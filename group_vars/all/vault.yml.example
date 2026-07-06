@@ -25,3 +25,7 @@ vault_phpmyadmin_basic_password: "CAMBIAMI_pma_basic"
 # (Opzionale) password dell'utente sudo admin_user del sistema.
 # Se vuota, l'utente sarà creato senza password (solo accesso a chiave SSH).
 vault_admin_user_password: ""
+
+# Token API football-data.org per l'aggiornamento orari SportsPress
+# (gratuito: https://www.football-data.org/client/register)
+vault_football_data_token: "CAMBIAMI_football_data"

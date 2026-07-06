@@ -4,6 +4,16 @@ Tutte le modifiche rilevanti a questo progetto sono documentate qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e il versionamento [SemVer](https://semver.org/lang/it/).
 
+## [Unreleased]
+
+### Aggiunto
+- **roles/sportspress_fixtures**: aggiornamento giornaliero degli orari delle
+  partite SportsPress dalla API football-data.org (systemd timer 07:15,
+  script via `wp eval-file`, token in vault `vault_football_data_token`).
+  Aggiorna solo i match con orario ufficializzato (status `TIMED`+), per non
+  sovrascrivere il calendario ufficiale della Lega con date provvisorie.
+  Nel play principale con tag `sportspress` / `fixtures`.
+
 ## [1.0.3] - 2026-06-30
 
 Migrazione di un sito esistente da backup "Backup Migration" (BMI).

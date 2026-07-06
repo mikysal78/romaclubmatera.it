@@ -81,6 +81,10 @@
     - role: backup
       tags: [backup]
 
+    # 10) Aggiornamento giornaliero orari partite SportsPress (football-data.org)
+    - role: sportspress_fixtures
+      tags: [sportspress, fixtures]
+
   post_tasks:
     - name: Calcola l'URL del sito per il riepilogo
       ansible.builtin.set_fact:

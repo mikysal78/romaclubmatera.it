@@ -1,0 +1,15 @@
+{{ ansible_managed | comment }}
+[Unit]
+Description=Aggiorna orari eventi SportsPress da football-data.org
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User={{ sportspress_fixtures_wp_user }}
+Group={{ sportspress_fixtures_wp_user }}
+ExecStart={{ sportspress_fixtures_wp_cli }} eval-file {{ sportspress_fixtures_script_dir }}/update-fixtures.php --path={{ sportspress_fixtures_wp_path }}
+Nice=10
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=full

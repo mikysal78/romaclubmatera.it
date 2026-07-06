@@ -1,0 +1,59 @@
+---
+- name: Verifica che il token football-data.org sia nel vault
+  ansible.builtin.assert:
+    that:
+      - sportspress_fixtures_fd_token | length > 0
+    fail_msg: >-
+      vault_football_data_token non impostato.
+      Aggiungilo con: ansible-vault edit group_vars/all/vault.yml
+    quiet: true
+
+- name: Crea la directory dello script
+  ansible.builtin.file:
+    path: "{{ sportspress_fixtures_script_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Installa lo script di aggiornamento fixtures
+  ansible.builtin.copy:
+    src: update-fixtures.php
+    dest: "{{ sportspress_fixtures_script_dir }}/update-fixtures.php"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Installa la config con il token API
+  ansible.builtin.template:
+    src: sp-fixtures.j2
+    dest: "{{ sportspress_fixtures_conf_file }}"
+    owner: root
+    group: "{{ sportspress_fixtures_wp_user }}"
+    mode: "0640"
+  no_log: true
+
+- name: Installa la unit di servizio
+  ansible.builtin.template:
+    src: sp-fixtures-update.service.j2
+    dest: /etc/systemd/system/sp-fixtures-update.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Ricarica systemd
+
+- name: Installa il timer
+  ansible.builtin.template:
+    src: sp-fixtures-update.timer.j2
+    dest: /etc/systemd/system/sp-fixtures-update.timer
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Ricarica systemd
+
+- name: Abilita e avvia il timer
+  ansible.builtin.systemd_service:
+    name: sp-fixtures-update.timer
+    enabled: true
+    state: started
+    daemon_reload: true

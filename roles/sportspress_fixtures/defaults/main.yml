@@ -1,0 +1,29 @@
+---
+# Token API football-data.org (gratuito, tier ONE, Serie A inclusa).
+# Registrazione: https://www.football-data.org/client/register
+# Va messo nel vault:  ansible-vault edit group_vars/all/vault.yml
+sportspress_fixtures_fd_token: "{{ vault_football_data_token | default('') }}"
+
+# football-data.org: AS Roma = 100, Serie A = SA, season = anno di inizio
+sportspress_fixtures_fd_team_id: 100
+sportspress_fixtures_fd_season: "2026"
+sportspress_fixtures_fd_competition: "SA"
+
+# Termini SportsPress (slug) a cui appartengono gli eventi da aggiornare.
+# A inizio stagione nuova aggiornare season API e slug season SportsPress.
+sportspress_fixtures_sp_league: "serie-a"
+sportspress_fixtures_sp_season: "2026-27"
+
+# Installazione WordPress (riusa le variabili del progetto)
+sportspress_fixtures_wp_path: "{{ wp_root | default('/var/www/' ~ wp_domain) }}"
+sportspress_fixtures_wp_user: www-data
+sportspress_fixtures_wp_cli: "{{ wordpress_cli_path | default('/usr/local/bin/wp') }}"
+
+# Percorsi di installazione dello script e della config col token
+sportspress_fixtures_script_dir: /usr/local/lib/sp-fixtures
+sportspress_fixtures_conf_file: /etc/default/sp-fixtures
+
+# Pianificazione systemd timer (ritardo casuale per non chiamare la API
+# tutti allo stesso minuto)
+sportspress_fixtures_on_calendar: "*-*-* 07:15:00"
+sportspress_fixtures_randomized_delay: "900"
