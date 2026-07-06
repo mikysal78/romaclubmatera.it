@@ -13,6 +13,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   Aggiorna solo i match con orario ufficializzato (status `TIMED`+), per non
   sovrascrivere il calendario ufficiale della Lega con date provvisorie.
   Nel play principale con tag `sportspress` / `fixtures`.
+- **mu-plugin rcm-next-match** (nel ruolo sportspress_fixtures): evidenzia la
+  riga della prossima partita nelle tabelle event-list, mostra "da definire"
+  al posto di 0:00 per gli orari non ufficializzati (calendario e banner) e
+  svuota le cache quando un evento programmato viene pubblicato.
 
 ## [1.0.3] - 2026-06-30
 

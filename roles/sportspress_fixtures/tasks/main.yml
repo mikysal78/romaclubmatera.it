@@ -57,3 +57,19 @@
     enabled: true
     state: started
     daemon_reload: true
+
+- name: Crea la directory dei mu-plugins
+  ansible.builtin.file:
+    path: "{{ sportspress_fixtures_wp_path }}/wp-content/mu-plugins"
+    state: directory
+    owner: "{{ sportspress_fixtures_wp_user }}"
+    group: "{{ sportspress_fixtures_wp_user }}"
+    mode: "0755"
+
+- name: Installa il mu-plugin che evidenzia la prossima partita
+  ansible.builtin.copy:
+    src: rcm-next-match.php
+    dest: "{{ sportspress_fixtures_wp_path }}/wp-content/mu-plugins/rcm-next-match.php"
+    owner: "{{ sportspress_fixtures_wp_user }}"
+    group: "{{ sportspress_fixtures_wp_user }}"
+    mode: "0644"
