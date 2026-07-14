@@ -153,6 +153,24 @@
     - turnstile_site_key | length > 0
     - turnstile_secret_key | length > 0
 
+# ---------- Mu-plugin ----------
+- name: Directory mu-plugins
+  ansible.builtin.file:
+    path: "{{ wp_root }}/wp-content/mu-plugins"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+# Formato 16:9 (800x450) usato dalla gallery "Le trasferte dei tifosi"
+- name: Installa il mu-plugin con le dimensioni immagine personalizzate
+  ansible.builtin.copy:
+    src: rcm-image-sizes.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-image-sizes.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # ---------- Permessi ----------
 - name: Proprietario corretto su tutti i file
   ansible.builtin.file:
