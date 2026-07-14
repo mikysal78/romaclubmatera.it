@@ -153,6 +153,16 @@
     - turnstile_site_key | length > 0
     - turnstile_secret_key | length > 0
 
+# ---------- Commenti disattivati ----------
+- name: Disattiva commenti e ping sui nuovi contenuti
+  ansible.builtin.command: "{{ wordpress_cli_path }} option update {{ item }} closed --path={{ wp_root }}"
+  loop:
+    - default_comment_status
+    - default_ping_status
+  become: true
+  become_user: www-data
+  changed_when: true
+
 # ---------- Mu-plugin ----------
 - name: Directory mu-plugins
   ansible.builtin.file:
