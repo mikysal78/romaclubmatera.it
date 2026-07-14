@@ -29,3 +29,8 @@ vault_admin_user_password: ""
 # Token API football-data.org per l'aggiornamento orari SportsPress
 # (gratuito: https://www.football-data.org/client/register)
 vault_football_data_token: "CAMBIAMI_football_data"
+
+# Chiavi Cloudflare Turnstile per l'anti-spam sui form
+# (gratuite: https://dash.cloudflare.com -> Turnstile -> Add widget)
+vault_turnstile_site_key: ""
+vault_turnstile_secret_key: ""

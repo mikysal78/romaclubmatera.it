@@ -103,6 +103,56 @@
   become_user: www-data
   when: enable_redis | bool
 
+# ---------- Anti-spam (Cloudflare Turnstile) ----------
+- name: Installa e attiva il plugin simple-cloudflare-turnstile
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install simple-cloudflare-turnstile --activate --path={{ wp_root }}"
+  register: wordpress_turnstile_plugin
+  changed_when: "'Plugin already installed' not in wordpress_turnstile_plugin.stdout"
+  failed_when:
+    - wordpress_turnstile_plugin.rc != 0
+    - "'already installed' not in wordpress_turnstile_plugin.stdout"
+  become: true
+  become_user: www-data
+  when: enable_turnstile | bool
+
+- name: Abilita Turnstile su CF7, commenti, login e registrazione
+  ansible.builtin.command: "{{ wordpress_cli_path }} option update {{ item }} 1 --path={{ wp_root }}"
+  loop:
+    - cfturnstile_cf7_all
+    - cfturnstile_comment
+    - cfturnstile_login
+    - cfturnstile_register
+  become: true
+  become_user: www-data
+  changed_when: true
+  when: enable_turnstile | bool
+
+# Modalità invisibile: il widget compare solo se serve un'interazione
+# (dichiarato anche nella privacy policy del sito).
+- name: Imposta Turnstile in modalità invisibile (interaction-only)
+  ansible.builtin.command: "{{ wordpress_cli_path }} option update cfturnstile_appearance interaction-only --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+  when: enable_turnstile | bool
+
+# Il plugin applica la protezione solo con cfturnstile_tested=yes: finché le
+# chiavi non sono nel vault i form restano senza widget (nessun lockout).
+- name: Configura le chiavi Turnstile (dal vault)
+  ansible.builtin.command: "{{ wordpress_cli_path }} option update {{ item.k }} {{ item.v }} --path={{ wp_root }}"
+  loop:
+    - { k: "cfturnstile_key", v: "{{ turnstile_site_key }}" }
+    - { k: "cfturnstile_secret", v: "{{ turnstile_secret_key }}" }
+    - { k: "cfturnstile_tested", v: "yes" }
+  become: true
+  become_user: www-data
+  changed_when: true
+  no_log: true
+  when:
+    - enable_turnstile | bool
+    - turnstile_site_key | length > 0
+    - turnstile_secret_key | length > 0
+
 # ---------- Permessi ----------
 - name: Proprietario corretto su tutti i file
   ansible.builtin.file:

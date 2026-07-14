@@ -43,6 +43,12 @@ letsencrypt_extra_domains: []
 # ---------- Redis object cache ----------
 enable_redis: true
 
+# ---------- Anti-spam (Cloudflare Turnstile) ----------
+# Plugin simple-cloudflare-turnstile su form CF7, commenti, login e registrazione.
+# Le chiavi (gratuite) si creano su https://dash.cloudflare.com -> Turnstile
+# e vanno nel vault. Senza chiavi il plugin resta installato ma inattivo.
+enable_turnstile: true
+
 # ---------- phpMyAdmin ----------
 enable_phpmyadmin: true
 # Path "segreto" sotto cui esporre phpMyAdmin (evita /phpmyadmin di default)
@@ -92,3 +98,5 @@ db_password: "{{ vault_db_password | default('') }}"
 wp_admin_password: "{{ vault_wp_admin_password | default('') }}"
 phpmyadmin_basic_password: "{{ vault_phpmyadmin_basic_password | default('') }}"
 admin_user_password: "{{ vault_admin_user_password | default('') }}"
+turnstile_site_key: "{{ vault_turnstile_site_key | default('') }}"
+turnstile_secret_key: "{{ vault_turnstile_secret_key | default('') }}"
