@@ -153,6 +153,24 @@
     - turnstile_site_key | length > 0
     - turnstile_secret_key | length > 0
 
+# ---------- SEO (Yoast) ----------
+- name: Installa e attiva il plugin Yoast SEO
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install wordpress-seo --activate --path={{ wp_root }}"
+  register: wordpress_yoast_plugin
+  changed_when: "'Plugin already installed' not in wordpress_yoast_plugin.stdout"
+  failed_when:
+    - wordpress_yoast_plugin.rc != 0
+    - "'already installed' not in wordpress_yoast_plugin.stdout"
+  become: true
+  become_user: www-data
+
+# URL parlanti (/%postname%/): requisito SEO, gli URL ?p=N vengono rediretti in 301
+- name: Permalink structure /%postname%/
+  ansible.builtin.command: "{{ wordpress_cli_path }} option update permalink_structure '/%postname%/' --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+
 # ---------- Commenti disattivati ----------
 - name: Disattiva commenti e ping sui nuovi contenuti
   ansible.builtin.command: "{{ wordpress_cli_path }} option update {{ item }} closed --path={{ wp_root }}"
