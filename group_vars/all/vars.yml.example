@@ -43,6 +43,17 @@ letsencrypt_extra_domains: []
 # ---------- Redis object cache ----------
 enable_redis: true
 
+# ---------- Email in uscita (WP Mail SMTP) ----------
+# Le mail di WordPress (form contatti, notifiche) escono via SMTP autenticato
+# sul mail server del dominio: SPF/DKIM allineati, niente spam.
+# La password della casella va nel vault (vault_smtp_password).
+enable_smtp: true
+smtp_host: "mail.romaclubmatera.it"
+smtp_port: 587
+smtp_user: "noreply@romaclubmatera.it"
+smtp_from: "noreply@romaclubmatera.it"
+smtp_from_name: "Roma Club Matera Francesco Totti"
+
 # ---------- Anti-spam (Cloudflare Turnstile) ----------
 # Plugin simple-cloudflare-turnstile su form CF7, commenti, login e registrazione.
 # Le chiavi (gratuite) si creano su https://dash.cloudflare.com -> Turnstile
@@ -98,5 +109,6 @@ db_password: "{{ vault_db_password | default('') }}"
 wp_admin_password: "{{ vault_wp_admin_password | default('') }}"
 phpmyadmin_basic_password: "{{ vault_phpmyadmin_basic_password | default('') }}"
 admin_user_password: "{{ vault_admin_user_password | default('') }}"
+smtp_password: "{{ vault_smtp_password | default('') }}"
 turnstile_site_key: "{{ vault_turnstile_site_key | default('') }}"
 turnstile_secret_key: "{{ vault_turnstile_secret_key | default('') }}"

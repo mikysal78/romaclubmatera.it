@@ -30,6 +30,9 @@ vault_admin_user_password: ""
 # (gratuito: https://www.football-data.org/client/register)
 vault_football_data_token: "CAMBIAMI_football_data"
 
+# Password SMTP della casella per le email in uscita (vedi smtp_user in vars)
+vault_smtp_password: ""
+
 # Chiavi Cloudflare Turnstile per l'anti-spam sui form
 # (gratuite: https://dash.cloudflare.com -> Turnstile -> Add widget)
 vault_turnstile_site_key: ""

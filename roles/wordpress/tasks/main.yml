@@ -171,6 +171,51 @@
   become_user: www-data
   changed_when: true
 
+# ---------- Email in uscita (WP Mail SMTP) ----------
+- name: Installa e attiva il plugin WP Mail SMTP
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install wp-mail-smtp --activate --path={{ wp_root }}"
+  register: wordpress_smtp_plugin
+  changed_when: "'Plugin already installed' not in wordpress_smtp_plugin.stdout"
+  failed_when:
+    - wordpress_smtp_plugin.rc != 0
+    - "'already installed' not in wordpress_smtp_plugin.stdout"
+  become: true
+  become_user: www-data
+  when: enable_smtp | bool
+
+- name: Configura WP Mail SMTP in wp-config.php
+  ansible.builtin.command: >-
+    {{ wordpress_cli_path }} config set {{ item.k }} "{{ item.v }}"
+    {{ item.raw | default('') }} --path={{ wp_root }}
+  loop:
+    - { k: "WPMS_ON", v: "true", raw: "--raw" }
+    - { k: "WPMS_MAILER", v: "smtp" }
+    - { k: "WPMS_SMTP_HOST", v: "{{ smtp_host }}" }
+    - { k: "WPMS_SMTP_PORT", v: "{{ smtp_port }}", raw: "--raw" }
+    - { k: "WPMS_SSL", v: "tls" }
+    - { k: "WPMS_SMTP_AUTH", v: "true", raw: "--raw" }
+    - { k: "WPMS_SMTP_USER", v: "{{ smtp_user }}" }
+    - { k: "WPMS_MAIL_FROM", v: "{{ smtp_from }}" }
+    - { k: "WPMS_MAIL_FROM_FORCE", v: "true", raw: "--raw" }
+    - { k: "WPMS_MAIL_FROM_NAME", v: "{{ smtp_from_name }}" }
+    - { k: "WPMS_MAIL_FROM_NAME_FORCE", v: "true", raw: "--raw" }
+  become: true
+  become_user: www-data
+  changed_when: true
+  when: enable_smtp | bool
+
+- name: Configura la password SMTP (dal vault)
+  ansible.builtin.command: >-
+    {{ wordpress_cli_path }} config set WPMS_SMTP_PASS "{{ smtp_password }}"
+    --path={{ wp_root }}
+  become: true
+  become_user: www-data
+  changed_when: true
+  no_log: true
+  when:
+    - enable_smtp | bool
+    - smtp_password | length > 0
+
 # ---------- Commenti disattivati ----------
 - name: Disattiva commenti e ping sui nuovi contenuti
   ansible.builtin.command: "{{ wordpress_cli_path }} option update {{ item }} closed --path={{ wp_root }}"
