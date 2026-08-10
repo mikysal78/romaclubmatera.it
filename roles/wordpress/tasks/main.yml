@@ -244,6 +244,24 @@
     group: www-data
     mode: "0644"
 
+# Anagrafica soci (import CSV) e auguri di compleanno automatici
+- name: Installa il mu-plugin dei compleanni
+  ansible.builtin.copy:
+    src: rcm-compleanni.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-compleanni.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
+# WP-Cron parte solo con le visite: su un sito a basso traffico gli auguri
+# uscirebbero in ritardo. Con questo cron di sistema gli eventi scaduti girano comunque.
+- name: Cron di sistema per gli eventi WP-Cron scaduti
+  ansible.builtin.cron:
+    name: wp-cron romaclubmatera
+    minute: "*/15"
+    user: www-data
+    job: "{{ wordpress_cli_path }} cron event run --due-now --path={{ wp_root }} >/dev/null 2>&1"
+
 # ---------- Permessi ----------
 - name: Proprietario corretto su tutti i file
   ansible.builtin.file:

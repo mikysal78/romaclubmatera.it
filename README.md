@@ -18,9 +18,10 @@ Stack: **Nginx + PHP-FPM 8.4 + MariaDB + Redis (object cache) + WP-CLI**, micro-
 6. [Esecuzione](#6-esecuzione)
 7. [Cosa fa l'hardening](#7-cosa-fa-lhardening)
 8. [Backup e ripristino](#8-backup-e-ripristino)
-9. [Manutenzione e tag utili](#9-manutenzione-e-tag-utili)
-10. [Troubleshooting](#10-troubleshooting)
-11. [Pubblicazione su GitHub](#11-pubblicazione-su-github)
+9. [Personalizzazioni del sito (mu-plugin)](#9-personalizzazioni-del-sito-mu-plugin)
+10. [Manutenzione e tag utili](#10-manutenzione-e-tag-utili)
+11. [Troubleshooting](#11-troubleshooting)
+12. [Pubblicazione su GitHub](#12-pubblicazione-su-github)
 
 ---
 
@@ -94,8 +95,9 @@ wordpress-trixie-ansible/
     ├── redis/                # Redis object cache
     ├── webserver/            # Nginx + vhost + FastCGI cache
     ├── letsencrypt/          # certbot: emissione + rinnovo automatico HTTPS
-    ├── wordpress/            # WP-CLI: download, config, install, redis plugin
+    ├── wordpress/            # WP-CLI: download, config, install, redis plugin, mu-plugin
     ├── phpmyadmin/           # phpMyAdmin protetto
+    ├── sportspress_fixtures/ # calendario partite da football-data.org
     └── backup/               # directory + script + cron
 ```
 
@@ -396,7 +398,57 @@ Note importanti:
 - viene sempre creato un **backup pre-import** in `/var/backups/` sul CT: se qualcosa non torna, puoi ripristinare;
 - dopo l'import, controlla home, menu, media e i plugin pesanti (Elementor, Slider Revolution).
 
-## 9. Manutenzione e tag utili
+## 9. Personalizzazioni del sito (mu-plugin)
+
+Le funzioni su misura non sono plugin da installare dalla bacheca: sono **mu-plugin**
+(`wp-content/mu-plugins/`, sempre attivi, non disattivabili per sbaglio) versionati nel
+repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
+
+| Mu-plugin | Ruolo | Cosa fa |
+|---|---|---|
+| `rcm-image-sizes.php` | `wordpress` | registra il formato 16:9 (800x450) usato dalla gallery delle trasferte |
+| `rcm-compleanni.php` | `wordpress` | anagrafica soci e auguri di compleanno automatici |
+| `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
+
+### 9.1 Auguri di compleanno ai soci (`rcm-compleanni`)
+
+Manda gli auguri via email ai soci il giorno del compleanno, usando il relay SMTP già
+configurato (vedi `enable_smtp`). I soci **non sono utenti WordPress**: stanno in una
+tabella dedicata `<prefisso>_rcm_soci`, popolata via import CSV.
+
+In bacheca compare il menu **Soci**, riservato agli amministratori:
+
+- **Elenco soci** — ricerca, paginazione, aggiunta manuale, eliminazione; in cima il
+  totale e quanti soci sono senza data di nascita (quelli vengono esclusi dagli invii);
+- **Importa CSV** — prima riga con i nomi delle colonne (`nome`, `cognome`, `email`,
+  `data di nascita`), separatore `,` o `;`, date `gg/mm/aaaa` o `aaaa-mm-gg`. L'import è
+  **idempotente sull'email**: aggiorna invece di duplicare e le celle vuote non
+  sovrascrivono i dati già in archivio;
+- **Auguri** — interruttore on/off, ora di invio, oggetto e testo con i segnaposto
+  `{nome}` `{cognome}` `{eta}` `{anno_nascita}`, indirizzo in Ccn, prova di invio con dati
+  finti e tabella dei compleanni nei 30 giorni successivi.
+
+Note di funzionamento:
+
+- l'invio parte **spento**: si accende dalla scheda *Auguri* dopo aver importato la lista;
+- niente doppioni: ogni socio ha `ultimo_invio_anno`, quindi più esecuzioni nello stesso
+  giorno non rimandano la stessa email;
+- il 29 febbraio, negli anni non bisestili, gli auguri escono il 28.
+
+> **WP-Cron e cron di sistema.** WP-Cron gira solo quando qualcuno visita il sito: su un
+> sito a basso traffico gli invii pianificati uscirebbero in ritardo. Il ruolo `wordpress`
+> installa quindi un cron di sistema per `www-data` che ogni 15 minuti esegue
+> `wp cron event run --due-now`. Vale per tutti gli eventi pianificati, non solo i compleanni.
+
+```bash
+# Stato della pianificazione e prova manuale (sul CT)
+sudo -u www-data wp --path=/var/www/example.com cron event list | grep compleanni
+sudo -u www-data wp --path=/var/www/example.com cron event run rcm_compleanni_invio_giornaliero
+```
+
+---
+
+## 10. Manutenzione e tag utili
 
 Esegui solo una parte del playbook con i tag:
 
@@ -407,7 +459,7 @@ ansible-playbook site.yml --ask-vault-pass --tags backup
 ansible-playbook site.yml --ask-vault-pass --tags wordpress
 ```
 
-Tag disponibili: `common`, `hardening`, `database`, `php`, `redis`, `nginx`, `wordpress`, `phpmyadmin`, `backup`.
+Tag disponibili: `common`, `hardening`, `database`, `php`, `redis`, `nginx`, `wordpress`, `phpmyadmin`, `backup`, `sportspress`.
 
 **Comandi WP-CLI utili** (sul CT, come `www-data`):
 
@@ -419,7 +471,7 @@ sudo -u www-data wp --path=/var/www/example.com core update
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 | Sintomo | Causa / Soluzione |
 |---|---|
@@ -433,7 +485,7 @@ sudo -u www-data wp --path=/var/www/example.com core update
 
 ---
 
-## 11. Pubblicazione su GitHub
+## 12. Pubblicazione su GitHub
 
 Dalla cartella del progetto:
 
