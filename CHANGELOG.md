@@ -6,6 +6,11 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-10
+
+Personalizzazioni del sito del Roma Club Matera: calendario partite, SEO,
+posta in uscita, anti-spam e auguri di compleanno ai soci.
+
 ### Aggiunto
 - **mu-plugin rcm-compleanni** (nel ruolo wordpress): anagrafica soci in tabella
   dedicata `<prefisso>_rcm_soci` con import CSV idempotente sull'email, e invio
@@ -27,6 +32,32 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   riga della prossima partita nelle tabelle event-list, mostra "da definire"
   al posto di 0:00 per gli orari non ufficializzati (calendario e banner) e
   svuota le cache quando un evento programmato viene pubblicato.
+- **Email in uscita via WP Mail SMTP** (ruolo wordpress): plugin installato e
+  configurato con costanti `WPMS_*` in `wp-config.php`, relay autenticato su
+  porta 587 con TLS e mittente forzato. Password dal vault
+  (`vault_smtp_password`), si attiva con `enable_smtp`. Sostituisce Site
+  Mailer, rimosso dal live perche' non tracciava alcun invio.
+- **Anti-spam Cloudflare Turnstile** (ruolo wordpress): plugin
+  `simple-cloudflare-turnstile` su Contact Form 7, commenti, login e
+  registrazione, in modalita' invisibile (interaction-only). Chiavi dal vault;
+  la protezione si attiva solo quando le chiavi sono valorizzate, cosi' una
+  configurazione incompleta non chiude fuori nessuno dalla bacheca.
+- **Yoast SEO e permalink parlanti** (ruolo wordpress): plugin installato e
+  struttura permalink `/%postname%/`.
+- **mu-plugin rcm-image-sizes** (ruolo wordpress): registra la size
+  `rcm_gallery_16_9` (800x450, crop). Elementor non genera i crop `custom` dal
+  frontend, quindi il widget image-gallery usa questa size registrata.
+- Logo del club in SVG nella radice del repo.
+
+### Modificato
+- **Commenti e ping chiusi di default** (ruolo wordpress):
+  `default_comment_status` e `default_ping_status` a `closed` sui nuovi
+  contenuti.
+
+### Corretto
+- **robots.txt**: il template nginx serviva un 404 al posto del robots virtuale
+  di WordPress/Yoast (che contiene il riferimento alla sitemap). Aggiunto
+  `try_files` cosi' la richiesta arriva a WordPress quando il file non esiste.
 
 ## [1.0.3] - 2026-06-30
 
@@ -97,6 +128,7 @@ in Proxmox, con HTTPS valido.
 - `vars.yml` e `vault.yml` sono esclusi dal repo: si creano dai rispettivi `.example`.
 - Dipendenze Galaxy installate in `galaxy_roles/` e `collections/` (non versionate).
 
-[1.0.3]: https://github.com/mikysal78/wordpress-trixie-ansible/releases/tag/v1.0.3
-[1.0.2]: https://github.com/mikysal78/wordpress-trixie-ansible/releases/tag/v1.0.2
-[1.0.0]: https://github.com/mikysal78/wordpress-trixie-ansible/releases/tag/v1.0.0
+[1.1.0]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.1.0
+[1.0.3]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.0.3
+[1.0.2]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.0.2
+[1.0.0]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.0.0
