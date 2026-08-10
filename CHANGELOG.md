@@ -7,6 +7,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **mu-plugin rcm-compleanni** (nel ruolo wordpress): anagrafica soci in tabella
+  dedicata `<prefisso>_rcm_soci` con import CSV idempotente sull'email, e invio
+  automatico degli auguri di compleanno via il relay SMTP del sito. Menu *Soci* in
+  bacheca (elenco, import, impostazioni auguri con segnaposto, prova di invio,
+  prossimi compleanni a 30 giorni). Anti-doppione con `ultimo_invio_anno`; il 29
+  febbraio slitta al 28 negli anni non bisestili. L'invio nasce spento.
+  I soci non sono utenti WordPress: la lista la importa il cliente.
+- **cron di sistema per WP-Cron** (ruolo wordpress): `wp cron event run --due-now`
+  ogni 15 minuti come `www-data`. WP-Cron da solo parte con le visite e su un sito
+  a basso traffico gli invii pianificati uscirebbero in ritardo.
 - **roles/sportspress_fixtures**: aggiornamento giornaliero degli orari delle
   partite SportsPress dalla API football-data.org (systemd timer 07:15,
   script via `wp eval-file`, token in vault `vault_football_data_token`).
