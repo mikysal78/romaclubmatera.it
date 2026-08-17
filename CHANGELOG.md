@@ -18,6 +18,11 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   (Elementor, pagina 12), nella voce di menu 250 e nel titolo della pagina 239.
   Lo slug `/trasferte/` non cambia.
 
+- **Widget Contatti nel footer**: il link dell'email puntava al segnaposto
+  `mailto:football@gmail.com` pur mostrando `info@romaclubmatera.it` — chi ci
+  cliccava scriveva a un indirizzo inesistente. Corretto il `mailto:`; il numero
+  di telefono, che era un link morto `href="#"`, e' ora un link `tel:`.
+
 ### Rimosso
 - **Sezione Eventi**: i 24 articoli storici (ID 1238-1261) sono nel cestino, la
   voce di menu 249 e la categoria *Eventi* (term 32) sono eliminate,
