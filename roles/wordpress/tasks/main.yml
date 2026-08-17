@@ -244,16 +244,6 @@
     group: www-data
     mode: "0644"
 
-# Gli articoli storici (categoria "Eventi") stanno sotto la voce di menu Eventi,
-# non nell'elenco /news/: restano pubblicati ma fuori dalla pagina degli articoli.
-- name: Installa il mu-plugin che filtra l'elenco delle news
-  ansible.builtin.copy:
-    src: rcm-news-query.php
-    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-news-query.php"
-    owner: www-data
-    group: www-data
-    mode: "0644"
-
 # Anagrafica soci (import CSV) e auguri di compleanno automatici
 - name: Installa il mu-plugin dei compleanni
   ansible.builtin.copy:

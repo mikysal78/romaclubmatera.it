@@ -6,20 +6,28 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
-### Aggiunto
-- **mu-plugin rcm-news-query** (ruolo wordpress): esclude la categoria *Eventi*
-  dalla pagina degli articoli `/news/`. Gli articoli storici (2012-2022) servono
-  alla voce di menu *Eventi* (`/category/eventi/`) e restano pubblicati e
-  raggiungibili: li togliamo solo dall'elenco delle news correnti.
-
 ### Modificato
 - **Widget "Articoli recenti"** (barra laterale e footer, blocchi
-  `core/latest-posts`): limitati alla categoria *News*, altrimenti gli articoli
-  storici rientravano dalla barra laterale della stessa pagina `/news/`.
+  `core/latest-posts`): limitati alla categoria *News*, cosi' l'elenco resta
+  quello delle news correnti.
 - **Articoli 206 e 208** ("Grazie di tutto: la serata sociale" e "Dal 2012 a oggi:
   la storia del Roma Club Matera") messi in bozza su richiesta: `/news/` mostra
   ora solo Match Day Roma-Fiorentina, Roma-Inter, Iscriviti al Roma Club e
   La nostra sede.
+- **"Le trasferte dei tifosi" rinominata "Le nostre trasferte"** nella home
+  (Elementor, pagina 12), nella voce di menu 250 e nel titolo della pagina 239.
+  Lo slug `/trasferte/` non cambia.
+
+### Rimosso
+- **Sezione Eventi**: i 24 articoli storici (ID 1238-1261) sono nel cestino, la
+  voce di menu 249 e la categoria *Eventi* (term 32) sono eliminate,
+  `/category/eventi/` risponde 404. Le 219 foto restano nella libreria media su
+  richiesta. Export WXR di sicurezza in `/root/backup-eventi/` sul CT.
+  Gli slug degli articoli erano occupati dagli allegati omonimi (i vecchi URL
+  finivano in 301 su un file `.jpg`): rinominati con prefisso `foto-`, cosi' i
+  vecchi indirizzi rispondono 404 e gli slug restano liberi in caso di ripristino.
+- **mu-plugin rcm-news-query**: serviva a tenere la categoria *Eventi* fuori da
+  `/news/`, che senza quella categoria non ha piu' motivo di esistere.
 
 ## [1.1.0] - 2026-08-10
 
