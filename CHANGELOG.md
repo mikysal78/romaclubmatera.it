@@ -6,6 +6,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Aggiunto
+- **mu-plugin rcm-news-query** (ruolo wordpress): esclude la categoria *Eventi*
+  dalla pagina degli articoli `/news/`. Gli articoli storici (2012-2022) servono
+  alla voce di menu *Eventi* (`/category/eventi/`) e restano pubblicati e
+  raggiungibili: li togliamo solo dall'elenco delle news correnti.
+
+### Modificato
+- **Widget "Articoli recenti"** (barra laterale e footer, blocchi
+  `core/latest-posts`): limitati alla categoria *News*, altrimenti gli articoli
+  storici rientravano dalla barra laterale della stessa pagina `/news/`.
+- **Articoli 206 e 208** ("Grazie di tutto: la serata sociale" e "Dal 2012 a oggi:
+  la storia del Roma Club Matera") messi in bozza su richiesta: `/news/` mostra
+  ora solo Match Day Roma-Fiorentina, Roma-Inter, Iscriviti al Roma Club e
+  La nostra sede.
+
 ## [1.1.0] - 2026-08-10
 
 Personalizzazioni del sito del Roma Club Matera: calendario partite, SEO,
