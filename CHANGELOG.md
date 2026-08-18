@@ -6,7 +6,41 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Aggiunto
+- **Blocco "Ultime news" in home** (pagina 12, Elementor): nuova sezione subito
+  sotto "Maciniamo chilometri ... superiamo gli ostacoli..." e prima de
+  "Il Direttivo". Mostra i 3 articoli piu' recenti della categoria *News* con
+  widget **Post Magazine Grid** (Unlimited Elements), lo stesso che il tema usava
+  nella sezione blog: impostazioni riprese dalla revisione 594 della home, cosi'
+  tipografia e bottoni restano quelli del tema. Data in italiano sopra il titolo,
+  velo scuro al 35% sulla foto per la leggibilita', bottone "Tutte le news"
+  verso `/news/`. Backup del layout precedente in
+  `/root/elementor_data_12_backup_20260818-2136.json` sul CT.
+
 ### Modificato
+- **Articolo "Iscriversi al Roma Club Matera"** (ID 210): il titolo iniziava in
+  minuscolo e lo slug era ancora quello demo del tema
+  (`/football-is-the-ballet-of-the-masses/`). Ora e'
+  `/iscriversi-al-roma-club-matera/`; il vecchio indirizzo risponde 301 sul nuovo
+  grazie al redirect nativo di WordPress sugli slug storici.
+- **Animazioni d'ingresso della home da "slow" a "fast"** (pagina 12): ogni
+  sezione nasce con `elementor-invisible` (`visibility: hidden`) e compare in
+  dissolvenza entrando nel viewport. Con la durata "slow" (2 s) scorrendo si
+  vedevano bande nere al posto delle sezioni non ancora comparse - "Il Direttivo",
+  che ha una foto di sfondo, sembrava avere lo sfondo nero. Ora `animation_duration`
+  e' `fast` (0,8 s) su tutte e 8 le sezioni animate; lo slider resta senza
+  animazione, com'era in origine.
+- **Immagini del tema portate in locale** (nessun contenuto dipende piu' dal sito
+  demo `themes.webswaala.com`): 40 URL distinte lo referenziavano - 37 avevano
+  gia' il file in `uploads/`, mancavano solo `blog-img-01.jpg` e `blog-img-02.jpg`,
+  scaricati sul CT. Riscritte **227 occorrenze** su tutto il database
+  (`wp search-replace`, 109 in forma normale + 118 con le slash escapate dentro
+  `_elementor_data`, che la prima passata non intercetta). Toccava anche link a
+  pagine del demo (`?p=194`, `?page_id=239`) e i `guid` di 54 allegati. L'unico
+  contenuto vivo coinvolto oltre alla home era la pagina *Chi siamo* (ID 16).
+  Verificate 84 immagini fra home e Chi siamo, incluse quelle nel CSS generato da
+  Elementor: nessuna rotta. Backup del database prima della sostituzione in
+  `/root/db-pre-webswaala-20260818-2251.sql` sul CT.
 - **Widget "Articoli recenti"** (barra laterale e footer, blocchi
   `core/latest-posts`): limitati alla categoria *News*, cosi' l'elenco resta
   quello delle news correnti.
