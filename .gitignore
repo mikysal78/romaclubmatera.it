@@ -16,3 +16,6 @@ credentials-*.txt
 *.log
 .DS_Store
 .ansible/
+
+# Script personali di comodo (non fanno parte del deploy)
+resume.sh
