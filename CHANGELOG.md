@@ -29,6 +29,22 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   `/root/elementor_data_12_backup_20260818-2136.json` sul CT.
 
 ### Modificato
+- **Pagina "Direttivo" (ID 236): nome e ruolo sotto la foto.** Il tema mostrava
+  il nome *sopra* la foto e solo al passaggio del mouse (classe `.our-text`,
+  `opacity: 0`, tirata su con `margin-top: -22em` e `offset_y` per breakpoint),
+  quindi da fermo le 12 caselle erano solo foto senza didascalia. Ora per ogni
+  membro: foto, **nome** in bianco 24px sotto la foto e, sotto, una riga di
+  **ruolo/descrizione** (widget testo, classe `our-role`, oro `#e6af14`,
+  maiuscoletto 13px) pronta per essere riscritta dalla redazione. Compilati i
+  ruoli noti dalla pagina *Chi siamo* - Vito Plasmati *Presidente*, Rino Di
+  Gennaro *Vice presidente* - gli altri 10 restano "Membro del direttivo".
+  Rimossi i 12 widget **social-icons**: puntavano tutti a `#` ed erano visibili
+  solo in hover sopra la foto, posizione che il nuovo layout non lascia libera.
+  In *Aspetto > Personalizza > CSS aggiuntivo* il velo oro pieno sull'hover
+  (serviva a far leggere quelle icone) diventa una velatura al 18%, cosi' la
+  foto resta visibile. Portata a `fast` anche qui la dissolvenza d'ingresso,
+  come gia' fatto in home. Backup del layout in
+  `/root/elementor_data_236_backup_20260819-2348.json` sul CT.
 - **Articolo "Iscriversi al Roma Club Matera"** (ID 210): il titolo iniziava in
   minuscolo e lo slug era ancora quello demo del tema
   (`/football-is-the-ballet-of-the-masses/`). Ora e'
