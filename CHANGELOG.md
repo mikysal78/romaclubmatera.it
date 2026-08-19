@@ -7,6 +7,17 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Pagine segnaposto "in costruzione": Statuto, Regolamento e Store**
+  (ID 1304, 1305, 1306). Pagine classiche (non Elementor), quindi ereditano
+  l'hero col titolo e i colori del tema; contenuto centrato con badge
+  "Lavori in corso" in oro `#e6af14`, due righe di spiegazione e rimando a
+  `info@romaclubmatera.it` / `/contatti/`. Impostato
+  `_yoast_wpseo_meta-robots-noindex = 1`, cosi' Yoast le tiene fuori dalla
+  sitemap finche' non avranno contenuto vero.
+  Nel menu **Primary**: *Statuto* e *Regolamento* come voci figlie di
+  *Chi siamo* (dopo *Direttivo*), *Store* al primo livello subito prima di
+  *Contattaci*. Riordinato tutto il menu con `menu_order` da 1 a 12 per evitare
+  posizioni duplicate.
 - **Blocco "Ultime news" in home** (pagina 12, Elementor): nuova sezione subito
   sotto "Maciniamo chilometri ... superiamo gli ostacoli..." e prima de
   "Il Direttivo". Mostra i 3 articoli piu' recenti della categoria *News* con
