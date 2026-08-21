@@ -7,6 +7,19 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Rimando a "Il Romanista" nel footer.** Nuovo mu-plugin `rcm-romanista.php`:
+  card in fondo alla colonna destra del footer (sotto *Contatti*), agganciata a
+  `dynamic_sidebar_after` sulla sidebar `footer4`, quindi senza toccare il footer
+  builder del tema. Stile nella sezione "Il Romanista" di `rcm-custom.css`.
+  **E' un link, non la locandina**: la prima pagina e' opera dell'editore e
+  riprodurla sul sito - anche scaricandola in automatico, anche con credito -
+  richiede l'autorizzazione della redazione. Per lo stesso motivo la testata e'
+  scritta in testo e non col loro logo. Tecnicamente la locandina sarebbe
+  banale: la pubblicano a un indirizzo fisso che sostituiscono ogni giorno.
+  Il codice e' gia' predisposto: il filtro `rcm_romanista_locandina_url`, se
+  restituisce un indirizzo, fa mostrare l'immagine al posto del testo tenendo il
+  link sotto. Da accendere **solo** dopo l'ok scritto, e servendo una copia dal
+  nostro server invece di agganciare la loro immagine.
 - **Recensioni dei soci: raccolta, moderazione e striscia scorrevole.** Nuovo
   mu-plugin `rcm-recensioni.php` (+ `rcm-recensioni/recensioni.css`), versionato
   in `roles/wordpress/files/`.

@@ -253,6 +253,17 @@
     group: www-data
     mode: "0644"
 
+# Rimando alla prima pagina de Il Romanista in fondo alla colonna destra del
+# footer. E' un link, non la locandina: la riproduzione richiede l'ok della
+# redazione (il perche' e' spiegato in testa al file).
+- name: Installa il mu-plugin del rimando a Il Romanista
+  ansible.builtin.copy:
+    src: rcm-romanista.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-romanista.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Recensioni dei soci: tipo di contenuto, modulo pubblico con Turnstile e
 # moderazione, striscia scorrevole sopra il footer. Il CSS sta accanto al
 # mu-plugin perche' e' parte della stessa funzione, non del tema.
