@@ -7,6 +7,36 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Recensioni dei soci: raccolta, moderazione e striscia scorrevole.** Nuovo
+  mu-plugin `rcm-recensioni.php` (+ `rcm-recensioni/recensioni.css`), versionato
+  in `roles/wordpress/files/`.
+  *Raccolta*: pagina **Recensioni** (ID 1323, `/recensioni/`, voce di menu fra
+  *Sponsor* e *Contattaci*) con modulo - nome, citta', e-mail, voto in stelle,
+  testo 30-600 caratteri, spunta di consenso obbligatoria e link alla privacy
+  policy. Antispam a tre livelli: nonce, campo-trappola nascosto e Turnstile.
+  *Moderazione*: le recensioni arrivano come **bozze in attesa**, niente va
+  online da solo; avviso via e-mail a `info@` con il link per approvare.
+  *Archivio*: tipo di contenuto `rcm_recensione` (non pubblico, nessuna pagina
+  propria), con voto/citta'/e-mail nel pannello laterale e colonne in elenco.
+  L'e-mail non viene mai pubblicata.
+  *Vetrina*: striscia agganciata a `thewebs_before_footer`, quindi **sopra il
+  footer** e su tutte le pagine tranne `/recensioni/` (dove le schede ci sono
+  gia'). Scorrimento continuo in CSS puro, senza JavaScript: la lista e'
+  duplicata e l'animazione trasla del 50%, cosi' il giro si richiude senza
+  salti. Si ferma al passaggio del mouse e col focus da tastiera. Da telefono e
+  con `prefers-reduced-motion` l'animazione sparisce e diventa una striscia da
+  sfogliare col dito.
+  *Soglia*: sotto le 3 recensioni pubblicate la striscia non compare - una
+  vetrina mezza vuota fa peggio di nessuna vetrina. Per vedere che aspetto avra'
+  prima di averle, `?rcm_anteprima=1` mostra tre schede finte tenute in memoria
+  (mai salvate, mai visibili ai visitatori) a chi e' collegato e puo' scrivere.
+  *Turnstile*: il widget lo disegna il plugin con lo shortcode
+  `[simple-turnstile]` e la verifica passa da `cfturnstile_check()`, cosi'
+  valgono le impostazioni del pannello. Attenzione: il plugin espone anche
+  l'action `cfturnstile_display_widget`, ma il suo callback *restituisce* la
+  stringa invece di stamparla e `do_action` scarta i valori di ritorno - da li'
+  esce un div vuoto. Da non caricare una seconda copia di `api.js`: il plugin la
+  serve in modalita' `explicit` e la doppia inclusione impediva il rendering.
 - **CSS su misura spostato dal database al tema figlio.** Stava in
   *Aspetto > Personalizza > CSS aggiuntivo* (post 867, tipo `custom_css`): 242
   righe che un ripristino da zero avrebbe perso, perche' nel repo non c'era

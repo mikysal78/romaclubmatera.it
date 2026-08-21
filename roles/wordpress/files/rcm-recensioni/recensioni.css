@@ -1,0 +1,360 @@
+/*
+ * Recensioni dei soci - striscia sopra il footer e modulo pubblico.
+ * Fa parte del mu-plugin rcm-recensioni.php (repo: roles/wordpress/files/).
+ */
+
+/* ---------- striscia ---------- */
+
+.rcm-recensioni {
+  --rcm-rec-oro: #e6af14;
+  padding: 54px 0 46px;
+  background: #0d0d0d;
+  border-top: 1px solid rgba(230, 175, 20, 0.25);
+  border-bottom: 1px solid rgba(230, 175, 20, 0.25);
+  overflow: hidden;
+}
+
+.rcm-recensioni-titolo {
+  margin: 0 0 30px;
+  text-align: center;
+  font-size: 30px;
+  line-height: 1.25;
+  color: var(--rcm-rec-oro);
+}
+
+/* le sfumature ai lati fanno "entrare e uscire" le schede invece di tagliarle */
+.rcm-recensioni-vista {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 90px, #000 calc(100% - 90px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 90px, #000 calc(100% - 90px), transparent 100%);
+}
+
+.rcm-recensioni-pista {
+  display: flex;
+  gap: 22px;
+  width: max-content;
+  margin: 0;
+  padding: 0 11px;
+  list-style: none;
+  animation: rcm-rec-scorri var(--rcm-rec-durata, 60s) linear infinite;
+}
+
+/* si ferma quando ci passi sopra o quando ci arrivi da tastiera:
+   una scheda che scappa mentre la leggi e' una scheda persa */
+.rcm-recensioni-vista:hover .rcm-recensioni-pista,
+.rcm-recensioni-vista:focus-within .rcm-recensioni-pista {
+  animation-play-state: paused;
+}
+
+/* la lista e' duplicata, quindi meta' pista e' un giro completo */
+@keyframes rcm-rec-scorri {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.rcm-recensione {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 26px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: #161616;
+}
+
+.rcm-recensione-voto {
+  margin: 0 0 12px;
+  color: var(--rcm-rec-oro);
+  font-size: 17px;
+  letter-spacing: 2px;
+}
+
+.rcm-recensione-testo {
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+  color: #e8e8e8;
+  font-size: 16px;
+  line-height: 1.65;
+  font-style: italic;
+}
+
+.rcm-recensione-firma {
+  margin: auto 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rcm-recensione-nome {
+  display: block;
+  color: var(--rcm-rec-oro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rcm-recensione-citta {
+  display: block;
+  color: #9a9a9a;
+}
+
+.rcm-recensioni-invito {
+  margin: 30px 0 0;
+  text-align: center;
+  font-size: 15px;
+}
+
+.rcm-recensioni-invito a {
+  color: var(--rcm-rec-oro);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Da telefono lo scorrimento automatico da' fastidio e consuma batteria:
+   diventa una striscia che si sfoglia col dito. Stessa cosa per chi ha
+   chiesto al sistema di ridurre le animazioni. */
+@media (prefers-reduced-motion: reduce), (max-width: 767px) {
+  .rcm-recensioni-vista {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    /* la sfumatura serviva a far entrare e uscire le schede in movimento:
+       qui non si muove niente e sbiadirebbe solo il testo della prima */
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .rcm-recensioni-pista {
+    animation: none;
+  }
+  .rcm-recensioni-pista > [aria-hidden="true"] {
+    display: none; /* il doppione serve solo al loop */
+  }
+  .rcm-recensione {
+    scroll-snap-align: center;
+    width: 290px;
+  }
+}
+
+/* ---------- elenco dentro una pagina ---------- */
+
+.rcm-recensioni-elenco {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: center;
+  margin: 0 0 40px;
+  padding: 0;
+  list-style: none;
+}
+
+.rcm-recensioni-elenco .rcm-recensione {
+  --rcm-rec-oro: #e6af14;
+}
+
+/* ---------- modulo ---------- */
+
+.rcm-rec-form {
+  --rcm-rec-oro: #e6af14;
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.rcm-rec-riga {
+  margin: 0 0 22px;
+}
+
+.rcm-rec-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rcm-rec-form input[type="text"],
+.rcm-rec-form input[type="email"],
+.rcm-rec-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: #141414;
+  color: #f2f2f2;
+  font-size: 16px; /* sotto i 16px iOS ingrandisce la pagina da solo */
+  line-height: 1.5;
+}
+
+.rcm-rec-form input:focus,
+.rcm-rec-form textarea:focus {
+  outline: 2px solid var(--rcm-rec-oro);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.rcm-rec-aiuto {
+  display: block;
+  margin-top: 6px;
+  color: #9a9a9a;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.rcm-rec-stelle {
+  margin: 0 0 22px;
+  padding: 0;
+  border: 0;
+}
+
+.rcm-rec-stelle legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* le stelle stanno nel DOM da 5 a 1: girando la riga si vedono da 1 a 5 e il
+   selettore ~ puo' accendere tutte quelle di valore piu' basso */
+.rcm-rec-stelle-gruppo {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.rcm-rec-stelle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.rcm-rec-stelle label {
+  margin: 0;
+  color: #4a4a4a;
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.rcm-rec-stelle input:checked ~ label,
+.rcm-rec-stelle label:hover,
+.rcm-rec-stelle label:hover ~ label {
+  color: var(--rcm-rec-oro);
+}
+
+.rcm-rec-stelle input:focus-visible + label {
+  outline: 2px solid var(--rcm-rec-oro);
+  outline-offset: 2px;
+}
+
+.rcm-rec-consenso {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 0 24px;
+}
+
+.rcm-rec-consenso input {
+  margin-top: 4px;
+  flex: 0 0 auto;
+}
+
+.rcm-rec-consenso label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.rcm-rec-consenso a {
+  color: var(--rcm-rec-oro);
+  text-decoration: underline;
+}
+
+/* il campo trappola per i bot: fuori dallo schermo, mai display:none,
+   altrimenti i bot piu' svegli capiscono che non va compilato */
+.rcm-rec-onore {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.rcm-rec-turnstile {
+  margin: 0 0 22px;
+}
+
+.rcm-rec-invia {
+  padding: 14px 34px;
+  border: 2px solid var(--rcm-rec-oro);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--rcm-rec-oro);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.rcm-rec-invia:hover,
+.rcm-rec-invia:focus-visible {
+  background: var(--rcm-rec-oro);
+  color: #111;
+}
+
+.rcm-rec-esito {
+  max-width: 620px;
+  margin: 0 auto 28px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.rcm-rec-ok {
+  border: 1px solid rgba(230, 175, 20, 0.5);
+  background: rgba(230, 175, 20, 0.1);
+  color: #f4d67a;
+}
+
+.rcm-rec-ko {
+  border: 1px solid rgba(220, 70, 70, 0.5);
+  background: rgba(220, 70, 70, 0.1);
+  color: #f0a3a3;
+}
+
+.rcm-recensioni .screen-reader-text,
+.rcm-rec-form .screen-reader-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.rcm-recensioni-anteprima {
+  margin: 0 0 18px;
+  text-align: center;
+  color: #f0a3a3;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

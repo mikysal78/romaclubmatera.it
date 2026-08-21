@@ -253,6 +253,26 @@
     group: www-data
     mode: "0644"
 
+# Recensioni dei soci: tipo di contenuto, modulo pubblico con Turnstile e
+# moderazione, striscia scorrevole sopra il footer. Il CSS sta accanto al
+# mu-plugin perche' e' parte della stessa funzione, non del tema.
+- name: Installa il mu-plugin delle recensioni
+  ansible.builtin.copy:
+    src: rcm-recensioni.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-recensioni.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
+- name: Installa gli asset delle recensioni
+  ansible.builtin.copy:
+    src: rcm-recensioni/
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-recensioni/"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+    directory_mode: "0755"
+
 # Frase in romanesco nell'hero della pagina Sponsor: l'hero e' un template del
 # tema, quindi il testo va agganciato all'action thewebs_entry_hero
 - name: Installa il mu-plugin del claim nell'hero della pagina Sponsor
