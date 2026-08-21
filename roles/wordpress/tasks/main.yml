@@ -253,6 +253,16 @@
     group: www-data
     mode: "0644"
 
+# Frase in romanesco nell'hero della pagina Sponsor: l'hero e' un template del
+# tema, quindi il testo va agganciato all'action thewebs_entry_hero
+- name: Installa il mu-plugin del claim nell'hero della pagina Sponsor
+  ansible.builtin.copy:
+    src: rcm-sponsor-hero.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-sponsor-hero.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # WP-Cron parte solo con le visite: su un sito a basso traffico gli auguri
 # uscirebbero in ritardo. Con questo cron di sistema gli eventi scaduti girano comunque.
 - name: Cron di sistema per gli eventi WP-Cron scaduti

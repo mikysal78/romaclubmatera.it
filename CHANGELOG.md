@@ -7,6 +7,18 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Hero della pagina Sponsor: bandiere del club al posto del fondo oro.**
+  Sfondo con la foto `Gallery-48` (allegato 671, bandiere *Eterna Fedelta'* e
+  *Presente* con le sciarpe alzate) e velo scuro in sfumatura, solo su
+  `.page-id-1312` - le altre pagine tengono l'oro del tema. Sotto il titolo, il
+  claim in romanesco *"Nun e' pubblicita': e' famija"* con il perche'
+  sponsorizzare il club. L'hero e' un template del tema, quindi il testo e'
+  agganciato all'action `thewebs_entry_hero` (priorita' 20, dopo titolo e
+  breadcrumb) da un mu-plugin nuovo, `rcm-sponsor-hero.php`, invece che generato
+  dal CSS: cosi' resta markup vero, leggibile da Google e dagli screen reader.
+  Ridotti anche i margini di `.content-area` sulla sola pagina Sponsor, che con
+  i 5-8em del tema lasciava due fasce nere vuote sopra e sotto le card.
+  Backup del CSS del customizer in `/root/custom_css_backup_*.css` sul CT.
 - **Pagina "Sponsor"** (ID 1312, slug `/sponsor/`). Pagina classica come le
   altre segnaposto, quindi eredita hero e colori del tema; griglia flessibile di
   card bianche su fondo scuro, ognuna con logo, nome, categoria in oro
