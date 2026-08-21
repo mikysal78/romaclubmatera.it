@@ -7,6 +7,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Pagina "Sponsor"** (ID 1312, slug `/sponsor/`). Pagina classica come le
+  altre segnaposto, quindi eredita hero e colori del tema; griglia flessibile di
+  card bianche su fondo scuro, ognuna con logo, nome, categoria in oro
+  `#e6af14`, una riga di descrizione e bottone *Visita il sito* verso il sito
+  dello sponsor (`target="_blank"` + `rel="noopener noreferrer"`). Loghi
+  **scaricati e ricaricati nella media library** del sito (niente hotlink verso
+  i server degli sponsor): *Coppola Rossa Matera* (ID 1311, dal loro
+  `LOGO-COPPOLA-ROSSA-600.png`) e *Amarena Garden House / Ristorante Lavanda*
+  (ID 1315, dal loro `logo-black.png`). I due loghi hanno proporzioni molto
+  diverse (600x371 contro 450x102): normalizzati con un box fisso alto 140px e
+  `max-width/max-height`, cosi' le card restano allineate. Testi delle card
+  scritti esplicitamente in scuro (`#1c1c1c` / `#3a3a3a`) perche' il tema e' a
+  fondo nero e altrimenti sarebbero bianchi su card bianca. Pagina indicizzabile
+  (nessun `noindex`). Nel menu **Primary** come voce di primo livello tra
+  *Store* e *Contattaci*, con riordino di `menu_order` da 1 a 13.
 - **Pagine segnaposto "in costruzione": Statuto, Regolamento e Store**
   (ID 1304, 1305, 1306). Pagine classiche (non Elementor), quindi ereditano
   l'hero col titolo e i colori del tema; contenuto centrato con badge
