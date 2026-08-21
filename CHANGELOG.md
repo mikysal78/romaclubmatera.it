@@ -7,6 +7,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Informativa privacy aggiornata per le recensioni** (pagina 905). Il modulo
+  chiedeva il consenso e rimandava all'informativa, ma l'informativa non parlava
+  delle recensioni: il link puntava a un testo che non copriva quel trattamento.
+  Aggiunti: la voce *Dati delle recensioni* (nome, citta', e-mail, testo)
+  nell'elenco dei dati trattati; la finalita' *Pubblicazione delle recensioni*
+  con base giuridica il consenso (art. 6.1.a) e la revoca; i tempi di
+  conservazione (online fino a revoca, non approvate eliminate); *recensioni*
+  fra i moduli protetti da Turnstile; la facoltativita' dell'invio in *Natura
+  del conferimento*; e una sezione dedicata **Recensioni dei soci** nello stile
+  di quelle su JotForm e Turnstile, che chiarisce cosa viene pubblicato (nome,
+  citta', voto, testo), cosa no (l'e-mail), che nulla va online senza
+  approvazione e come chiedere la rimozione. Data dell'informativa portata ad
+  agosto 2026. Backup del testo precedente in `/root/privacy_backup_*.html`.
+  Corretto anche il modulo: per la rimozione rimandava a `info@`, ora a
+  `privacy@` come il resto dell'informativa.
 - **Rimando a "Il Romanista" nel footer.** Nuovo mu-plugin `rcm-romanista.php`:
   card in fondo alla colonna destra del footer, sotto *Contatti*, separata dal
   blocco iscrizione da una riga sottile a tutta colonna. Si aggancia a

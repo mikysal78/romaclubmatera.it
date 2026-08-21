@@ -304,7 +304,7 @@ function rcm_rec_shortcode_modulo() {
 				Acconsento alla pubblicazione di nome, citt&agrave; e testo sul sito e ho letto la
 				<a href="/privacy-policy/" target="_blank" rel="noopener">privacy policy</a>.
 				Posso chiederne la rimozione quando voglio scrivendo a
-				<a href="mailto:info@romaclubmatera.it">info@romaclubmatera.it</a>.
+				<a href="mailto:privacy@romaclubmatera.it">privacy@romaclubmatera.it</a>.
 			</label>
 		</p>
 
