@@ -7,6 +7,29 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Avviso privacy sopra il modulo di tesseramento** (pagina 902, Elementor).
+  Il modulo JotForm raccoglie nome, data e luogo di nascita, indirizzo, telefono,
+  e-mail, **tipo e numero di documento** e i dati di eventuali familiari, ma
+  nella pagina non c'era alcun rimando all'informativa: l'art. 13 GDPR chiede
+  che sia resa al momento della raccolta. Aggiunto un riquadro sopra il modulo
+  (widget HTML inserito come primo elemento della colonna, prima di quello con
+  lo script JotForm) con finalita' in una riga, menzione di JotForm come
+  fornitore, link all'informativa e indirizzo `privacy@romaclubmatera.it`.
+  Testo scuro su fondo bianco dichiarato esplicitamente, come per le card degli
+  sponsor: la pagina e' a fondo nero e altrimenti sarebbe stato invisibile.
+  Backup del layout precedente in `/root/elementor_data_902_backup_*.json`.
+  **Restano due cose da correggere dentro JotForm** (modulo `251772457622360`,
+  non modificabile da qui, serve l'account JotForm):
+  1. la spunta *"Autorizzo il trattamento dei dati per le finalita' di
+     marketing"* e' **obbligatoria** (`validate[required]` sull'input,
+     `jf-required` sul contenitore): senza spuntarla non si puo' inviare la
+     richiesta di tesseramento. Un consenso marketing obbligatorio non e'
+     liberamente prestato (artt. 4.11 e 7.4 GDPR) e **contraddice la nostra
+     stessa informativa**, che dichiara quel consenso facoltativo e ininfluente
+     sul tesseramento. Va reso non obbligatorio.
+  2. nel modulo non c'e' alcun link all'informativa ne' una presa visione: da
+     aggiungere come campo dedicato, obbligatorio, distinto dal consenso
+     marketing.
 - **Informativa privacy aggiornata per le recensioni** (pagina 905). Il modulo
   chiedeva il consenso e rimandava all'informativa, ma l'informativa non parlava
   delle recensioni: il link puntava a un testo che non copriva quel trattamento.
