@@ -1,3 +1,7 @@
 ---
 wordpress_cli_path: /usr/local/bin/wp
 wordpress_url: "http{{ 's' if enable_https else '' }}://{{ wp_domain }}"
+
+# Tema figlio del sito: ci vive il CSS su misura (assets/css/rcm-custom.css).
+# Il tema arriva con import-site.yml, non da questo ruolo.
+wp_child_theme_dir: "{{ wp_root }}/wp-content/themes/bestfoot-child"

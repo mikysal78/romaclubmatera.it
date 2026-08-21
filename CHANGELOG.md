@@ -7,6 +7,26 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **CSS su misura spostato dal database al tema figlio.** Stava in
+  *Aspetto > Personalizza > CSS aggiuntivo* (post 867, tipo `custom_css`): 242
+  righe che un ripristino da zero avrebbe perso, perche' nel repo non c'era
+  niente. Ora e' `bestfoot-child/assets/css/rcm-custom.css`, versionato come
+  `roles/wordpress/files/rcm-custom.css` e installato dal ruolo `wordpress`
+  insieme allo snippet di aggancio (`blockinfile` con marker `RCM CUSTOM CSS`
+  in `functions.php`). Nuova variabile `wp_child_theme_dir`; i task si saltano
+  se il tema figlio non c'e' ancora, perche' arriva con `import-site.yml`.
+  Nel campo del Customizer resta solo un commento che dice dov'e' finito il CSS.
+  **Attenzione all'ordine di caricamento**: WordPress stampa il CSS del
+  Customizer su `wp_head` con priorita' 101, cioe' *dopo* i fogli per-pagina di
+  Elementor. Diverse regole (tabelle SportsPress del calendario, ruolo sotto le
+  foto del direttivo) hanno la stessa specificita' di quelle generate da
+  Elementor e vincevano solo perche' arrivavano dopo: con un normale
+  `wp_enqueue_style` uscivano prima e si rompevano in silenzio. Il foglio quindi
+  viene registrato e stampato a mano su `wp_head` 101, nello stesso punto di
+  prima. Verificato l'ordine dei `<link>` e il risultato a video su home,
+  direttivo, calendario, tesseramento e sponsor. Backup del contenuto
+  precedente in `/root/custom_css_prima_dello_spostamento_*.css` e del
+  `functions.php` in `/root/functions_bestfoot-child_backup_*.php`.
 - **Hero della pagina Sponsor: bandiere del club al posto del fondo oro.**
   Sfondo con la foto `Gallery-48` (allegato 671, bandiere *Eterna Fedelta'* e
   *Presente* con le sciarpe alzate) e velo scuro in sfumatura, solo su
