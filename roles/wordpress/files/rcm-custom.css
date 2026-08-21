@@ -258,13 +258,13 @@ h1, h2, h3, h4, h5, h6 {
 /* === Il Romanista: rimando alla prima pagina, in fondo alla colonna destra === */
 /* markup nel mu-plugin rcm-romanista.php */
 .rcm-romanista {
-  margin-top: 26px;
+  width: 100%;
 }
 
 .rcm-romanista-card {
   display: block;
   max-width: 260px;
-  margin-left: auto; /* la colonna e' allineata a destra */
+  margin: 0 auto; /* la card ha una colonna sua: sta al centro */
   padding: 18px 20px 16px;
   border: 1px solid rgba(230, 175, 20, 0.45);
   border-radius: 10px;
@@ -317,9 +317,9 @@ h1, h2, h3, h4, h5, h6 {
   content: " \2192";
 }
 
-@media (max-width: 767px) {
-  .rcm-romanista-card {
-    margin-left: auto;
-    margin-right: auto;
+@media (max-width: 1024px) {
+  /* da tablet in giu' le colonne si impilano: un po' d'aria sopra */
+  .rcm-romanista {
+    margin-top: 26px;
   }
 }

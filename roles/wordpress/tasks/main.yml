@@ -335,6 +335,29 @@
     mode: "0644"
   when: rcm_child_theme.stat.exists
 
+# La riga centrale del footer nasce a 3 colonne. La quarta serve alla card de
+# "Il Romanista" (mu-plugin rcm-romanista.php), che si aggancia a
+# thewebs_render_footer_column per la colonna 4. Il valore e' un theme mod,
+# quindi vive nel database del tema figlio: senza questo task un ripristino da
+# zero tornerebbe a 3 colonne e la card sparirebbe.
+- name: Leggi le colonne della riga centrale del footer
+  ansible.builtin.command: "{{ wordpress_cli_path }} theme mod get footer_middle_columns --format=json --path={{ wp_root }}"
+  register: wordpress_footer_columns
+  changed_when: false
+  failed_when: false
+  become: true
+  become_user: www-data
+  when: rcm_child_theme.stat.exists
+
+- name: Porta a 4 le colonne della riga centrale del footer
+  ansible.builtin.command: "{{ wordpress_cli_path }} theme mod set footer_middle_columns 4 --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+  when:
+    - rcm_child_theme.stat.exists
+    - '''"value":"4"'' not in (wordpress_footer_columns.stdout | default(""))'
+
 # WP-Cron parte solo con le visite: su un sito a basso traffico gli auguri
 # uscirebbero in ritardo. Con questo cron di sistema gli eventi scaduti girano comunque.
 - name: Cron di sistema per gli eventi WP-Cron scaduti
