@@ -8,19 +8,17 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 - **Rimando a "Il Romanista" nel footer.** Nuovo mu-plugin `rcm-romanista.php`:
-  card in una **colonna sua, la quarta**, a destra della newsletter. La riga
-  centrale del footer nasceva a 3 colonne: il numero e' il theme mod
-  `footer_middle_columns`, portato a 4 (c'e' un task Ansible idempotente, se no
-  un ripristino da zero tornerebbe a 3 e la card sparirebbe). Il tema cicla
-  sulle colonne e per ognuna lancia `thewebs_render_footer_column`: la quarta
-  non ha widget assegnati, ed e' li' che si aggancia il mu-plugin. Nessun file
-  del tema modificato. La CSS del tema gia' prevedeva 4 e 5 colonne, quindi la
-  griglia si e' adattata da sola; da tablet le colonne diventano una griglia 2x2
-  (card accanto alla newsletter), da telefono si impilano. Stile nella sezione
-  "Il Romanista" di `rcm-custom.css`.
-  Nota per chi cerchera' di filtrare le opzioni del tema: `thewebs()->option()`
-  **non passa da nessun filtro**, quindi il numero di colonne si cambia solo
-  scrivendo il theme mod.
+  card in fondo alla colonna destra del footer, sotto *Contatti*, separata dal
+  blocco iscrizione da una riga sottile a tutta colonna. Si aggancia a
+  `dynamic_sidebar_after` sulla sidebar `footer4`, quindi senza toccare il
+  footer builder del tema. Stile nella sezione "Il Romanista" di
+  `rcm-custom.css`.
+  Provata anche la variante con una quarta colonna dedicata (theme mod
+  `footer_middle_columns` a 4 + aggancio a `thewebs_render_footer_column`):
+  funziona, ma stringe tutte le colonne da 433 a 325px e manda a capo il campo
+  e-mail della newsletter, quindi e' stata scartata. Se un giorno servisse:
+  `thewebs()->option()` **non passa da nessun filtro**, il numero di colonne si
+  cambia solo scrivendo il theme mod.
   **E' un link, non la locandina**: la prima pagina e' opera dell'editore e
   riprodurla sul sito - anche scaricandola in automatico, anche con credito -
   richiede l'autorizzazione della redazione. Per lo stesso motivo la testata e'

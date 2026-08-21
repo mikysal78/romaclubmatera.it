@@ -22,26 +22,16 @@ defined( 'ABSPATH' ) || exit;
 
 const RCM_ROMANISTA_URL = 'https://www.ilromanista.eu/prima-pagina';
 
-/**
- * La card sta in una colonna sua, la quarta, a destra della newsletter.
- *
- * La riga centrale del footer nasce a 3 colonne; il numero arriva da
- * footer_middle_columns, che il tema legge dai theme mods e che portiamo a 4
- * (lo fa anche il ruolo Ansible, cosi' resta dopo un ripristino). Il tema poi
- * cicla sulle colonne e per ognuna lancia thewebs_render_footer_column: la
- * quarta non ha widget assegnati, quindi resterebbe vuota ed e' li' che
- * entriamo noi. Nessun file del tema toccato.
- */
-const RCM_ROMANISTA_COLONNA = 4;
-
-add_action( 'thewebs_render_footer_column', 'rcm_romanista_card', 10, 2 );
+// dynamic_sidebar_after scatta subito dopo i widget della colonna: la card
+// finisce sotto "Contatti", in fondo a destra, senza toccare il footer builder
+add_action( 'dynamic_sidebar_after', 'rcm_romanista_card', 10, 2 );
 
 /**
- * @param string $riga    Riga del footer ("top", "middle", "bottom").
- * @param int    $colonna Numero della colonna in corso.
+ * @param string $index      Id della sidebar stampata.
+ * @param bool   $ha_widget  Se la sidebar aveva widget.
  */
-function rcm_romanista_card( $riga, $colonna ) {
-	if ( 'middle' !== $riga || RCM_ROMANISTA_COLONNA !== (int) $colonna ) {
+function rcm_romanista_card( $index, $ha_widget = true ) {
+	if ( 'footer4' !== $index ) {
 		return;
 	}
 
