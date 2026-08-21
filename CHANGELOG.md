@@ -18,6 +18,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   dal CSS: cosi' resta markup vero, leggibile da Google e dagli screen reader.
   Ridotti anche i margini di `.content-area` sulla sola pagina Sponsor, che con
   i 5-8em del tema lasciava due fasce nere vuote sopra e sotto le card.
+  L'altezza dell'hero e' un `min-height` (400/300/180px per breakpoint): con il
+  claim il contenuto la supera e da telefono arrivava a filo del bordo, quindi
+  aggiunto padding verticale a `.entry-header`. Verificato con Chrome headless a
+  360, 390, 768 e 1440px.
   Backup del CSS del customizer in `/root/custom_css_backup_*.css` sul CT.
 - **Pagina "Sponsor"** (ID 1312, slug `/sponsor/`). Pagina classica come le
   altre segnaposto, quindi eredita hero e colori del tema; griglia flessibile di
