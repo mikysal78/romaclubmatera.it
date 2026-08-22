@@ -7,6 +7,20 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 ## [Unreleased]
 
 ### Aggiunto
+- **Pagina "La nostra rete"** (ID 1329, slug `/la-nostra-rete/`), in costruzione,
+  voce di menu figlia di *Il Club* dopo *Le nostre trasferte*. Pagina classica
+  come le altre segnaposto, quindi eredita hero e colori del tema; badge
+  "Lavori in corso" in oro `#e6af14`, due righe di introduzione e due sezioni
+  gia' strutturate - **Affiliazioni** e **Gemellaggi e amicizie** - con caselle
+  tratteggiate al posto dei loghi, cosi' si capisce cosa arrivera' senza far
+  sembrare la pagina rotta. Impostato `_yoast_wpseo_meta-robots-noindex = 1`
+  come per Statuto/Regolamento/Store. Riordinato il menu con `menu_order` da 1
+  a 15.
+  **Nessun logo caricato**: in libreria ci sono solo i loghi delle squadre di
+  Serie A (li usa SportsPress per il calendario), non quello UTR ne' quelli
+  degli altri Roma Club. I file vanno forniti dal club - per i gemellaggi vale
+  la stessa cautela di *Il Romanista*: il logo e' dell'altro club e conviene
+  chiederlo a loro invece di prenderlo dal loro sito.
 - **Avviso privacy sopra il modulo di tesseramento** (pagina 902, Elementor).
   Il modulo JotForm raccoglie nome, data e luogo di nascita, indirizzo, telefono,
   e-mail, **tipo e numero di documento** e i dati di eventuali familiari, ma
