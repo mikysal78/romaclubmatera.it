@@ -16,11 +16,18 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   sembrare la pagina rotta. Impostato `_yoast_wpseo_meta-robots-noindex = 1`
   come per Statuto/Regolamento/Store. Riordinato il menu con `menu_order` da 1
   a 15.
-  **Nessun logo caricato**: in libreria ci sono solo i loghi delle squadre di
-  Serie A (li usa SportsPress per il calendario), non quello UTR ne' quelli
-  degli altri Roma Club. I file vanno forniti dal club - per i gemellaggi vale
-  la stessa cautela di *Il Romanista*: il logo e' dell'altro club e conviene
-  chiederlo a loro invece di prenderlo dal loro sito.
+  **Logo UTR** (allegato 1331) recuperato dal sito ufficiale `utronlus.com`,
+  dove non e' un `<img>` ma un file raggiungibile a `/images/logo.jpg` (il
+  template Joomla ha lo sfondo del logo commentato via nel CSS). Esiste solo a
+  208x207px, mostrato a 170px in una card bianca come quelle degli sponsor,
+  perche' il file ha fondo bianco e la pagina e' scura. **Ricodificato con
+  `-strip` prima del caricamento**: il sito di origine contiene link SEO
+  nascosti iniettati (`beautystic`, `replica-watches`, ecc.) nel `<body>`,
+  segno che l'installazione Joomla e' compromessa - dal file caricato sono stati
+  buttati via tutti i metadati e sono rimasti solo i pixel. Il logo e' servito
+  dal nostro server, non agganciato al loro.
+  Per i **gemellaggi** nessun logo caricato: vale la cautela di *Il Romanista*,
+  il logo e' dell'altro club e va chiesto a loro.
 - **Avviso privacy sopra il modulo di tesseramento** (pagina 902, Elementor).
   Il modulo JotForm raccoglie nome, data e luogo di nascita, indirizzo, telefono,
   e-mail, **tipo e numero di documento** e i dati di eventuali familiari, ma
