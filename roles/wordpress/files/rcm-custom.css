@@ -327,3 +327,39 @@ h1, h2, h3, h4, h5, h6 {
     margin-right: auto;
   }
 }
+
+/* ---------------------------------------------------------------
+   Carosello della sede in home page (widget .our-img)
+   Le foto della sede hanno pareti bianche: la didascalia in oro,
+   pensata per foto scure, ci finiva sopra e non si leggeva piu'.
+   Sfumatura scura solo in fondo alla slide, dietro al testo.
+   --------------------------------------------------------------- */
+.elementor-widget-image-carousel.our-img .swiper-slide-inner {
+  position: relative;
+  display: block;
+}
+
+.elementor-widget-image-carousel.our-img .swiper-slide-inner::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.45) 45%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+}
+
+/* la didascalia ha margin-top negativo (Elementor, "Spazio didascalia"):
+   senza z-index finirebbe sotto la sfumatura */
+.elementor-widget-image-carousel.our-img .elementor-image-carousel-caption {
+  position: relative;
+  z-index: 1;
+  padding: 0 20px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}

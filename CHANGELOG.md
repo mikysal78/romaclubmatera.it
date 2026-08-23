@@ -6,7 +6,32 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Modificato
+- **Carosello della home page**: al posto delle tre foto di eventi (*Roma*,
+  *Matera 2024*, *16 Birra* - allegati 563/564/565, rimasti in libreria) ci sono
+  ora **nove foto della sede** (allegati 1333-1341), ordinate come una visita:
+  ingresso, sala principale, maglie storiche, muro delle figurine, sciarpe delle
+  finali europee, gemellaggi, stemmi storici, prime pagine dei giornali e
+  bancone. Titolo dell'allegato = didascalia in sovrimpressione (il widget ha
+  `caption_type: title`), testo alternativo descrittivo su ognuna.
+  Le originali sono PNG 1448x1086 da ~2 MB: ricodificate a 1100px di larghezza,
+  JPEG progressivo q80, ~140 KB l'una (1,3 MB per tutte e nove) perche' il
+  widget usa `thumbnail_size: full` e le carica tutte nel DOM. Il ritratto del
+  bancone (1086x1448) e' stato ritagliato al centro in 4:3 come le altre: le
+  slide devono avere tutte lo stesso formato o il carosello balla.
+  Le vecchie slide erano verticali 2:3, queste sono orizzontali 4:3: la fascia
+  e' passata da ~720px a ~360px di altezza.
+  Aggiunta la **spaziatura di 14px tra le slide** (`image_spacing_custom`):
+  la sezione ha lo sfondo nero, quindi il vuoto si legge come un bordo nero e
+  le foto non sembrano piu' attaccate.
+
 ### Aggiunto
+- **Sfumatura sotto le didascalie del carosello** in `rcm-custom.css`, sul
+  widget `.our-img`: le foto della sede hanno pareti bianche e la didascalia in
+  oro - pensata per le foto scure di prima - ci finiva sopra illeggibile.
+  Gradiente nero dal basso sul 45% della slide, con `z-index` sulla didascalia
+  perche' ha `margin-top` negativo (impostazione *Spazio didascalia* di
+  Elementor) e senza finirebbe sotto la sfumatura.
 - **Pagina "La nostra rete"** (ID 1329, slug `/la-nostra-rete/`), in costruzione,
   voce di menu figlia di *Il Club* dopo *Le nostre trasferte*. Pagina classica
   come le altre segnaposto, quindi eredita hero e colori del tema; badge
