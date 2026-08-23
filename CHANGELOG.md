@@ -32,6 +32,13 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   Gradiente nero dal basso sul 45% della slide, con `z-index` sulla didascalia
   perche' ha `margin-top` negativo (impostazione *Spazio didascalia* di
   Elementor) e senza finirebbe sotto la sfumatura.
+  La sfumatura lasciava scoperta l'ultima riga di pixel di ogni foto - un filo
+  chiaro che sembrava un bordino sotto le immagini, colorato quando la foto
+  finisce sulla fascia rossogialla dipinta alle pareti. Due cause insieme:
+  l'immagine e' `inline` e si porta dietro il filo di baseline, e con altezze
+  frazionarie il browser arrotonda l'altezza dell'overlay. Aggiunto
+  `display: block` all'immagine e portata la sfumatura a `bottom: -1px` con
+  `height: calc(45% + 1px)`.
 - **Pagina "La nostra rete"** (ID 1329, slug `/la-nostra-rete/`), in costruzione,
   voce di menu figlia di *Il Club* dopo *Le nostre trasferte*. Pagina classica
   come le altre segnaposto, quindi eredita hero e colori del tema; badge

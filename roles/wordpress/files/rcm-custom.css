@@ -339,13 +339,21 @@ h1, h2, h3, h4, h5, h6 {
   display: block;
 }
 
+/* l'immagine e' inline: senza display:block resta il filo di baseline
+   sotto, che la sfumatura non copre e si vede come un bordino */
+.elementor-widget-image-carousel.our-img .swiper-slide-image {
+  display: block;
+}
+
 .elementor-widget-image-carousel.our-img .swiper-slide-inner::after {
   content: "";
   position: absolute;
   right: 0;
-  bottom: 0;
+  /* -1px: con altezze frazionarie il browser arrotonda e lascerebbe
+     scoperta l'ultima riga di pixel della foto */
+  bottom: -1px;
   left: 0;
-  height: 45%;
+  height: calc(45% + 1px);
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.8) 0%,
