@@ -32,13 +32,18 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   Gradiente nero dal basso sul 45% della slide, con `z-index` sulla didascalia
   perche' ha `margin-top` negativo (impostazione *Spazio didascalia* di
   Elementor) e senza finirebbe sotto la sfumatura.
-  La sfumatura lasciava scoperta l'ultima riga di pixel di ogni foto - un filo
-  chiaro che sembrava un bordino sotto le immagini, colorato quando la foto
-  finisce sulla fascia rossogialla dipinta alle pareti. Due cause insieme:
-  l'immagine e' `inline` e si porta dietro il filo di baseline, e con altezze
-  frazionarie il browser arrotonda l'altezza dell'overlay. Aggiunto
-  `display: block` all'immagine e portata la sfumatura a `bottom: -1px` con
-  `height: calc(45% + 1px)`.
+  La sfumatura, ancorata alla `<figure>`, si fermava **44px sopra il bordo
+  vero della foto** e lasciava scoperta una striscia chiara: la "linea sotto
+  la foto", evidentissima sulla slide del bancone che in fondo ha il pavimento
+  chiaro. La causa e' lo *Spazio didascalia* di Elementor, `-84px`: quel
+  margine negativo accorcia la figure di `84 - 40` px rispetto all'immagine,
+  che quindi le deborda sotto. Risolto **posizionando la didascalia in
+  assoluto** (`bottom: 44px`, `52px` sotto i 768px dove la riga e' 32px) cosi'
+  la figure torna alta quanto l'immagine; serve la specificita' di Elementor
+  (4 classi, `.elementor .elementor-element.our-img ...`) per battere il suo
+  `margin-block-start`. Aggiunti anche `display: block` sull'immagine, che da
+  `inline` si portava dietro il filo di baseline, e `bottom: -1px` sulla
+  sfumatura per l'arrotondamento delle altezze frazionarie.
 - **Pagina "La nostra rete"** (ID 1329, slug `/la-nostra-rete/`), in costruzione,
   voce di menu figlia di *Il Club* dopo *Le nostre trasferte*. Pagina classica
   come le altre segnaposto, quindi eredita hero e colori del tema; badge

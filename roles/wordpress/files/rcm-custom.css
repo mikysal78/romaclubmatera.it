@@ -334,40 +334,61 @@ h1, h2, h3, h4, h5, h6 {
    pensata per foto scure, ci finiva sopra e non si leggeva piu'.
    Sfumatura scura solo in fondo alla slide, dietro al testo.
    --------------------------------------------------------------- */
-.elementor-widget-image-carousel.our-img .swiper-slide-inner {
+/* La didascalia di Elementor sta dentro la <figure> con "Spazio didascalia"
+   a -84px: quel margine negativo accorcia la figure di 44px rispetto
+   all'immagine, che quindi le deborda sotto. Una sfumatura ancorata alla
+   figure si ferma 44px sopra il bordo vero della foto e lascia scoperta una
+   striscia chiara - la "linea sotto la foto", ben visibile sul bancone che
+   in fondo ha il pavimento chiaro.
+   Quindi la didascalia va posizionata in assoluto: cosi' la figure torna
+   alta quanto l'immagine e la sfumatura arriva davvero in fondo.
+   Serve la specificita' di Elementor (4 classi) per battere il suo
+   margin-block-start. */
+.elementor .elementor-element.our-img .swiper-slide-inner {
   position: relative;
   display: block;
 }
 
-/* l'immagine e' inline: senza display:block resta il filo di baseline
-   sotto, che la sfumatura non copre e si vede come un bordino */
-.elementor-widget-image-carousel.our-img .swiper-slide-image {
+/* display:block toglie anche il filo di baseline dell'immagine inline */
+.elementor .elementor-element.our-img .swiper-slide-image {
   display: block;
 }
 
-.elementor-widget-image-carousel.our-img .swiper-slide-inner::after {
+.elementor .elementor-element.our-img .elementor-image-carousel-caption {
+  position: absolute;
+  right: 0;
+  /* 44px = altezza riga (40) meno lo spazio didascalia (-84): tiene la
+     didascalia dov'era prima, ora che non e' piu' il margine a spostarla */
+  bottom: 44px;
+  left: 0;
+  z-index: 1;
+  margin: 0;
+  margin-block-start: 0;
+  padding: 0 20px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+.elementor .elementor-element.our-img .swiper-slide-inner::after {
   content: "";
   position: absolute;
   right: 0;
   /* -1px: con altezze frazionarie il browser arrotonda e lascerebbe
-     scoperta l'ultima riga di pixel della foto */
+     scoperta l'ultima riga di pixel */
   bottom: -1px;
   left: 0;
-  height: calc(45% + 1px);
+  height: calc(55% + 1px);
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.8) 0%,
-    rgba(0, 0, 0, 0.45) 45%,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.62) 35%,
     rgba(0, 0, 0, 0) 100%
   );
   pointer-events: none;
 }
 
-/* la didascalia ha margin-top negativo (Elementor, "Spazio didascalia"):
-   senza z-index finirebbe sotto la sfumatura */
-.elementor-widget-image-carousel.our-img .elementor-image-carousel-caption {
-  position: relative;
-  z-index: 1;
-  padding: 0 20px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+@media (max-width: 767px) {
+  /* su mobile la riga della didascalia e' 32px, non 40 */
+  .elementor .elementor-element.our-img .elementor-image-carousel-caption {
+    bottom: 52px;
+  }
 }
