@@ -19,3 +19,6 @@ credentials-*.txt
 
 # Script personali di comodo (non fanno parte del deploy)
 resume.sh
+
+# Cache Python degli script
+__pycache__/

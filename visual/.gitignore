@@ -1,0 +1,3 @@
+# Gli screenshot pesano decine di MB e si rigenerano: fuori dal repo.
+# Quello che va versionato e' baseline.json (impronte) e config.json.
+shots/

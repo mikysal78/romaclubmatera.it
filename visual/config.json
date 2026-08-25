@@ -1,0 +1,79 @@
+{
+  "_commento": "Pagine da sorvegliare. 'nascondi' e' l'elenco dei blocchi che cambiano contenuto a ogni caricamento (slider, mappa, citazioni a rotazione): vengono resi invisibili prima dello scatto, mantenendo il loro ingombro, cosi' il resto della pagina resta confrontabile riga per riga. 'tolleranza' e' la percentuale di pixel che puo' cambiare senza che sia un problema, per il rumore sparso.",
+  "base_url": "https://romaclubmatera.it",
+  "viewports": [
+    [
+      "desktop",
+      1440,
+      900
+    ],
+    [
+      "mobile",
+      390,
+      844
+    ]
+  ],
+  "tolleranza_default": 0.05,
+  "pagine": [
+    {
+      "path": "/",
+      "nota": "slider in cima e citazioni a rotazione",
+      "nascondi": [
+        ".elementor-widget-slider_revolution",
+        ".uc_quote_slider"
+      ]
+    },
+    {
+      "path": "/chi-siamo/"
+    },
+    {
+      "path": "/direttivo/"
+    },
+    {
+      "path": "/statuto/"
+    },
+    {
+      "path": "/regolamento/"
+    },
+    {
+      "path": "/tesseramento-2026-27/",
+      "tolleranza": 0.2,
+      "nota": "il modulo JotForm e' in un iframe e si disegna molto dopo il caricamento",
+      "attesa": 14
+    },
+    {
+      "path": "/calendario/"
+    },
+    {
+      "path": "/trasferte/"
+    },
+    {
+      "path": "/news/"
+    },
+    {
+      "path": "/recensioni/",
+      "tolleranza": 5.0,
+      "nota": "le recensioni escono in ordine casuale"
+    },
+    {
+      "path": "/sponsor/"
+    },
+    {
+      "path": "/store/"
+    },
+    {
+      "path": "/la-nostra-rete/"
+    },
+    {
+      "path": "/contatti/",
+      "nota": "mappa Google e widget Turnstile",
+      "tolleranza": 0.2,
+      "nascondi": [
+        ".elementor-widget-google_maps"
+      ]
+    },
+    {
+      "path": "/privacy-policy/"
+    }
+  ]
+}

@@ -471,6 +471,69 @@ sudo -u www-data wp --path=/var/www/example.com core update
 
 ---
 
+## 10.1 Controllo visivo dopo gli aggiornamenti
+
+Aggiornare WordPress, un plugin o un tema può cambiare l'aspetto del sito senza
+che nessuno se ne accorga: un margine diverso, un font che non carica, una
+sezione che sparisce in fondo alla pagina. `scripts/visual-check.py` fotografa
+le pagine con Chrome headless (desktop 1440px e mobile 390px, pagina intera) e
+le confronta pixel per pixel con un riferimento salvato in precedenza.
+
+```bash
+# PRIMA di aggiornare: fotografa lo stato attuale
+make visual-baseline
+
+# ... aggiorna plugin/temi, svuota le cache ...
+
+# DOPO: dice quali pagine si sono mosse e a che altezza
+make visual-check
+```
+
+`visual-check` esce con codice 1 se qualcosa è cambiato oltre la tolleranza, ed
+è quindi utilizzabile anche in uno script. Per ogni pagina diversa salva in
+`visual/shots/diff/` lo scatto nuovo con evidenziato in rosso ciò che si è
+mosso. Se il cambiamento era voluto, si rifà la baseline.
+
+**Cosa sta dove**
+
+| File | Versionato | Contenuto |
+|---|---|---|
+| `visual/config.json` | sì | pagine sorvegliate e tolleranza di ognuna |
+| `visual/baseline.json` | sì | dimensioni e impronta di ogni fascia di 16 righe |
+| `visual/shots/` | no | gli screenshot veri (decine di MB, si rigenerano) |
+
+**Il contenuto che cambia da solo.** Alcuni blocchi sono diversi a ogni
+caricamento: lo slider della home, le citazioni a rotazione, la mappa di Google,
+l'ordine casuale delle recensioni. Senza accorgimenti segnalerebbero una
+differenza a ogni giro e il controllo diventerebbe inutile. `config.json` offre
+tre modi, in ordine di preferenza:
+
+| Chiave | Quando usarla |
+|---|---|
+| `nascondi` | il blocco ha un selettore CSS suo: viene reso invisibile prima dello scatto, **mantenendo l'ingombro**, così il resto della pagina resta confrontabile riga per riga. È il modo migliore: regge anche se il layout si sposta |
+| `ignora` | non c'è un selettore pulito, ma l'area è nota: si escludono dal conteggio degli intervalli di righe, per viewport (`{"desktop": [[470, 1000]]}`). Attenzione, sono posizioni assolute: se sopra si aggiunge contenuto vanno ricalcolate |
+| `tolleranza` | il rumore è sparso su tutta la pagina e non si può circoscrivere |
+
+Per tutte le altre pagine la tolleranza di default è 0,05%: in pratica devono
+restare identiche. Ciò che viene nascosto o ignorato **non è più sorvegliato**:
+tienilo per i blocchi che davvero non si possono stabilizzare.
+
+**Due avvertenze.**
+
+- Il confronto pixel per pixel vale fra scatti dello *stesso* Chrome. Se il
+  browser si aggiorna, l'antialiasing cambia ovunque e le differenze diventano
+  diffuse e minuscole: lo script rileva il caso e lo dice, ma conviene rifare la
+  baseline dopo un aggiornamento di Chrome.
+- Gli screenshot dimostrano com'è il sito, non *perché*. Se qualcosa si muove,
+  la controprova più diretta è guardare cosa è cambiato sul disco del server:
+  `find /var/www/<sito> -newermt "-2 hours" -type f` e
+  `wp plugin verify-checksums --all`.
+
+Le dipendenze sono su Debian: `sudo apt install python3-websockets python3-pil
+python3-numpy` più `google-chrome` (o `chromium`).
+
+---
+
 ## 11. Troubleshooting
 
 | Sintomo | Causa / Soluzione |

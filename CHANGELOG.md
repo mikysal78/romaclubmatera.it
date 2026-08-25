@@ -6,6 +6,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Sicurezza
+- **Aggiornati i tre temi di default inattivi**: `twentytwentytwo` 2.1 -> 2.2,
+  `twentytwentythree` 1.6 -> 1.7, `twentytwentyfour` 1.5 -> 1.6. Non sono
+  attivi e non toccano l'aspetto del sito, ma restano codice sul disco.
+  Core (7.1) e gli 11 plugin attivi erano gia' aggiornati; `wp core
+  verify-checksums` e `wp plugin verify-checksums --all` passano (esclusi
+  Slider Revolution e Unlimited Elements, premium e quindi non su
+  wordpress.org). Verificato con `visual-check` che nessuna pagina sia
+  cambiata.
+
 ### Modificato
 - **Carosello della home page**: al posto delle tre foto di eventi (*Roma*,
   *Matera 2024*, *16 Birra* - allegati 563/564/565, rimasti in libreria) ci sono
@@ -26,6 +36,35 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   le foto non sembrano piu' attaccate.
 
 ### Aggiunto
+- **Controllo visivo degli aggiornamenti** (`scripts/visual-check.py`,
+  `visual/config.json`, `visual/baseline.json`, target `make visual-baseline` e
+  `make visual-check`): fotografa le 15 pagine pubbliche con Chrome headless a
+  1440px e 390px, pagina intera, e le confronta pixel per pixel con una
+  baseline. Esce con codice 1 se qualcosa e' cambiato oltre la tolleranza e
+  salva in `visual/shots/diff/` lo scatto nuovo con in rosso cio' che si e'
+  mosso.
+  Quattro accorgimenti, ognuno trovato perche' senza di esso il confronto
+  dava falsi allarmi:
+  la pagina va **scorsa a scatti** prima dello scatto, altrimenti le animazioni
+  di entrata di Elementor non partono e i blocchi restano a `opacity: 0` (una
+  pagina che risulta mezza vuota);
+  va **rimosso il preloader** del tema, che con la cache del browser fredda
+  resta a schermo e falsa tutta la pagina;
+  i **caroselli vanno riportati alla prima slide** oltre che fermati, se no
+  ogni scatto ne pesca una diversa;
+  e vanno spente **le transizioni CSS oltre alle animazioni**, perche' un
+  titolo colto a meta' dissolvenza cambia l'antialiasing delle lettere e fa
+  risultare diversa una pagina identica.
+  Per i blocchi che cambiano contenuto a ogni caricamento `config.json` ha
+  `nascondi` (selettori CSS resi invisibili mantenendo l'ingombro - usato per
+  lo slider Revolution della home, le citazioni a rotazione di Unlimited
+  Elements e la mappa di Google su Contattaci), `ignora` (intervalli di righe
+  per viewport) e `tolleranza`; per tutte le altre pagine e' 0,05%.
+  Con questi accorgimenti due passate consecutive danno 0,000% su tutte e 30
+  le combinazioni pagina/viewport.
+  Nel repo va solo `baseline.json` (dimensioni + impronta di ogni fascia di 16
+  righe, poche decine di KB): gli screenshot pesano decine di MB e stanno in
+  `visual/shots/`, ignorato da git.
 - **Sfumatura sotto le didascalie del carosello** in `rcm-custom.css`, sul
   widget `.our-img`: le foto della sede hanno pareti bianche e la didascalia in
   oro - pensata per le foto scure di prima - ci finiva sopra illeggibile.
