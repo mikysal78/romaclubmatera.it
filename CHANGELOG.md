@@ -45,6 +45,32 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   le foto non sembrano piu' attaccate.
 
 ### Aggiunto
+- **Il calendario automatico ora regge piu' competizioni**, in vista della
+  Champions: `sportspress_fixtures_competizioni` e' un elenco, una voce per
+  coppa o campionato, e la config diventa un ini a sezioni (una vecchia config
+  senza sezioni continua a funzionare, cosi' un aggiornamento dello script
+  senza rilanciare Ansible non rompe il timer notturno).
+  La parte delicata e' **come si abbina un match della API al suo evento**:
+  per giornata (`sp_day`) va bene nei gironi, ma nelle fasi a eliminazione la
+  giornata **non identifica il match** - negli ottavi di Champions il
+  `matchday` vale 1 o 2, cioe' andata e ritorno, e collide con le giornate 1 e
+  2 della fase campionato. Di default (`abbinamento: auto`) si usa la giornata
+  nelle fasi a girone (`REGULAR_SEASON`, `LEAGUE_STAGE`, `GROUP_STAGE`) e la
+  **data** altrove: fra gli eventi a +/-7 giorni si prende quello con le stesse
+  due squadre nello stesso verso casa/trasferta, e a pari punteggio si rinuncia
+  con un avviso invece di indovinare. Un evento gia' abbinato non viene riusato
+  nella stessa passata, cosi' andata e ritorno non finiscono sullo stesso.
+  Provato forzando `abbinamento: data` sulle 39 giornate di Serie A gia' in
+  archivio: ritrova gli stessi eventi, zero avvisi, zero date cambiate.
+  Aggiunta anche la gestione dei **supplementari**: `fullTime` della API li
+  comprende, quindi il secondo tempo per differenza non tornerebbe - quando la
+  `duration` non e' `REGULAR` si scrive solo il totale e lo si annota nel log.
+  Ai rigori il punteggio resta pari e l'esito e' un pareggio: chi passa il
+  turno non e' un dato che SportsPress registri.
+  La Champions e' gia' predisposta ma commentata: il tier gratuito la copre
+  (l'Europa League no, risponde "restricted") e la Roma e' qualificata di
+  diritto avendo chiuso 3a in Serie A 2025/26, ma football-data non ha ancora
+  pubblicato la stagione 2026/27 della coppa.
 - **Risultati delle partite in automatico** (`roles/sportspress_fixtures`): lo
   script che ogni mattina allinea data e ora del calendario ora scrive anche il
   punteggio delle partite concluse. Legge da football-data.org `fullTime` e

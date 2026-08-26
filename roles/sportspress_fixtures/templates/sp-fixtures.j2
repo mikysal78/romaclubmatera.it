@@ -1,9 +1,22 @@
 {{ ansible_managed | comment }}
-; Config per update-fixtures.php (formato ini)
+; Config per update-fixtures.php (ini con sezioni: una per competizione)
 FD_TOKEN="{{ sportspress_fixtures_fd_token }}"
 FD_TEAM_ID="{{ sportspress_fixtures_fd_team_id }}"
-FD_SEASON="{{ sportspress_fixtures_fd_season }}"
-FD_COMPETITION="{{ sportspress_fixtures_fd_competition }}"
-SP_LEAGUE="{{ sportspress_fixtures_sp_league }}"
-SP_SEASON="{{ sportspress_fixtures_sp_season }}"
 SP_RESULTS="{{ sportspress_fixtures_results | ternary(1, 0) }}"
+{% for c in sportspress_fixtures_competizioni %}
+
+[{{ c.nome }}]
+FD_COMPETITION="{{ c.fd_competition }}"
+FD_SEASON="{{ c.fd_season | default(sportspress_fixtures_fd_season) }}"
+SP_LEAGUE="{{ c.sp_league }}"
+SP_SEASON="{{ c.sp_season | default(sportspress_fixtures_sp_season) }}"
+{% if c.abbinamento is defined %}
+ABBINAMENTO="{{ c.abbinamento }}"
+{% endif %}
+{% if c.giorni is defined %}
+GIORNI="{{ c.giorni }}"
+{% endif %}
+{% if c.fasi_giornata is defined %}
+FASI_GIORNATA="{{ c.fasi_giornata }}"
+{% endif %}
+{% endfor %}

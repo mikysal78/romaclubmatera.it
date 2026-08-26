@@ -4,19 +4,42 @@
 # Va messo nel vault:  ansible-vault edit group_vars/all/vault.yml
 sportspress_fixtures_fd_token: "{{ vault_football_data_token | default('') }}"
 
-# football-data.org: AS Roma = 100, Serie A = SA, season = anno di inizio
+# football-data.org: AS Roma = 100
 sportspress_fixtures_fd_team_id: 100
+
+# Valori usati dalle competizioni che non li specificano.
+# A inizio stagione nuova si aggiornano solo questi due:
+# fd_season e' l'anno di inizio, sp_season lo slug del termine SportsPress.
 sportspress_fixtures_fd_season: "2026"
-sportspress_fixtures_fd_competition: "SA"
+sportspress_fixtures_sp_season: "2026-27"
 
 # Scrivere anche i risultati delle partite concluse, oltre a data e ora.
 # A false lo script aggiorna solo gli orari e i punteggi restano manuali.
 sportspress_fixtures_results: true
 
-# Termini SportsPress (slug) a cui appartengono gli eventi da aggiornare.
-# A inizio stagione nuova aggiornare season API e slug season SportsPress.
-sportspress_fixtures_sp_league: "serie-a"
-sportspress_fixtures_sp_season: "2026-27"
+# Competizioni da tenere aggiornate. Una voce per ognuna:
+#   nome           etichetta nei log (diventa la sezione del file ini)
+#   fd_competition codice football-data (SA = Serie A, CL = Champions)
+#   sp_league      slug del termine sp_league a cui appartengono gli eventi
+#   abbinamento    auto (default) | giornata | data
+#   giorni         ampiezza della finestra per l'abbinamento per data (7)
+#   fasi_giornata  fasi in cui la giornata identifica il match
+#
+# "auto" usa la giornata (meta sp_day) nelle fasi a girone e la data nelle
+# fasi a eliminazione, dove la giornata NON identifica il match: in
+# Champions il matchday degli ottavi vale 1 o 2, cioe' andata e ritorno, e
+# collide con le prime due giornate del girone.
+sportspress_fixtures_competizioni:
+  - nome: "Serie A"
+    fd_competition: "SA"
+    sp_league: "serie-a"
+
+  # Da riattivare quando esce il sorteggio della fase campionato: fino ad
+  # allora la API non ha match e lo script si limita a scriverlo nel log.
+  # Serve prima il termine sp_league "Champions League" e gli eventi.
+  # - nome: "Champions League"
+  #   fd_competition: "CL"
+  #   sp_league: "champions-league"
 
 # Installazione WordPress (riusa le variabili del progetto)
 sportspress_fixtures_wp_path: "{{ wp_root | default('/var/www/' ~ wp_domain) }}"
