@@ -50,6 +50,19 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   le foto non sembrano piu' attaccate.
 
 ### Aggiunto
+- **News "Roma-Atalanta: una notte giallorossa da vivere insieme"** (post 1352,
+  slug `/roma-atalanta-5-settembre-2026/`, categoria News): **programmata** per
+  lunedi' 31 agosto 2026 alle 21:00, cioe' subito dopo Lecce-Roma. Locandina
+  Match Day (allegato 1351) con didascalia e testo alternativo, e in evidenza
+  la foto della sala principale della sede, visto che l'articolo parla di
+  ritrovarsi li'.
+  Locandina e testo concordano - sabato 5 settembre 2026 e' davvero un sabato,
+  ore 20:45, sede aperta dalle 20:15 - e concordano anche col calendario
+  SportsPress (giornata 3, Stadio Olimpico).
+  **Da sapere sui post programmati**: `DISABLE_WP_CRON` non e' impostato e
+  nessun cron di sistema chiama `wp-cron.php`, quindi WordPress usa il cron
+  interno, che scatta solo quando qualcuno visita il sito. Un post programmato
+  esce alla **prima visita dopo** l'orario, non all'orario esatto.
 - **News "Lecce-Roma: ovunque saremo, sara' solo Roma"** (post 1349, slug
   `/lecce-roma-31-agosto-2026/`, categoria News): locandina Match Day
   (allegato 1348) con didascalia e testo alternativo, foto di trasferta in
