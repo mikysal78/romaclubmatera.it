@@ -534,6 +534,63 @@ python3-numpy` più `google-chrome` (o `chromium`).
 
 ---
 
+## 10.2 Newsletter ai soci (Mailchimp)
+
+Le email al gruppo non partono dal sito ma da **Mailchimp** (account `us18`,
+mittente `info@romaclubmatera.it`). Il sito raccoglie solo gli iscritti, con
+il modulo nel piè di pagina.
+
+Il template dell'email sta nel repo in
+[`newsletter/`](newsletter/README.md) ed è caricato su Mailchimp come
+**Newsletter Roma Club Matera**.
+
+### Mandare una newsletter
+
+1. Mailchimp → **Campagne** → *Crea* → **Email**.
+2. Alla voce *Contenuto* → **Modifica design** → scheda **Salvati** →
+   scegliere *Newsletter Roma Club Matera*.
+3. Cliccare dentro i blocchi per cambiare il testo. Il blocco della notizia
+   si **duplica**: una copia per ogni cosa da raccontare. Quello che si può
+   modificare, zona per zona, è elencato in
+   [`newsletter/README.md`](newsletter/README.md).
+4. Compilare **Oggetto** e testo di anteprima. Sono le due righe che
+   decidono se l'email viene aperta: l'anteprima non ripete l'oggetto, lo
+   completa.
+5. **Invia email di prova** a un proprio indirizzo e guardarla **dal
+   telefono**, non solo dal computer: è lì che la legge quasi tutto il
+   gruppo.
+6. *Invia*.
+
+### Cose da sapere prima di premere invia
+
+- **L'invio non si annulla.** Non c'è un "richiama": una volta partita è
+  partita, e sbagliare un nome o una data si vede.
+- **Gli iscritti devono confermare.** L'iscrizione dal sito è a doppia
+  conferma: chi non clicca il link che riceve per email **non entra nella
+  lista** e non riceverà mai niente. Se qualcuno dice di essersi iscritto e
+  non riceve, la prima cosa da controllare è questa, in *Pubblico →
+  Contatti*, dove lo stato risulta *In attesa*.
+- **Indirizzo e link di cancellazione sono obbligatori** e stanno già nel
+  piè di pagina del template: non vanno tolti, né per legge né per
+  Mailchimp, che senza si rifiuta di inviare.
+- Con il **piano gratuito** Mailchimp aggiunge un suo badge in fondo
+  all'email. Non è un errore del template.
+- La versione in **solo testo** la genera Mailchimp da sola: serve ai client
+  che non mostrano l'HTML, e si può correggere prima dell'invio.
+- Le foto sono richiamate dal sito. **Se una foto viene cancellata da
+  WordPress sparisce anche dalle email già inviate**: le immagini vecchie
+  vanno lasciate dove sono.
+
+### Se il template va rifatto
+
+Si ricarica dal file nel repo — istruzioni in
+[`newsletter/README.md`](newsletter/README.md). Un template a codice **non
+si può aprire nel builder drag-and-drop** di Mailchimp: la struttura si
+cambia solo modificando l'HTML e ricaricandolo, ed è il motivo per cui la
+copia buona sta nel repo.
+
+---
+
 ## 11. Troubleshooting
 
 | Sintomo | Causa / Soluzione |
