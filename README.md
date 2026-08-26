@@ -1,6 +1,6 @@
-# WordPress su Debian 13 (Trixie) — Proxmox LXC
+# Sito Roma Club Matera "Francesco Totti"
 
-Playbook Ansible per il deploy **professionale** di un sito **WordPress mono-sito** su un container LXC Debian 13 *minimal*, con stack performante e hardening del sistema.
+Infrastruttura e personalizzazioni di **romaclubmatera.it**: playbook Ansible per il deploy di un sito **WordPress mono-sito** su un container **LXC Debian 13 (Trixie)** *minimal* su Proxmox, con stack performante e hardening del sistema.
 
 Stack: **Nginx + PHP-FPM 8.4 + MariaDB + Redis (object cache) + WP-CLI**, micro-cache FastCGI, HTTPS Let's Encrypt opzionale, **phpMyAdmin** protetto, **hardening** completo e **backup** automatici con retention.
 
