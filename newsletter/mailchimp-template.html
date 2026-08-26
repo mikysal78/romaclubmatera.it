@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="format-detection" content="telephone=no" />
+<title>*|MC:SUBJECT|*</title>
+<!--[if mso]>
+<style type="text/css">
+  /* Outlook usa Word per disegnare: senza questo i font di sistema
+     diventano Times New Roman a metà email. */
+  body, table, td, p, a { font-family: Arial, sans-serif !important; }
+</style>
+<![endif]-->
+<style type="text/css">
+  /* Gmail e Outlook.com ignorano quasi tutto quello che non è in stile
+     inline: qui restano solo le cose che inline non si possono scrivere
+     (media query e pseudo-classi). Il resto è ripetuto attributo per
+     attributo più sotto. */
+  body { margin:0 !important; padding:0 !important; width:100% !important; }
+  img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; }
+  table { border-collapse:collapse !important; }
+  a { color:#8e1f2f; }
+
+  /* Il client scuro di alcune app riscrive i colori: si dichiara che il
+     template li gestisce da sé, se no i fondi neri diventano grigi. */
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+
+  @media only screen and (max-width:620px) {
+    .rcm-wrap { width:100% !important; }
+    .rcm-pad { padding-left:20px !important; padding-right:20px !important; }
+    .rcm-h1 { font-size:26px !important; line-height:32px !important; }
+    .rcm-h2 { font-size:20px !important; line-height:26px !important; }
+    /* Le due colonne del blocco notizia si impilano: su 320px una foto
+       affiancata al testo diventa illeggibile. */
+    .rcm-col { display:block !important; width:100% !important; max-width:100% !important; }
+    .rcm-col-img { padding:0 0 16px 0 !important; }
+    .rcm-btn a { display:block !important; }
+  }
+</style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f4f2ef;">
+
+<!-- Testo di anteprima: è quello che si legge nella lista dei messaggi
+     accanto all'oggetto. Non si vede dentro l'email. -->
+<div style="display:none; font-size:1px; color:#f4f2ef; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+  <span mc:edit="anteprima">Le novità del Roma Club Matera</span>
+  &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f2ef;">
+<tr>
+<td align="center" style="padding:0;">
+
+<table role="presentation" class="rcm-wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px;">
+
+  <!-- ============ Intestazione ============ -->
+  <tr>
+    <td align="center" bgcolor="#1a0d00" class="rcm-pad" style="background-color:#1a0d00; padding:28px 40px 24px 40px;">
+      <img src="https://romaclubmatera.it/wp-content/uploads/2026/02/cropped-logo512-300x300.png"
+           width="84" height="84" alt="Roma Club Matera"
+           style="display:block; width:84px; height:84px; margin:0 auto 12px auto;" />
+      <div style="font-family:Georgia, 'Times New Roman', serif; font-size:20px; line-height:24px; letter-spacing:2px; color:#f0bc42; text-transform:uppercase;">
+        Roma Club Matera
+      </div>
+      <div style="font-family:Arial, sans-serif; font-size:11px; line-height:16px; letter-spacing:3px; color:#9a8f80; text-transform:uppercase; padding-top:4px;">
+        Francesco Totti &middot; MMXII
+      </div>
+    </td>
+  </tr>
+
+  <!-- Filo giallorosso di stacco -->
+  <tr>
+    <td style="font-size:0; line-height:0;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td bgcolor="#8e1f2f" height="4" style="background-color:#8e1f2f; height:4px; font-size:0; line-height:0;">&nbsp;</td>
+          <td bgcolor="#f0bc42" height="4" style="background-color:#f0bc42; height:4px; font-size:0; line-height:0;">&nbsp;</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ============ Titolo e apertura ============ -->
+  <tr>
+    <td bgcolor="#ffffff" class="rcm-pad" style="background-color:#ffffff; padding:36px 40px 8px 40px;">
+      <div mc:edit="apertura">
+        <h1 class="rcm-h1" style="margin:0 0 14px 0; font-family:Georgia, 'Times New Roman', serif; font-size:30px; line-height:36px; color:#1a0d00; font-weight:normal;">
+          Il titolo della newsletter
+        </h1>
+        <p style="margin:0; font-family:Arial, sans-serif; font-size:16px; line-height:26px; color:#3d3630;">
+          Ciao *|FNAME|*, ecco cosa succede al Club in queste settimane.
+          Due righe di introduzione, non di più: chi legge decide qui se
+          andare avanti.
+        </p>
+      </div>
+    </td>
+  </tr>
+
+  <!-- ============ Notizia (blocco ripetibile) ============ -->
+  <tr mc:repeatable="notizia" mc:variant="Notizia con foto">
+    <td bgcolor="#ffffff" class="rcm-pad" style="background-color:#ffffff; padding:28px 40px 0 40px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="rcm-col rcm-col-img" width="180" valign="top" style="width:180px; padding:0 20px 0 0;">
+            <div mc:edit="notizia_foto">
+              <img src="https://romaclubmatera.it/wp-content/uploads/2026/05/trasfera-home-300x221.jpg"
+                   width="180" alt="" style="display:block; width:100%; max-width:180px; height:auto; border-radius:4px;" />
+            </div>
+          </td>
+          <td class="rcm-col" valign="top" style="padding:0;">
+            <div mc:edit="notizia_testo">
+              <h2 class="rcm-h2" style="margin:0 0 8px 0; font-family:Georgia, 'Times New Roman', serif; font-size:21px; line-height:27px; color:#8e1f2f; font-weight:normal;">
+                Titolo della notizia
+              </h2>
+              <p style="margin:0 0 14px 0; font-family:Arial, sans-serif; font-size:15px; line-height:24px; color:#3d3630;">
+                Poche righe di racconto. Il resto sta sul sito: qui basta
+                dare il motivo per cliccare.
+              </p>
+            </div>
+            <table role="presentation" class="rcm-btn" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td bgcolor="#8e1f2f" align="center" style="background-color:#8e1f2f; border-radius:3px;">
+                  <a href="https://romaclubmatera.it/news/"
+                     style="display:inline-block; padding:11px 22px; font-family:Arial, sans-serif; font-size:14px; line-height:18px; color:#ffffff; text-decoration:none; font-weight:bold;">
+                    Leggi tutto
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ============ Riquadro giallorosso ============ -->
+  <tr>
+    <td bgcolor="#ffffff" class="rcm-pad" style="background-color:#ffffff; padding:32px 40px 0 40px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#faf6ee" style="background-color:#faf6ee; border-left:4px solid #f0bc42;">
+        <tr>
+          <td style="padding:22px 24px;">
+            <div mc:edit="riquadro">
+              <div style="font-family:Arial, sans-serif; font-size:11px; line-height:16px; letter-spacing:2px; color:#c99722; text-transform:uppercase; padding-bottom:8px;">
+                Il prossimo match
+              </div>
+              <div style="font-family:Georgia, 'Times New Roman', serif; font-size:22px; line-height:28px; color:#1a0d00;">
+                Lecce &ndash; Roma
+              </div>
+              <div style="font-family:Arial, sans-serif; font-size:15px; line-height:24px; color:#3d3630; padding-top:6px;">
+                Domenica 31 agosto, 18:30 &middot; ritrovo in sede un'ora prima.
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ============ Bottone principale ============ -->
+  <tr>
+    <td bgcolor="#ffffff" align="center" class="rcm-pad" style="background-color:#ffffff; padding:32px 40px 40px 40px;">
+      <div mc:edit="bottone">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+          <tr>
+            <td bgcolor="#f0bc42" align="center" style="background-color:#f0bc42; border-radius:3px;">
+              <a href="https://romaclubmatera.it/"
+                 style="display:inline-block; padding:14px 34px; font-family:Arial, sans-serif; font-size:15px; line-height:20px; color:#1a0d00; text-decoration:none; font-weight:bold;">
+                Vai al sito del Club
+              </a>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+
+  <!-- ============ Piè di pagina ============ -->
+  <tr>
+    <td bgcolor="#1a0d00" align="center" class="rcm-pad" style="background-color:#1a0d00; padding:30px 40px;">
+      <div mc:edit="piede_link" style="font-family:Arial, sans-serif; font-size:13px; line-height:22px; color:#f0bc42; padding-bottom:14px;">
+        <a href="https://romaclubmatera.it/news/" style="color:#f0bc42; text-decoration:none;">News</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://romaclubmatera.it/calendario/" style="color:#f0bc42; text-decoration:none;">Calendario</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://romaclubmatera.it/classifica/" style="color:#f0bc42; text-decoration:none;">Classifica</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://romaclubmatera.it/contatti/" style="color:#f0bc42; text-decoration:none;">Contatti</a>
+      </div>
+
+      <div style="font-family:Arial, sans-serif; font-size:12px; line-height:20px; color:#9a8f80;">
+        *|LIST:ADDRESSLINE|*
+      </div>
+
+      <div style="font-family:Arial, sans-serif; font-size:12px; line-height:20px; color:#9a8f80; padding-top:12px;">
+        Ricevi questa email perché ti sei iscritto alla newsletter del
+        Roma Club Matera.<br />
+        <a href="*|UPDATE_PROFILE|*" style="color:#9a8f80; text-decoration:underline;">Aggiorna le tue preferenze</a>
+        &nbsp;&middot;&nbsp;
+        <a href="*|UNSUB|*" style="color:#9a8f80; text-decoration:underline;">Cancellati</a>
+        &nbsp;&middot;&nbsp;
+        <a href="*|ARCHIVE|*" style="color:#9a8f80; text-decoration:underline;">Leggi nel browser</a>
+      </div>
+
+      <div style="font-family:Arial, sans-serif; font-size:11px; line-height:18px; color:#6b6155; padding-top:14px;">
+        &copy; *|CURRENT_YEAR|* Roma Club Matera Francesco Totti
+      </div>
+    </td>
+  </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
