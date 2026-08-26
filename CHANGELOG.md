@@ -66,8 +66,9 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   Roman - e le due colonne del blocco notizia che si impilano sotto i 620px,
   perche' su un telefono una foto affiancata al testo gli lascia una colonna
   di sei caratteri.
-  Il file nel repo e' la copia buona: caricato e riscaricato, ha lo stesso
-  SHA-256.
+  Il file nel repo e' la copia buona: prima del salvataggio il contenuto
+  dell'editor di Mailchimp e' stato confrontato con quello su disco e i due
+  SHA-256 coincidono.
 - **Pagina Classifica** (`/classifica/`, pagina 1345, nel menu accanto a
   Calendario) con la classifica di Serie A aggiornata ogni mattina dallo stesso
   timer del calendario (`roles/sportspress_fixtures/files/update-standings.php`,
