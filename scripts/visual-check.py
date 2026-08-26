@@ -250,16 +250,22 @@ stop.textContent = `*, *::before, *::after {
 }`;
 document.head.appendChild(stop);
 /* Nasconde i blocchi che cambiano contenuto a ogni caricamento (vedi
-   "nascondi" in config.json). visibility invece di display: l'ingombro
-   resta, quindi il resto della pagina non si sposta e continua a essere
-   confrontato riga per riga.
+   "nascondi" in config.json). Non display:none: l'ingombro deve restare,
+   se no il resto della pagina si sposta e non e' piu' confrontabile riga
+   per riga.
    Regola in foglio di stile con !important, non stile inline: Slider
    Revolution riscrive di continuo l'attributo style dei suoi contenitori
-   e cancellerebbe un inline, mentre !important lo batte. */
+   e cancellerebbe un inline, mentre !important lo batte.
+   E soprattutto opacity, non solo visibility: visibility si eredita, e
+   Slider Revolution rimette "visibility: visible" sulle sue slide appena
+   si inizializza, quindi il contenuto riaffiorava a seconda di quanto
+   tempo aveva avuto per partire. opacity non e' ereditata e vale per tutto
+   il sottoalbero: nessun figlio puo' disfarla. */
 const nascondi = (SELETTORI);
 if (nascondi.length) {
   const via = document.createElement('style');
-  via.textContent = nascondi.join(',') + '{visibility:hidden !important;}';
+  via.textContent = nascondi.join(',') +
+    '{visibility:hidden !important;opacity:0 !important;}';
   document.head.appendChild(via);
 }
 """

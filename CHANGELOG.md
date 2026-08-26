@@ -17,6 +17,15 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   cambiata.
 
 ### Modificato
+- **"Il prossimo match" in home page mostrava l'ultima partita giocata**. Il
+  blocco era `[event_blocks number="1"]`: con `date="auto"` (il default)
+  SportsPress divide il numero di eventi richiesti fra passati e futuri, e con
+  `number="1"` fa `ceil(1/2)=1` partite gia' giocate piu' `floor(1/2)=0` da
+  giocare - cioe' sempre e solo l'ultima. Finche' gli eventi non avevano un
+  punteggio la cosa passava inosservata, perche' sotto il titolo si leggeva
+  comunque una data; da quando i risultati vengono riempiti in automatico
+  sotto "Il prossimo match" compariva "4 - 0". Ora e'
+  `[event_blocks number="1" status="future" orderby="date" order="ASC"]`.
 - **Carosello della home page**: al posto delle tre foto di eventi (*Roma*,
   *Matera 2024*, *16 Birra* - allegati 563/564/565, rimasti in libreria) ci sono
   ora **nove foto della sede** (allegati 1333-1341), ordinate come una visita:
@@ -36,6 +45,30 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   le foto non sembrano piu' attaccate.
 
 ### Aggiunto
+- **Risultati delle partite in automatico** (`roles/sportspress_fixtures`): lo
+  script che ogni mattina allinea data e ora del calendario ora scrive anche il
+  punteggio delle partite concluse. Legge da football-data.org `fullTime` e
+  `halfTime` e riempie il meta `sp_results` con le tre variabili configurate su
+  SportsPress - `goals`, `firsthalf`, `secondhalf` (il secondo tempo per
+  differenza) - piu' l'esito, ricavato dalle `sp_outcome` in base alla loro
+  condizione (`>` vittoria, `=` pareggio, `<` sconfitta) invece che da uno slug
+  scritto a mano.
+  Scrive **solo a partita finita** (`FINISHED` o `AWARDED`): su un calendario un
+  parziale di una partita in corso si legge come definitivo. Se l'evento fosse
+  ancora in stato `future` lo pubblica, altrimenti il risultato resterebbe
+  invisibile in pagina.
+  Per capire **quale delle due squadre e' in casa** prova entrambi gli
+  accoppiamenti fra le squadre dell'evento e quelle della API, li punteggia e
+  tiene il migliore; a pari punteggio non indovina, salta e lascia un avviso.
+  L'uguaglianza esatta del nome vale piu' della sottostringa, e non e' un
+  dettaglio: "Milan" e' contenuto in "FC Internazionale Milano", quindi con la
+  sola sottostringa si assegnerebbe all'una il punteggio dell'altra.
+  Si spegne con `sportspress_fixtures_results: false` per tornare ai punteggi a
+  mano. Rieseguirlo non riscrive nulla se il risultato e' gia' quello giusto.
+  In pagina **non serve una colonna nuova**: l'opzione
+  `sportspress_event_list_time_format` e' su `combined`, quindi la colonna
+  "Orario/Risultati" mostra l'ora finche' la partita non e' giocata e il
+  punteggio da li' in poi.
 - **Controllo visivo degli aggiornamenti** (`scripts/visual-check.py`,
   `visual/config.json`, `visual/baseline.json`, target `make visual-baseline` e
   `make visual-check`): fotografa le 15 pagine pubbliche con Chrome headless a
@@ -60,6 +93,12 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   lo slider Revolution della home, le citazioni a rotazione di Unlimited
   Elements e la mappa di Google su Contattaci), `ignora` (intervalli di righe
   per viewport) e `tolleranza`; per tutte le altre pagine e' 0,05%.
+  Il nascondere usa `opacity: 0` oltre a `visibility: hidden`: `visibility` si
+  eredita e Slider Revolution rimette `visibility: visible` sulle proprie slide
+  appena si inizializza, quindi lo slider della home riaffiorava o no a seconda
+  di quanto tempo aveva avuto per partire (falso allarme del 3,79% su
+  mobile-home). `opacity` non e' ereditata e vale per tutto il sottoalbero:
+  nessun figlio puo' disfarla.
   Con questi accorgimenti due passate consecutive danno 0,000% su tutte e 30
   le combinazioni pagina/viewport.
   Nel repo va solo `baseline.json` (dimensioni + impronta di ogni fascia di 16

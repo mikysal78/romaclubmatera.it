@@ -9,6 +9,10 @@ sportspress_fixtures_fd_team_id: 100
 sportspress_fixtures_fd_season: "2026"
 sportspress_fixtures_fd_competition: "SA"
 
+# Scrivere anche i risultati delle partite concluse, oltre a data e ora.
+# A false lo script aggiorna solo gli orari e i punteggi restano manuali.
+sportspress_fixtures_results: true
+
 # Termini SportsPress (slug) a cui appartengono gli eventi da aggiornare.
 # A inizio stagione nuova aggiornare season API e slug season SportsPress.
 sportspress_fixtures_sp_league: "serie-a"
