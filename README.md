@@ -6,6 +6,12 @@ Stack: **Nginx + PHP-FPM 8.4 + MariaDB + Redis (object cache) + WP-CLI**, micro-
 
 > Pensato per **clean install**: il playbook assume un CT appena creato, non un sistema con WordPress già presente.
 
+> [!IMPORTANT]
+> **Tutti i diritti riservati.** Questo repository è consultabile ma non
+> riusabile: copia, riuso delle personalizzazioni e opere derivate
+> richiedono l'autorizzazione scritta del Roma Club Matera "Francesco
+> Totti" — info@romaclubmatera.it. Vedi [LICENSE](LICENSE).
+
 ---
 
 ## Indice
