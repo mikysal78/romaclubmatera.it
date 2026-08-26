@@ -23,6 +23,9 @@
  * Di default (ABBINAMENTO=auto) si usa la giornata nelle fasi elencate in
  * FASI_GIORNATA e la data in tutte le altre.
  *
+ * Le funzioni condivise con update-standings.php (config, chiamate API,
+ * abbinamento dei nomi delle squadre) stanno in sp-lib.php.
+ *
  * Uso: wp eval-file update-fixtures.php --path=<wordpress>
  * Config (ini con sezioni): /etc/default/sp-fixtures, override con env
  * SP_FIXTURES_CONF. Ogni sezione è una competizione; una config vecchia
@@ -33,73 +36,12 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	exit( 1 );
 }
 
-$config_file = getenv( 'SP_FIXTURES_CONF' ) ?: '/etc/default/sp-fixtures';
-$conf        = is_readable( $config_file ) ? parse_ini_file( $config_file, true ) : false;
-if ( ! $conf || empty( $conf['FD_TOKEN'] ) ) {
-	WP_CLI::error( "Config mancante o FD_TOKEN vuoto in $config_file" );
-}
+require_once __DIR__ . '/sp-lib.php';
 
+$conf       = rcm_conf();
 $token      = $conf['FD_TOKEN'];
 $team_id    = $conf['FD_TEAM_ID'] ?? '100';
 $do_results = ! isset( $conf['SP_RESULTS'] ) || filter_var( $conf['SP_RESULTS'], FILTER_VALIDATE_BOOLEAN );
-
-/**
- * Le competizioni configurate, una per sezione del file ini.
- *
- * Retrocompatibile: se il file non ha sezioni (la vecchia config con una
- * sola competizione) le chiavi in cima valgono come competizione unica,
- * così un aggiornamento dello script senza rilanciare Ansible non rompe
- * il timer notturno.
- *
- * @param array $conf Config già letta da parse_ini_file con le sezioni.
- * @return array Nome della competizione => sue impostazioni.
- */
-function rcm_competizioni( $conf ) {
-	$sezioni = array();
-	foreach ( $conf as $nome => $valore ) {
-		if ( is_array( $valore ) ) {
-			$sezioni[ $nome ] = $valore;
-		}
-	}
-	if ( $sezioni ) {
-		return $sezioni;
-	}
-
-	if ( empty( $conf['SP_LEAGUE'] ) ) {
-		return array();
-	}
-	return array( $conf['SP_LEAGUE'] => $conf );
-}
-
-/**
- * Quanto il nome di una squadra WordPress somiglia a una squadra della API.
- *
- * La API dà tre forme ("AS Roma" / "Roma" / "ROM") e i titoli su WordPress
- * non seguono nessuna di queste in modo costante ("AS Roma", "Fiorentina",
- * "Como"). L'uguaglianza vale più della sottostringa perché "Milan" è
- * contenuto in "FC Internazionale Milano": prendendo la sottostringa come
- * prova certa si assegnerebbe il punteggio dell'Inter al Milan.
- *
- * @param string $wp_title Titolo della squadra su WordPress.
- * @param array  $api_team Squadra come la restituisce football-data.
- * @return int Punteggio di somiglianza: 3 uguale, 2 contenuta, 0 diversa.
- */
-function rcm_somiglianza( $wp_title, $api_team ) {
-	$wp    = trim( (string) $wp_title );
-	$forme = array_filter( array( $api_team['name'] ?? '', $api_team['shortName'] ?? '' ) );
-
-	foreach ( $forme as $forma ) {
-		if ( 0 === strcasecmp( $wp, $forma ) ) {
-			return 3;
-		}
-	}
-	foreach ( $forme as $forma ) {
-		if ( '' !== $wp && ( false !== stripos( $forma, $wp ) || false !== stripos( $wp, $forma ) ) ) {
-			return 2;
-		}
-	}
-	return 0;
-}
 
 /**
  * Quale delle due squadre dell'evento gioca in casa secondo la API.
@@ -331,26 +273,11 @@ function rcm_competizione( $nome, $c, $token, $team_id, $do_results, $tz, &$stat
 				'season'       => $fd_season,
 			)
 		);
-	$resp = wp_remote_get(
-		$url,
-		array(
-			'headers' => array( 'X-Auth-Token' => $token ),
-			'timeout' => 30,
-		)
-	);
-	if ( is_wp_error( $resp ) ) {
-		WP_CLI::warning( "[$nome] API: " . $resp->get_error_message() );
+	$data = rcm_api( $url, $token, "[$nome]" );
+	if ( null === $data ) {
 		++$stats['warned'];
 		return;
 	}
-	$http = wp_remote_retrieve_response_code( $resp );
-	if ( 200 !== $http ) {
-		WP_CLI::warning( "[$nome] API HTTP $http" );
-		++$stats['warned'];
-		return;
-	}
-
-	$data = json_decode( wp_remote_retrieve_body( $resp ), true );
 	if ( empty( $data['matches'] ) ) {
 		// Normale prima del sorteggio: la coppa esiste ma non ha ancora
 		// partite per noi. Non è un errore e non deve fermare le altre.

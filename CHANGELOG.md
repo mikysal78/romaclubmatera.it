@@ -17,6 +17,11 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   cambiata.
 
 ### Modificato
+- **Stemma della Juventus invisibile in classifica**: quello scaricato a suo
+  tempo da football-data era la variante **bianca** del marchio, pensata per i
+  fondi scuri, e sulla tabella bianca spariva lasciando la cella vuota. Ora e'
+  la variante nera (il file bianco resta in `/root/backup-crest_779-bianco.png`
+  sul server). Le altre 19 squadre erano gia' a posto.
 - **"Il prossimo match" in home page mostrava l'ultima partita giocata**. Il
   blocco era `[event_blocks number="1"]`: con `date="auto"` (il default)
   SportsPress divide il numero di eventi richiesti fra passati e futuri, e con
@@ -45,6 +50,33 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   le foto non sembrano piu' attaccate.
 
 ### Aggiunto
+- **Pagina Classifica** (`/classifica/`, pagina 1345, nel menu accanto a
+  Calendario) con la classifica di Serie A aggiornata ogni mattina dallo stesso
+  timer del calendario (`roles/sportspress_fixtures/files/update-standings.php`,
+  con le funzioni in comune in `sp-lib.php`).
+  **La classifica non la calcola SportsPress**: il plugin la ricava dagli eventi
+  in archivio, e sul sito ci sono solo le partite della Roma - verrebbe fuori
+  una riga coi dati veri e diciannove a zero. Si scrivono invece i valori
+  "manuali" nel meta `sp_teams`, che SportsPress usa al posto di quelli
+  calcolati quando ci sono: la tabella e' quella vera senza dover importare
+  tutte le 380 partite del campionato. Le otto colonne che il sito aveva gia'
+  (`P W D L F A GD Pts`) corrispondono una a una ai campi della API.
+  **L'ordinamento e' il punto delicato**: SportsPress riordina sempre da se',
+  per punti, differenza reti e gol fatti. In Serie A pero' il primo criterio a
+  parita' di punti e' lo scontro diretto, che senza le partite delle altre
+  squadre non e' calcolabile, e una tabella ordinata "quasi" bene sarebbe
+  peggio di una dichiaratamente sbagliata. Si scrive quindi anche la posizione
+  ufficiale in una colonna nascosta (slug `posizione`, priorita' 1, ASC; le
+  altre spostate di uno), che non viene mostrata e serve solo a ordinare: cosi'
+  l'ordine e' esattamente quello della Lega. Lo slug e' `posizione` e non `pos`
+  perche' `pos` e' gia' la chiave che SportsPress usa per la posizione
+  calcolata, e le due si sovrascriverebbero.
+  La tabella da riempire si trova da sola - e' la `sp_table` con la stessa lega
+  e stagione della competizione - quindi nella config non c'e' nessun ID.
+  Sul sito sono state taggate le 20 squadre con lega e stagione (SportsPress
+  prende da li' le righe) e create la colonna `posizione` (1343), la tabella
+  `Classifica Serie A 2026/27` (1344) e la pagina (1345). Lo shortcode ha
+  `rows="20"`, se no la tabella si ferma a dieci righe con la paginazione.
 - **Il calendario automatico ora regge piu' competizioni**, in vista della
   Champions: `sportspress_fixtures_competizioni` e' un elenco, una voce per
   coppa o campionato, e la config diventa un ini a sezioni (una vecchia config

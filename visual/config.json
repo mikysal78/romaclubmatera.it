@@ -45,6 +45,10 @@
       "path": "/calendario/"
     },
     {
+      "slug": "classifica",
+      "path": "/classifica/"
+    },
+    {
       "path": "/trasferte/"
     },
     {

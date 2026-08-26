@@ -19,4 +19,7 @@ GIORNI="{{ c.giorni }}"
 {% if c.fasi_giornata is defined %}
 FASI_GIORNATA="{{ c.fasi_giornata }}"
 {% endif %}
+{% if c.classifica is defined %}
+CLASSIFICA="{{ c.classifica | ternary(1, 0) }}"
+{% endif %}
 {% endfor %}

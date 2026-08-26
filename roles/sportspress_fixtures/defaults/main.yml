@@ -24,6 +24,7 @@ sportspress_fixtures_results: true
 #   abbinamento    auto (default) | giornata | data
 #   giorni         ampiezza della finestra per l'abbinamento per data (7)
 #   fasi_giornata  fasi in cui la giornata identifica il match
+#   classifica     false per non riempirne la classifica (default: true)
 #
 # "auto" usa la giornata (meta sp_day) nelle fasi a girone e la data nelle
 # fasi a eliminazione, dove la giornata NON identifica il match: in

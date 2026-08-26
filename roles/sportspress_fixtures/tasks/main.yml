@@ -16,13 +16,17 @@
     group: root
     mode: "0755"
 
-- name: Installa lo script di aggiornamento fixtures
+- name: Installa gli script di aggiornamento
   ansible.builtin.copy:
-    src: update-fixtures.php
-    dest: "{{ sportspress_fixtures_script_dir }}/update-fixtures.php"
+    src: "{{ item }}"
+    dest: "{{ sportspress_fixtures_script_dir }}/{{ item }}"
     owner: root
     group: root
     mode: "0644"
+  loop:
+    - sp-lib.php
+    - update-fixtures.php
+    - update-standings.php
 
 - name: Installa la config con il token API
   ansible.builtin.template:
