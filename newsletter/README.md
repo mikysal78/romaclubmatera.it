@@ -7,6 +7,10 @@ Mailchimp come **Newsletter Roma Club Matera** (account `us18`, sezione
 Il file qui nel repo è la copia buona: se il template va rifatto o
 qualcuno lo rovina, si ricrea da questo.
 
+Mailchimp **riformatta l'HTML quando salva**, quindi la copia sul suo
+server non resta identica byte per byte a questo file. È normale: le
+differenze sono di sola spaziatura, il contenuto è lo stesso.
+
 ## Come si ricarica su Mailchimp
 
 *Template di email* → **Codice personalizzato** → Continua → incollare il
@@ -25,12 +29,18 @@ nell'editor della campagna.
 | `anteprima` | il testo che si legge nella lista dei messaggi accanto all'oggetto |
 | `apertura` | titolo e paragrafo di introduzione |
 | `notizia_foto` / `notizia_testo` | la foto e il testo di una notizia |
+| `notizia_bottone` | il bottone della notizia, **compreso il link** |
 | `riquadro` | il riquadro giallo (es. "Il prossimo match") |
 | `bottone` | il bottone grande in fondo |
 | `piede_link` | i link del piè di pagina |
 
 Il blocco notizia è `mc:repeatable`: nell'editor si duplica per averne
 quante se ne vogliono, senza rimettere mano all'HTML.
+
+Per cambiare la pagina di destinazione del bottone: cliccare il blocco,
+selezionare le parole *Leggi tutto* e usare lo strumento collegamento della
+barra, oppure aprire il codice della zona con il pulsante `<>` e cambiare
+l'`href`.
 
 ## Campi che Mailchimp riempie da solo
 

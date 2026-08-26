@@ -17,15 +17,26 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   cambiata.
 
 ### Modificato
+- **Il bottone della notizia nella newsletter ora si puo' modificare**
+  (`newsletter/mailchimp-template.html`, zona `mc:edit="notizia_bottone"`).
+  Prima il bottone stava **fuori** dalla zona modificabile: si potevano
+  cambiare titolo e testo della notizia ma non il suo link, che puntava
+  sempre a `/news/` - in un blocco pensato per rimandare a una pagina
+  diversa ogni volta, mezzo inutile.
+  Sistemato anche il segnaposto del riquadro, che diceva "Domenica 31
+  agosto": il 31 agosto 2026 e' un lunedi'. Ora e' un segnaposto neutro
+  ("Giorno e ora della partita"), che in un modello e' comunque meglio di
+  una data finta destinata a essere ricopiata.
+  Le campagne gia' create da questo template non cambiano: si portano dietro
+  la copia fatta al momento della creazione.
 - **WP-Cron spento sulle visite e affidato al cron di sistema**
   (`DISABLE_WP_CRON`, ruolo `wordpress`). WP-Cron non e' un cron: e' codice che
   gira quando qualcuno carica una pagina, e il lavoro lo paga il visitatore che
   capita al momento sbagliato. Un cron di sistema per `www-data` c'era gia'
   (serviva agli auguri di compleanno), ma girava **in aggiunta** a quello delle
   visite, non al suo posto. Ora il meccanismo delle visite e' spento e resta
-  solo il cron, che e' passato **da 15 a 5 minuti**: e' il ritardo massimo con
-  cui esce un post programmato, e su un annuncio dato per un orario preciso 15
-  minuti si notano.
+  solo il cron, ogni 15 minuti: e' il ritardo massimo con cui esce un post
+  programmato, e si stringe abbassando `wordpress_cron_minute`.
   I due task hanno il tag `wp_cron` perche' siano applicabili da soli: il ruolo
   `wordpress` intero rimescola i salts, e lanciarlo per due righe butterebbe
   fuori tutti gli utenti loggati.

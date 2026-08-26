@@ -8,4 +8,4 @@ wp_child_theme_dir: "{{ wp_root }}/wp-content/themes/bestfoot-child"
 
 # Ogni quanto il cron di sistema fa girare gli eventi WP-Cron scaduti.
 # E' anche il ritardo massimo con cui esce un post programmato.
-wordpress_cron_minute: "*/5"
+wordpress_cron_minute: "*/15"

@@ -350,8 +350,8 @@
 # uscirebbero in ritardo, e il lavoro lo paga il visitatore che capita al
 # momento sbagliato. Con DISABLE_WP_CRON (piu' sotto) quel meccanismo e'
 # spento e resta solo questo cron, che decide lui quando far girare le cose.
-# Ogni 5 minuti e non 15: e' il ritardo massimo con cui esce un post
-# programmato, e su un annuncio dato per un orario preciso 15 si notano.
+# L'intervallo e' il ritardo massimo con cui esce un post programmato:
+# si stringe abbassando wordpress_cron_minute.
 - name: Cron di sistema per gli eventi WP-Cron scaduti
   ansible.builtin.cron:
     name: wp-cron romaclubmatera
