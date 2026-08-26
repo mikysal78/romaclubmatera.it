@@ -9,8 +9,9 @@ Stack: **Nginx + PHP-FPM 8.4 + MariaDB + Redis (object cache) + WP-CLI**, micro-
 > [!IMPORTANT]
 > **Tutti i diritti riservati.** Questo repository è consultabile ma non
 > riusabile: copia, riuso delle personalizzazioni e opere derivate
-> richiedono l'autorizzazione scritta del Roma Club Matera "Francesco
-> Totti" — info@romaclubmatera.it. Vedi [LICENSE](LICENSE).
+> richiedono l'autorizzazione scritta dei titolari — Roma Club Matera
+> "Francesco Totti" e mikysal78 — info@romaclubmatera.it.
+> Vedi [LICENSE](LICENSE).
 
 ---
 
@@ -641,6 +642,7 @@ gh repo create wordpress-trixie-ansible --public --source=. --remote=origin --pu
 **Tutti i diritti riservati** — vedi [LICENSE](LICENSE).
 
 Il codice e le personalizzazioni di questo repository non sono riusabili
-senza autorizzazione scritta del Roma Club Matera "Francesco Totti"
+senza autorizzazione scritta dei titolari: Roma Club Matera "Francesco
+Totti" per i contenuti e l'identità, mikysal78 come autore del codice
 (info@romaclubmatera.it). Il software di terze parti installato dai
 playbook resta soggetto alle proprie licenze.

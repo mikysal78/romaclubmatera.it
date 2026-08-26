@@ -1,4 +1,4 @@
-Copyright (c) 2026 Roma Club Matera "Francesco Totti"
+Copyright (c) 2026 Roma Club Matera "Francesco Totti" e mikysal78
 Tutti i diritti riservati. — All rights reserved.
 
 ITALIANO
@@ -7,8 +7,12 @@ Questo repository contiene il codice di infrastruttura, le personalizzazioni
 e i contenuti del sito del Roma Club Matera "Francesco Totti"
 (romaclubmatera.it).
 
+I diritti sono congiunti: il Club per i contenuti, il nome e l'identità
+visiva, mikysal78 come autore del codice di infrastruttura e delle
+personalizzazioni.
+
 Nessuna licenza d'uso viene concessa. In particolare, senza autorizzazione
-scritta del Roma Club Matera "Francesco Totti" non è consentito:
+scritta dei titolari non è consentito:
 
   - copiare, riprodurre o ridistribuire il contenuto di questo repository,
     in tutto o in parte;
@@ -38,10 +42,14 @@ This repository contains the infrastructure code, customisations and
 content of the website of Roma Club Matera "Francesco Totti"
 (romaclubmatera.it).
 
+Rights are held jointly by Roma Club Matera "Francesco Totti" (content,
+name and visual identity) and mikysal78 (infrastructure code and
+customisations).
+
 No licence is granted. Copying, redistribution, the creation of derivative
 works, and any reuse of these customisations — in whole or in part, for
 commercial or non-commercial purposes — require the prior written
-permission of Roma Club Matera "Francesco Totti".
+permission of both rights holders.
 
 Viewing this repository grants no rights. Requests: info@romaclubmatera.it
 
