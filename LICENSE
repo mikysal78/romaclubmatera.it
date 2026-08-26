@@ -1,21 +1,49 @@
-MIT License
+Copyright (c) 2026 Roma Club Matera "Francesco Totti"
+Tutti i diritti riservati. — All rights reserved.
 
-Copyright (c) 2026 mikysal78
+ITALIANO
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Questo repository contiene il codice di infrastruttura, le personalizzazioni
+e i contenuti del sito del Roma Club Matera "Francesco Totti"
+(romaclubmatera.it).
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Nessuna licenza d'uso viene concessa. In particolare, senza autorizzazione
+scritta del Roma Club Matera "Francesco Totti" non è consentito:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+  - copiare, riprodurre o ridistribuire il contenuto di questo repository,
+    in tutto o in parte;
+  - creare opere derivate, riusare le personalizzazioni o adattarle ad
+    altri siti;
+  - usare il codice per scopi commerciali o non commerciali;
+  - usare il nome, il logo, lo stemma o gli altri segni distintivi del
+    Club.
+
+La consultazione del repository non implica alcuna concessione di diritti.
+
+Per richieste di autorizzazione: info@romaclubmatera.it
+
+NOTE
+
+I marchi, i loghi e i nomi di A.S. Roma e delle altre società sportive
+citate appartengono ai rispettivi titolari e compaiono qui solo a scopo
+descrittivo.
+
+Il software di terze parti installato dai playbook (WordPress, i suoi
+plugin e temi, e gli altri pacchetti) resta soggetto alle proprie licenze,
+che non sono modificate da questo documento.
+
+ENGLISH
+
+This repository contains the infrastructure code, customisations and
+content of the website of Roma Club Matera "Francesco Totti"
+(romaclubmatera.it).
+
+No licence is granted. Copying, redistribution, the creation of derivative
+works, and any reuse of these customisations — in whole or in part, for
+commercial or non-commercial purposes — require the prior written
+permission of Roma Club Matera "Francesco Totti".
+
+Viewing this repository grants no rights. Requests: info@romaclubmatera.it
+
+Third-party software installed by these playbooks remains governed by its
+own licence terms, which this document does not alter.

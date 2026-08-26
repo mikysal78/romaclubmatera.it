@@ -632,4 +632,9 @@ gh repo create wordpress-trixie-ansible --public --source=. --remote=origin --pu
 
 ## Licenza
 
-MIT — vedi [LICENSE](LICENSE).
+**Tutti i diritti riservati** — vedi [LICENSE](LICENSE).
+
+Il codice e le personalizzazioni di questo repository non sono riusabili
+senza autorizzazione scritta del Roma Club Matera "Francesco Totti"
+(info@romaclubmatera.it). Il software di terze parti installato dai
+playbook resta soggetto alle proprie licenze.
