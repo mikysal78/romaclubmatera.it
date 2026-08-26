@@ -311,39 +311,39 @@
 # basta rilanciare site.yml dopo l'import.
 - name: Verifica se il tema figlio e' gia' installato
   ansible.builtin.stat:
-    path: "{{ wp_child_theme_dir }}/functions.php"
-  register: rcm_child_theme
+    path: "{{ wordpress_child_theme_dir }}/functions.php"
+  register: wordpress_child_theme
 
 - name: Directory del CSS su misura nel tema figlio
   ansible.builtin.file:
-    path: "{{ wp_child_theme_dir }}/assets/css"
+    path: "{{ wordpress_child_theme_dir }}/assets/css"
     state: directory
     owner: www-data
     group: www-data
     mode: "0755"
-  when: rcm_child_theme.stat.exists
+  when: wordpress_child_theme.stat.exists
 
 - name: Installa il CSS su misura del sito
   ansible.builtin.copy:
     src: rcm-custom.css
-    dest: "{{ wp_child_theme_dir }}/assets/css/rcm-custom.css"
+    dest: "{{ wordpress_child_theme_dir }}/assets/css/rcm-custom.css"
     owner: www-data
     group: www-data
     mode: "0644"
-  when: rcm_child_theme.stat.exists
+  when: wordpress_child_theme.stat.exists
 
 # Non un wp_enqueue_style normale: il foglio va stampato su wp_head 101, dove
 # stava il CSS del Customizer, altrimenti esce prima di Elementor e le regole
 # con pari specificita' perdono. Il perche' e' spiegato nello snippet stesso.
 - name: Aggancia il CSS su misura nel functions.php del tema figlio
   ansible.builtin.blockinfile:
-    path: "{{ wp_child_theme_dir }}/functions.php"
+    path: "{{ wordpress_child_theme_dir }}/functions.php"
     marker: "// {mark} RCM CUSTOM CSS"
     block: "{{ lookup('ansible.builtin.file', 'rcm-enqueue-custom-css.php') }}"
     owner: www-data
     group: www-data
     mode: "0644"
-  when: rcm_child_theme.stat.exists
+  when: wordpress_child_theme.stat.exists
 
 # WP-Cron non e' un cron: e' codice che gira quando qualcuno carica una pagina.
 # Su un sito a basso traffico gli auguri di compleanno e i post programmati
