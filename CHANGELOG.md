@@ -17,6 +17,18 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   cambiata.
 
 ### Modificato
+- **WP-Cron spento sulle visite e affidato al cron di sistema**
+  (`DISABLE_WP_CRON`, ruolo `wordpress`). WP-Cron non e' un cron: e' codice che
+  gira quando qualcuno carica una pagina, e il lavoro lo paga il visitatore che
+  capita al momento sbagliato. Un cron di sistema per `www-data` c'era gia'
+  (serviva agli auguri di compleanno), ma girava **in aggiunta** a quello delle
+  visite, non al suo posto. Ora il meccanismo delle visite e' spento e resta
+  solo il cron, che e' passato **da 15 a 5 minuti**: e' il ritardo massimo con
+  cui esce un post programmato, e su un annuncio dato per un orario preciso 15
+  minuti si notano.
+  I due task hanno il tag `wp_cron` perche' siano applicabili da soli: il ruolo
+  `wordpress` intero rimescola i salts, e lanciarlo per due righe butterebbe
+  fuori tutti gli utenti loggati.
 - **Stemma della Juventus invisibile in classifica**: quello scaricato a suo
   tempo da football-data era la variante **bianca** del marchio, pensata per i
   fondi scuri, e sulla tabella bianca spariva lasciando la cella vuota. Ora e'

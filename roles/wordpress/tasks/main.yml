@@ -69,6 +69,16 @@
   become_user: www-data
   changed_when: true
 
+# Spegne il WP-Cron innescato dalle visite: senza questo gli eventi girano
+# due volte, dal cron di sistema e dal primo visitatore che passa, e la
+# pagina di quel visitatore aspetta che finiscano.
+- name: Disattiva il WP-Cron innescato dalle visite
+  ansible.builtin.command: "{{ wordpress_cli_path }} config set DISABLE_WP_CRON true --raw --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+  tags: [wp_cron]
+
 # ---------- Redis object cache ----------
 - name: Configura le costanti Redis in wp-config
   ansible.builtin.command: "{{ wordpress_cli_path }} config set {{ item.k }} {{ item.v }} {{ item.raw | default('') }} --path={{ wp_root }}"
@@ -335,14 +345,20 @@
     mode: "0644"
   when: rcm_child_theme.stat.exists
 
-# WP-Cron parte solo con le visite: su un sito a basso traffico gli auguri
-# uscirebbero in ritardo. Con questo cron di sistema gli eventi scaduti girano comunque.
+# WP-Cron non e' un cron: e' codice che gira quando qualcuno carica una pagina.
+# Su un sito a basso traffico gli auguri di compleanno e i post programmati
+# uscirebbero in ritardo, e il lavoro lo paga il visitatore che capita al
+# momento sbagliato. Con DISABLE_WP_CRON (piu' sotto) quel meccanismo e'
+# spento e resta solo questo cron, che decide lui quando far girare le cose.
+# Ogni 5 minuti e non 15: e' il ritardo massimo con cui esce un post
+# programmato, e su un annuncio dato per un orario preciso 15 si notano.
 - name: Cron di sistema per gli eventi WP-Cron scaduti
   ansible.builtin.cron:
     name: wp-cron romaclubmatera
-    minute: "*/15"
+    minute: "{{ wordpress_cron_minute }}"
     user: www-data
     job: "{{ wordpress_cli_path }} cron event run --due-now --path={{ wp_root }} >/dev/null 2>&1"
+  tags: [wp_cron]
 
 # ---------- Permessi ----------
 - name: Proprietario corretto su tutti i file

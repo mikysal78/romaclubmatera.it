@@ -5,3 +5,7 @@ wordpress_url: "http{{ 's' if enable_https else '' }}://{{ wp_domain }}"
 # Tema figlio del sito: ci vive il CSS su misura (assets/css/rcm-custom.css).
 # Il tema arriva con import-site.yml, non da questo ruolo.
 wp_child_theme_dir: "{{ wp_root }}/wp-content/themes/bestfoot-child"
+
+# Ogni quanto il cron di sistema fa girare gli eventi WP-Cron scaduti.
+# E' anche il ritardo massimo con cui esce un post programmato.
+wordpress_cron_minute: "*/5"
