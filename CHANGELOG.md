@@ -50,6 +50,24 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   le foto non sembrano piu' attaccate.
 
 ### Aggiunto
+- **Template newsletter per Mailchimp** (`newsletter/mailchimp-template.html`,
+  caricato sull'account `us18` come *Newsletter Roma Club Matera*):
+  intestazione con lo stemma su fondo scuro, filo giallorosso, apertura,
+  blocco notizia **ripetibile** con foto e bottone, riquadro giallo per il
+  prossimo match, bottone principale e pie' di pagina con i link del sito.
+  Sette zone `mc:edit` e un `mc:repeatable`: il contenuto si cambia
+  dall'editor della campagna senza toccare l'HTML. Mailchimp avverte che un
+  template a codice **non torna piu' nel builder drag-and-drop**, ma le zone
+  marcate restano modificabili.
+  L'HTML e' fatto come vogliono le email e non come una pagina web: tabelle,
+  stili inline, colori ripetuti in `bgcolor` **e** in `style` (i client vecchi
+  leggono solo il primo, i nuovi solo il secondo), un blocco `<!--[if mso]>`
+  che rimette Arial - se no da meta' email in poi Outlook passa a Times New
+  Roman - e le due colonne del blocco notizia che si impilano sotto i 620px,
+  perche' su un telefono una foto affiancata al testo gli lascia una colonna
+  di sei caratteri.
+  Il file nel repo e' la copia buona: caricato e riscaricato, ha lo stesso
+  SHA-256.
 - **Pagina Classifica** (`/classifica/`, pagina 1345, nel menu accanto a
   Calendario) con la classifica di Serie A aggiornata ogni mattina dallo stesso
   timer del calendario (`roles/sportspress_fixtures/files/update-standings.php`,
