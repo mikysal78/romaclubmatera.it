@@ -6,7 +6,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-27
+
 ### Sicurezza
+
 - **Aggiornati i tre temi di default inattivi**: `twentytwentytwo` 2.1 -> 2.2,
   `twentytwentythree` 1.6 -> 1.7, `twentytwentyfour` 1.5 -> 1.6. Non sono
   attivi e non toccano l'aspetto del sito, ma restano codice sul disco.
@@ -17,6 +20,7 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   cambiata.
 
 ### Modificato
+
 - **Il bottone della notizia nella newsletter ora si puo' modificare**
   (`newsletter/mailchimp-template.html`, zona `mc:edit="notizia_bottone"`).
   Prima il bottone stava **fuori** dalla zona modificabile: si potevano
@@ -72,7 +76,63 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   la sezione ha lo sfondo nero, quindi il vuoto si legge come un bordo nero e
   le foto non sembrano piu' attaccate.
 
+- **Pagina "Direttivo" (ID 236): nome e ruolo sotto la foto.** Il tema mostrava
+  il nome *sopra* la foto e solo al passaggio del mouse (classe `.our-text`,
+  `opacity: 0`, tirata su con `margin-top: -22em` e `offset_y` per breakpoint),
+  quindi da fermo le 12 caselle erano solo foto senza didascalia. Ora per ogni
+  membro: foto, **nome** in bianco 24px sotto la foto e, sotto, una riga di
+  **ruolo/descrizione** (widget testo, classe `our-role`, oro `#e6af14`,
+  maiuscoletto 13px) pronta per essere riscritta dalla redazione. Compilati i
+  ruoli noti dalla pagina *Chi siamo* - Vito Plasmati *Presidente*, Rino Di
+  Gennaro *Vice presidente* - gli altri 10 restano "Membro del direttivo".
+  Rimossi i 12 widget **social-icons**: puntavano tutti a `#` ed erano visibili
+  solo in hover sopra la foto, posizione che il nuovo layout non lascia libera.
+  In *Aspetto > Personalizza > CSS aggiuntivo* il velo oro pieno sull'hover
+  (serviva a far leggere quelle icone) diventa una velatura al 18%, cosi' la
+  foto resta visibile. Portata a `fast` anche qui la dissolvenza d'ingresso,
+  come gia' fatto in home. Backup del layout in
+  `/root/elementor_data_236_backup_20260819-2348.json` sul CT.
+- **Articolo "Iscriversi al Roma Club Matera"** (ID 210): il titolo iniziava in
+  minuscolo e lo slug era ancora quello demo del tema
+  (`/football-is-the-ballet-of-the-masses/`). Ora e'
+  `/iscriversi-al-roma-club-matera/`; il vecchio indirizzo risponde 301 sul nuovo
+  grazie al redirect nativo di WordPress sugli slug storici.
+- **Animazioni d'ingresso della home da "slow" a "fast"** (pagina 12): ogni
+  sezione nasce con `elementor-invisible` (`visibility: hidden`) e compare in
+  dissolvenza entrando nel viewport. Con la durata "slow" (2 s) scorrendo si
+  vedevano bande nere al posto delle sezioni non ancora comparse - "Il Direttivo",
+  che ha una foto di sfondo, sembrava avere lo sfondo nero. Ora `animation_duration`
+  e' `fast` (0,8 s) su tutte e 8 le sezioni animate; lo slider resta senza
+  animazione, com'era in origine.
+- **Immagini del tema portate in locale** (nessun contenuto dipende piu' dal sito
+  demo `themes.webswaala.com`): 40 URL distinte lo referenziavano - 37 avevano
+  gia' il file in `uploads/`, mancavano solo `blog-img-01.jpg` e `blog-img-02.jpg`,
+  scaricati sul CT. Riscritte **227 occorrenze** su tutto il database
+  (`wp search-replace`, 109 in forma normale + 118 con le slash escapate dentro
+  `_elementor_data`, che la prima passata non intercetta). Toccava anche link a
+  pagine del demo (`?p=194`, `?page_id=239`) e i `guid` di 54 allegati. L'unico
+  contenuto vivo coinvolto oltre alla home era la pagina *Chi siamo* (ID 16).
+  Verificate 84 immagini fra home e Chi siamo, incluse quelle nel CSS generato da
+  Elementor: nessuna rotta. Backup del database prima della sostituzione in
+  `/root/db-pre-webswaala-20260818-2251.sql` sul CT.
+- **Widget "Articoli recenti"** (barra laterale e footer, blocchi
+  `core/latest-posts`): limitati alla categoria *News*, cosi' l'elenco resta
+  quello delle news correnti.
+- **Articoli 206 e 208** ("Grazie di tutto: la serata sociale" e "Dal 2012 a oggi:
+  la storia del Roma Club Matera") messi in bozza su richiesta: `/news/` mostra
+  ora solo Match Day Roma-Fiorentina, Roma-Inter, Iscriviti al Roma Club e
+  La nostra sede.
+- **"Le trasferte dei tifosi" rinominata "Le nostre trasferte"** nella home
+  (Elementor, pagina 12), nella voce di menu 250 e nel titolo della pagina 239.
+  Lo slug `/trasferte/` non cambia.
+
+- **Widget Contatti nel footer**: il link dell'email puntava al segnaposto
+  `mailto:football@gmail.com` pur mostrando `info@romaclubmatera.it` — chi ci
+  cliccava scriveva a un indirizzo inesistente. Corretto il `mailto:`; il numero
+  di telefono, che era un link morto `href="#"`, e' ora un link `tel:`.
+
 ### Aggiunto
+
 - **News "Roma-Atalanta: una notte giallorossa da vivere insieme"** (post 1352,
   slug `/roma-atalanta-5-settembre-2026/`, categoria News): **programmata** per
   lunedi' 31 agosto 2026 alle 21:00, cioe' subito dopo Lecce-Roma. Locandina
@@ -427,63 +487,8 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   verso `/news/`. Backup del layout precedente in
   `/root/elementor_data_12_backup_20260818-2136.json` sul CT.
 
-### Modificato
-- **Pagina "Direttivo" (ID 236): nome e ruolo sotto la foto.** Il tema mostrava
-  il nome *sopra* la foto e solo al passaggio del mouse (classe `.our-text`,
-  `opacity: 0`, tirata su con `margin-top: -22em` e `offset_y` per breakpoint),
-  quindi da fermo le 12 caselle erano solo foto senza didascalia. Ora per ogni
-  membro: foto, **nome** in bianco 24px sotto la foto e, sotto, una riga di
-  **ruolo/descrizione** (widget testo, classe `our-role`, oro `#e6af14`,
-  maiuscoletto 13px) pronta per essere riscritta dalla redazione. Compilati i
-  ruoli noti dalla pagina *Chi siamo* - Vito Plasmati *Presidente*, Rino Di
-  Gennaro *Vice presidente* - gli altri 10 restano "Membro del direttivo".
-  Rimossi i 12 widget **social-icons**: puntavano tutti a `#` ed erano visibili
-  solo in hover sopra la foto, posizione che il nuovo layout non lascia libera.
-  In *Aspetto > Personalizza > CSS aggiuntivo* il velo oro pieno sull'hover
-  (serviva a far leggere quelle icone) diventa una velatura al 18%, cosi' la
-  foto resta visibile. Portata a `fast` anche qui la dissolvenza d'ingresso,
-  come gia' fatto in home. Backup del layout in
-  `/root/elementor_data_236_backup_20260819-2348.json` sul CT.
-- **Articolo "Iscriversi al Roma Club Matera"** (ID 210): il titolo iniziava in
-  minuscolo e lo slug era ancora quello demo del tema
-  (`/football-is-the-ballet-of-the-masses/`). Ora e'
-  `/iscriversi-al-roma-club-matera/`; il vecchio indirizzo risponde 301 sul nuovo
-  grazie al redirect nativo di WordPress sugli slug storici.
-- **Animazioni d'ingresso della home da "slow" a "fast"** (pagina 12): ogni
-  sezione nasce con `elementor-invisible` (`visibility: hidden`) e compare in
-  dissolvenza entrando nel viewport. Con la durata "slow" (2 s) scorrendo si
-  vedevano bande nere al posto delle sezioni non ancora comparse - "Il Direttivo",
-  che ha una foto di sfondo, sembrava avere lo sfondo nero. Ora `animation_duration`
-  e' `fast` (0,8 s) su tutte e 8 le sezioni animate; lo slider resta senza
-  animazione, com'era in origine.
-- **Immagini del tema portate in locale** (nessun contenuto dipende piu' dal sito
-  demo `themes.webswaala.com`): 40 URL distinte lo referenziavano - 37 avevano
-  gia' il file in `uploads/`, mancavano solo `blog-img-01.jpg` e `blog-img-02.jpg`,
-  scaricati sul CT. Riscritte **227 occorrenze** su tutto il database
-  (`wp search-replace`, 109 in forma normale + 118 con le slash escapate dentro
-  `_elementor_data`, che la prima passata non intercetta). Toccava anche link a
-  pagine del demo (`?p=194`, `?page_id=239`) e i `guid` di 54 allegati. L'unico
-  contenuto vivo coinvolto oltre alla home era la pagina *Chi siamo* (ID 16).
-  Verificate 84 immagini fra home e Chi siamo, incluse quelle nel CSS generato da
-  Elementor: nessuna rotta. Backup del database prima della sostituzione in
-  `/root/db-pre-webswaala-20260818-2251.sql` sul CT.
-- **Widget "Articoli recenti"** (barra laterale e footer, blocchi
-  `core/latest-posts`): limitati alla categoria *News*, cosi' l'elenco resta
-  quello delle news correnti.
-- **Articoli 206 e 208** ("Grazie di tutto: la serata sociale" e "Dal 2012 a oggi:
-  la storia del Roma Club Matera") messi in bozza su richiesta: `/news/` mostra
-  ora solo Match Day Roma-Fiorentina, Roma-Inter, Iscriviti al Roma Club e
-  La nostra sede.
-- **"Le trasferte dei tifosi" rinominata "Le nostre trasferte"** nella home
-  (Elementor, pagina 12), nella voce di menu 250 e nel titolo della pagina 239.
-  Lo slug `/trasferte/` non cambia.
-
-- **Widget Contatti nel footer**: il link dell'email puntava al segnaposto
-  `mailto:football@gmail.com` pur mostrando `info@romaclubmatera.it` — chi ci
-  cliccava scriveva a un indirizzo inesistente. Corretto il `mailto:`; il numero
-  di telefono, che era un link morto `href="#"`, e' ora un link `tel:`.
-
 ### Rimosso
+
 - **Sezione Eventi**: i 24 articoli storici (ID 1238-1261) sono nel cestino, la
   voce di menu 249 e la categoria *Eventi* (term 32) sono eliminate,
   `/category/eventi/` risponde 404. Le 219 foto restano nella libreria media su
@@ -616,6 +621,7 @@ in Proxmox, con HTTPS valido.
 - `vars.yml` e `vault.yml` sono esclusi dal repo: si creano dai rispettivi `.example`.
 - Dipendenze Galaxy installate in `galaxy_roles/` e `collections/` (non versionate).
 
+[1.2.0]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.2.0
 [1.1.0]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.1.0
 [1.0.3]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.0.3
 [1.0.2]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.0.2
