@@ -50,6 +50,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   le foto non sembrano piu' attaccate.
 
 ### Aggiunto
+- **News "Lecce-Roma: ovunque saremo, sara' solo Roma"** (post 1349, slug
+  `/lecce-roma-31-agosto-2026/`, categoria News): locandina Match Day
+  (allegato 1348) con didascalia e testo alternativo, foto di trasferta in
+  evidenza e blocco contatti col telefono e la mail cliccabili - stessa
+  impaginazione dei due match day gia' pubblicati.
+  La prima versione della locandina dava la partita di **domenica** 31 agosto:
+  il 31 agosto 2026 e' un **lunedi'**, come dicono il calendario della Lega e
+  il testo dell'articolo. Il post e' rimasto in bozza finche' non e' arrivata
+  la locandina corretta, che nel frattempo ha aggiunto anche la riga
+  dell'apertura sede (18:00) accanto al fischio d'inizio (18:30).
 - **Template newsletter per Mailchimp** (`newsletter/mailchimp-template.html`,
   caricato sull'account `us18` come *Newsletter Roma Club Matera*):
   intestazione con lo stemma su fondo scuro, filo giallorosso, apertura,
