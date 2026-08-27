@@ -55,7 +55,11 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   e' proprio cio' che si legge nell'elenco di `/news/`, quindi in vetrina
   c'era il titolo di una partita e il sommario di un'altra. Data verificata
   su football-data (giornata 5) e sull'evento SportsPress 813 prima di
-  riscriverlo.
+  riscriverlo. Tolto anche **"prima"** dal titolo: l'articolo e' del 14
+  agosto, ma nel frattempo e' uscita la news del Lecce in cui una parte del
+  Club va in trasferta il 31, quindi quella di Roma-Inter non e' piu' la
+  prima. Slug lasciato invariato
+  (`trasferta-roma-inter-19-settembre-2026`), cosi' il link non si rompe.
 
 - **Andata e ritorno non si scambiano piu'.** I due turni di una
   eliminatoria hanno le stesse due squadre a sei giorni di distanza: la
