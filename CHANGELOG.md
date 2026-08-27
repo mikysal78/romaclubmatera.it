@@ -6,6 +6,20 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Aggiunto
+
+- **Template Mailchimp per il tesseramento**
+  (`newsletter/mailchimp-tesseramento.html`), caricato sull'account come
+  *Tesseramento Roma Club Matera*. Struttura diversa dalla newsletter,
+  perche' diverso e' il compito: una sola cosa da chiedere, e la si chiede
+  subito. Foto della sede a tutta larghezza, fascia rossa col titolo, i
+  quattro vantaggi presi dall'articolo "Iscriversi al Roma Club Matera",
+  il riquadro della quota, il bottone al modulo JotForm e i tre passi
+  dell'iscrizione. Dieci zone `mc:edit`, nessun blocco ripetibile.
+  L'importo e' lasciato a `€ 00,00` con sotto la riga "Importo da inserire
+  prima dell'invio": un segnaposto che si nota, invece di una cifra
+  inventata che potrebbe partire cosi' com'e'.
+
 ## [1.2.0] - 2026-08-27
 
 ### Sicurezza

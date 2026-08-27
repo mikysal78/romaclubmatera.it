@@ -547,15 +547,19 @@ Le email al gruppo non partono dal sito ma da **Mailchimp** (account `us18`,
 mittente `info@romaclubmatera.it`). Il sito raccoglie solo gli iscritti, con
 il modulo nel piè di pagina.
 
-Il template dell'email sta nel repo in
-[`newsletter/`](newsletter/README.md) ed è caricato su Mailchimp come
-**Newsletter Roma Club Matera**.
+I template stanno nel repo in [`newsletter/`](newsletter/README.md) e sono
+caricati su Mailchimp con questi nomi:
+
+- **Newsletter Roma Club Matera** — la newsletter ricorrente;
+- **Tesseramento Roma Club Matera** — la campagna soci, con la foto di
+  apertura, i vantaggi, la quota e il bottone al modulo di iscrizione.
 
 ### Mandare una newsletter
 
 1. Mailchimp → **Campagne** → *Crea* → **Email**.
 2. Alla voce *Contenuto* → **Modifica design** → scheda **Salvati** →
-   scegliere *Newsletter Roma Club Matera*.
+   scegliere il template: *Newsletter Roma Club Matera* per le novità,
+   *Tesseramento Roma Club Matera* per la campagna soci.
 3. Cliccare dentro i blocchi per cambiare il testo. Il blocco della notizia
    si **duplica**: una copia per ogni cosa da raccontare. Quello che si può
    modificare, zona per zona, è elencato in
@@ -572,6 +576,8 @@ Il template dell'email sta nel repo in
 
 - **L'invio non si annulla.** Non c'è un "richiama": una volta partita è
   partita, e sbagliare un nome o una data si vede.
+- Nel template del tesseramento **la quota è un segnaposto** (`€ 00,00`):
+  va sostituita con l'importo vero prima di inviare.
 - **Gli iscritti devono confermare.** L'iscrizione dal sito è a doppia
   conferma: chi non clicca il link che riceve per email **non entra nella
   lista** e non riceverà mai niente. Se qualcuno dice di essersi iscritto e
