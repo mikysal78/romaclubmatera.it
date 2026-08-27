@@ -47,6 +47,42 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **SEO: quattro problemi trovati con un controllo su tutte e 21 le pagine
+  pubblicate.**
+  - *La home non aveva un H1 e si intitolava "Home".* Il titolo ora e'
+    "Roma Club Matera Francesco Totti - Romanisti in Basilicata" (58
+    caratteri) e il titolo grande in cima alla pagina e' passato da `h2` a
+    `h1`. La misura del carattere su desktop la dava il tema in base al
+    tag, percio' e' stata fissata a 50px/600 dentro il widget: verificato
+    con `visual-check` che l'aspetto non cambi.
+  - *Otto pagine erano senza meta description* (classifica, recensioni,
+    la nostra rete, sponsor, store, regolamento, statuto e la news del
+    Lecce): senza, Google si inventa il riassunto pescando frasi a caso.
+    Scritte tutte, fra 135 e 148 caratteri.
+  - *I titoli erano troppo lunghi* perche' Yoast appendeva il nome del
+    sito per intero, 35 caratteri su un budget di 60. Il suffisso nei
+    modelli e' ora "Roma Club Matera": 16 caratteri in meno su ogni
+    pagina. Al post piu' lungo (194, 121 caratteri) e' stato dato un
+    titolo SEO su misura, senza toccare il titolo dell'articolo: 121 ->
+    69.
+  - *Non c'era un'immagine social predefinita*, quindi nove pagine
+    condivise su WhatsApp o Facebook uscivano senza figura. Impostata la
+    foto dei soci sugli spalti con lo striscione del Club (allegato 653,
+    2048x1152).
+
+  Restano fuori misura quattro titoli di articoli (61-77 caratteri): sono
+  lunghi di loro, e la parte che conta sta all'inizio, dove non viene
+  tagliata. Le copie di sicurezza delle opzioni Yoast e dei dati Elementor
+  della home sono in `/root/seo-backup/` sul server.
+
+  Nota su una cosa che il primo controllo aveva segnalato a torto: le 21
+  immagini "senza alt" della classifica hanno `alt=""` **esplicito**, che
+  per uno stemma accanto al nome della squadra e' la scrittura giusta - un
+  lettore di schermo direbbe altrimenti il nome due volte. Stesso discorso
+  per il `noindex` su store, regolamento, statuto e la nostra rete: sono
+  pagine che dicono "sta arrivando", quindi tenerle fuori dall'indice e'
+  corretto.
+
 - **L'estratto della news "Roma-Inter" parlava di un'altra partita**
   (post 202). Titolo, testo, slug, locandina e meta description dicevano
   tutti la stessa cosa - Roma-Inter all'Olimpico, sabato 19 settembre 2026
