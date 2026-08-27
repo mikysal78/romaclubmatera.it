@@ -47,6 +47,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **L'estratto della news "Roma-Inter" parlava di un'altra partita**
+  (post 202). Titolo, testo, slug, locandina e meta description dicevano
+  tutti la stessa cosa - Roma-Inter all'Olimpico, sabato 19 settembre 2026
+  alle 18:00, con bus A/R e biglietteria - ma il `post_excerpt` era rimasto
+  quello del Lecce: "Il 31 agosto la Roma gioca al Via del Mare". L'estratto
+  e' proprio cio' che si legge nell'elenco di `/news/`, quindi in vetrina
+  c'era il titolo di una partita e il sommario di un'altra. Data verificata
+  su football-data (giornata 5) e sull'evento SportsPress 813 prima di
+  riscriverlo.
+
 - **Andata e ritorno non si scambiano piu'.** I due turni di una
   eliminatoria hanno le stesse due squadre a sei giorni di distanza: la
   ricerca per data li vedeva identici e si arrendeva, e la guardia
