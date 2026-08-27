@@ -60,6 +60,13 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   Club va in trasferta il 31, quindi quella di Roma-Inter non e' piu' la
   prima. Slug lasciato invariato
   (`trasferta-roma-inter-19-settembre-2026`), cosi' il link non si rompe.
+  Sistemata anche la riga di chiusura, che ripeteva la stessa cosa: da
+  "la prima grande trasferta della stagione" a "la prima trasferta
+  **organizzata** della stagione". La distinzione e' quella vera e non
+  invecchia: a Lecce "una parte dei membri sara' presente" per conto
+  proprio, per Fiorentina e Atalanta si apre la sede (con alcuni tesserati
+  all'Olimpico da se'), mentre Roma-Inter e' la prima con bus A/R e
+  biglietteria messi dal Club.
 
 - **Andata e ritorno non si scambiano piu'.** I due turni di una
   eliminatoria hanno le stesse due squadre a sei giorni di distanza: la
