@@ -8,6 +8,9 @@ After=network-online.target
 Type=oneshot
 User={{ sportspress_fixtures_wp_user }}
 Group={{ sportspress_fixtures_wp_user }}
+# Prima si creano gli eventi che ancora non ci sono (le coppe escono a
+# sorteggio fatto), poi si aggiornano orari e risultati di tutti.
+ExecStart={{ sportspress_fixtures_wp_cli }} eval-file {{ sportspress_fixtures_script_dir }}/create-fixtures.php --path={{ sportspress_fixtures_wp_path }}
 ExecStart={{ sportspress_fixtures_wp_cli }} eval-file {{ sportspress_fixtures_script_dir }}/update-fixtures.php --path={{ sportspress_fixtures_wp_path }}
 ExecStart={{ sportspress_fixtures_wp_cli }} eval-file {{ sportspress_fixtures_script_dir }}/update-standings.php --path={{ sportspress_fixtures_wp_path }}
 Nice=10

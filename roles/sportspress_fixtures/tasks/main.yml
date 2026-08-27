@@ -25,6 +25,7 @@
     mode: "0644"
   loop:
     - sp-lib.php
+    - create-fixtures.php
     - update-fixtures.php
     - update-standings.php
 

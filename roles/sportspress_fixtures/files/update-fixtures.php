@@ -170,6 +170,15 @@ function rcm_per_giornata( $day, $league_slug, $season_slug, $usati ) {
 					'key'   => 'sp_day',
 					'value' => $day,
 				),
+				// Chi ha l'identificativo si abbina per quello, e se non
+				// e' stato trovato per identificativo non e' questo match.
+				// Senza questa esclusione la "giornata 1" del girone
+				// pescherebbe l'andata di un turno a eliminazione, che ha
+				// sp_day 1 pure lei.
+				array(
+					'key'     => RCM_META_MATCH_ID,
+					'compare' => 'NOT EXISTS',
+				),
 			),
 			'tax_query'      => rcm_tax_query( $league_slug, $season_slug ),
 		)
@@ -204,6 +213,12 @@ function rcm_per_data( $m, $league_slug, $season_slug, $tz, $giorni, $usati ) {
 			'posts_per_page' => -1,
 			'no_found_rows'  => true,
 			'post__not_in'   => $usati,
+			'meta_query'     => array(
+				array(
+					'key'     => RCM_META_MATCH_ID,
+					'compare' => 'NOT EXISTS',
+				),
+			),
 			'date_query'     => array(
 				array(
 					'after'     => $local->modify( "-$giorni days" )->format( 'Y-m-d H:i:s' ),
@@ -310,8 +325,14 @@ function rcm_competizione( $nome, $c, $token, $team_id, $do_results, $tz, &$stat
 		$per_giornata = 'data' !== $abbinamento && '' !== $day
 			&& ( 'giornata' === $abbinamento || in_array( $stage, $fasi, true ) );
 
-		$ev = null;
-		if ( $per_giornata ) {
+		// Prima di tutto l'identificativo del match, se l'evento ce l'ha:
+		// e' l'unico abbinamento che non deve indovinare. Andata e ritorno
+		// di uno stesso turno hanno le stesse due squadre a sei giorni di
+		// distanza, e per data sono indistinguibili: ognuno dei due
+		// pareggia col fratello e la ricerca per data si arrende.
+		$ev = rcm_evento_per_match_id( (int) ( $m['id'] ?? 0 ), $usati );
+
+		if ( ! $ev && $per_giornata ) {
 			$ev = rcm_per_giornata( $day, $league_slug, $season_slug, $usati );
 
 			$nomi = array( $m['homeTeam']['shortName'], $m['awayTeam']['shortName'] );

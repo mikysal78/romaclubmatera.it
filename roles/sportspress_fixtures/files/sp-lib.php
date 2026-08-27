@@ -1,12 +1,47 @@
 <?php
 /**
- * Funzioni condivise fra update-fixtures.php e update-standings.php.
+ * Funzioni condivise fra create-fixtures.php, update-fixtures.php e
+ * update-standings.php.
  *
- * Entrambi leggono la stessa config e devono abbinare le squadre della API
- * a quelle di WordPress allo stesso modo: se le due cose divergessero, il
- * calendario e la classifica potrebbero attribuire lo stesso match o lo
+ * Tutti e tre leggono la stessa config e devono abbinare le squadre della
+ * API a quelle di WordPress allo stesso modo: se le tre cose divergessero,
+ * il calendario e la classifica potrebbero attribuire lo stesso match o lo
  * stesso punteggio a squadre diverse.
  */
+
+/**
+ * Meta in cui si tiene l'identificativo del match su football-data.
+ *
+ * Lo scrive create-fixtures.php quando crea (o riconosce) un evento, e lo
+ * rilegge update-fixtures.php: è l'unico abbinamento che non deve
+ * indovinare niente.
+ */
+const RCM_META_MATCH_ID = '_rcm_fd_match_id';
+
+/**
+ * L'evento marcato con un certo match della API.
+ *
+ * @param int   $match_id ID del match su football-data.
+ * @param array $esclusi  ID di eventi già usati in questo giro.
+ * @return WP_Post|null
+ */
+function rcm_evento_per_match_id( $match_id, $esclusi = array() ) {
+	if ( ! $match_id ) {
+		return null;
+	}
+
+	$posts = get_posts(
+		array(
+			'post_type'      => 'sp_event',
+			'posts_per_page' => 1,
+			'post_status'    => 'any',
+			'post__not_in'   => $esclusi,
+			'meta_key'       => RCM_META_MATCH_ID,
+			'meta_value'     => (string) $match_id,
+		)
+	);
+	return $posts ? $posts[0] : null;
+}
 
 /**
  * Legge la config (ini con sezioni) e verifica che ci sia il token.

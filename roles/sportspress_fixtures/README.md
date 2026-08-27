@@ -1,17 +1,23 @@
 # Ruolo `sportspress_fixtures`
 
-Aggiorna ogni giorno data/ora **e risultati** degli eventi SportsPress
-(sp_event) e le **classifiche** (sp_table) del sito, interrogando la API di
+Crea gli eventi SportsPress mancanti, ne aggiorna ogni giorno data/ora **e
+risultati**, e riempie le **classifiche** (sp_table), interrogando la API di
 football-data.org (gratuita, tier ONE), per **una o più competizioni**.
 
-Due script sullo stesso timer, con le funzioni in comune (config, chiamate
-API, abbinamento dei nomi delle squadre) in `sp-lib.php`: se calendario e
-classifica abbinassero i nomi in modo diverso potrebbero attribuire lo
-stesso punteggio a squadre diverse.
+Tre script sullo stesso timer, con le funzioni in comune (config, chiamate
+API, abbinamento dei nomi delle squadre) in `sp-lib.php`: se i tre
+abbinassero i nomi in modo diverso potrebbero attribuire lo stesso
+punteggio a squadre diverse.
+
+| Script | Cosa fa |
+| --- | --- |
+| `create-fixtures.php` | crea gli eventi che non ci sono ancora, e le squadre avversarie che mancano |
+| `update-fixtures.php` | scrive data, ora e risultato sugli eventi esistenti |
+| `update-standings.php` | riempie le classifiche |
 
 ## Come funziona
 
-- Script PHP eseguito via `wp eval-file` come `www-data` da un systemd
+- Script PHP eseguiti via `wp eval-file` come `www-data` da un systemd
   timer (`sp-fixtures-update.timer`, default 07:15 + ritardo casuale ≤15').
 - Una chiamata alla API per competizione, poi ogni match viene abbinato a
   un evento WordPress dentro la league/season configurate.
@@ -29,9 +35,50 @@ stesso punteggio a squadre diverse.
   ancora in stato `future` lo pubblica, altrimenti il risultato resterebbe
   invisibile.
 
+### Creazione degli eventi
+
+Il campionato esce tutto a luglio e i suoi 38 eventi si caricano una volta
+sola. Le coppe no: il sorteggio della fase campionato arriva a fine agosto
+e i turni a eliminazione si conoscono uno alla volta, a mesi di distanza.
+Per quelle c'è `create-fixtures.php`, che crea gli eventi appena la API li
+pubblica — e con essi le squadre avversarie che sul sito non ci sono,
+stemma compreso.
+
+**È spento di default e si accende per competizione** con `crea: true`.
+Sulla Serie A resta spento apposta: gli eventi ci sono già, con date della
+Lega che possono distare settimane da quelle della API, e un abbinamento
+mancato non sovrascriverebbe l'evento esistente — ne creerebbe un secondo,
+mettendo la stessa partita due volte in calendario.
+
+Ogni evento creato si porta dietro l'identificativo del match nella API
+(meta `_rcm_fd_match_id`). Non è un dettaglio: è ciò che permette di
+riconoscerlo al giro dopo senza somiglianze, ed è **l'unico modo di
+distinguere andata e ritorno** di un turno a eliminazione, che hanno le
+stesse due squadre a sei giorni di distanza. Per gli eventi creati altrove
+c'è una seconda rete: se nella stessa lega e stagione ce n'è già uno vicino
+di data **e con le squadre nel verso giusto**, lo si marca invece di
+crearne un altro.
+
+Se una squadra esiste già in un'altra competizione — la Roma sta in Serie
+A, l'Atalanta pure — non se ne fa una copia: le si aggiungono la lega e la
+stagione nuove. Due post per la stessa squadra vorrebbero dire due righe in
+classifica e lo stemma mancante metà delle volte.
+
+Per vedere cosa farebbe senza che scriva niente:
+
+```sh
+sudo -u www-data env SP_CREA_DRY=1 wp eval-file \
+  /usr/local/lib/sp-fixtures/create-fixtures.php --path=/var/www/<dominio>
+```
+
 ### Come si abbina un match al suo evento
 
-Due modi, perché non ne basta uno:
+Prima di tutto per **identificativo**, se l'evento ce l'ha: è l'unico
+abbinamento che non deve indovinare. Gli eventi che ce l'hanno sono esclusi
+dai due modi qui sotto — se non sono stati trovati per identificativo, quel
+match non è il loro.
+
+Poi, per gli eventi caricati a mano, due modi, perché non ne basta uno:
 
 | `abbinamento` | Come trova l'evento |
 | --- | --- |
@@ -162,7 +209,13 @@ sportspress_fixtures_competizioni:
   - nome: "Champions League"
     fd_competition: "CL"
     sp_league: "champions-league"
+    crea: true          # gli eventi li crea lo script, a sorteggio fatto
+    classifica: false   # 36 squadre in tabella, sul sito solo nove
 ```
+
+Prima di accendere `crea` per una competizione devono esistere il termine
+`sp_league` e il termine `sp_season` indicati: lo script non li inventa, e
+se mancano lo scrive nel log e passa oltre.
 
 `fd_season` e `sp_season` si possono mettere per competizione, ma di norma
 si lasciano ai valori generali: a inizio stagione nuova si aggiornano solo
@@ -194,5 +247,7 @@ systemctl start sp-fixtures-update.service   # esecuzione manuale
 journalctl -u sp-fixtures-update.service -n 50
 ```
 
-Il servizio lancia i due script in fila: prima il calendario, poi le
-classifiche.
+Il servizio lancia i tre script in fila: prima si creano gli eventi
+mancanti, poi si scrivono orari e risultati, infine le classifiche.
+L'ordine conta: un evento creato oggi deve poter ricevere il suo risultato
+nello stesso giro.

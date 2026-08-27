@@ -104,7 +104,7 @@ wordpress-trixie-ansible/
     ├── letsencrypt/          # certbot: emissione + rinnovo automatico HTTPS
     ├── wordpress/            # WP-CLI: download, config, install, redis plugin, mu-plugin
     ├── phpmyadmin/           # phpMyAdmin protetto
-    ├── sportspress_fixtures/ # calendario partite da football-data.org
+    ├── sportspress_fixtures/ # calendario, risultati e classifiche da football-data.org
     └── backup/               # directory + script + cron
 ```
 

@@ -8,6 +8,31 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Gli eventi delle coppe se li crea lo script**
+  (`roles/sportspress_fixtures/files/create-fixtures.php`). Fino a ieri il
+  ruolo sapeva solo *aggiornare* eventi che dovevano gia' esserci: per la
+  Serie A va bene, il calendario esce tutto a luglio e si carica una volta
+  sola, ma una coppa no. Il sorteggio della fase campionato arriva a fine
+  agosto e i turni a eliminazione si conoscono uno alla volta, a mesi di
+  distanza: senza qualcosa che li crei, ogni turno andava inserito a mano
+  indovinando gli stessi nomi che poi update-fixtures cerca.
+  Lo script crea anche le squadre avversarie mancanti, con lo stemma preso
+  dalla API, e se una squadra c'e' gia' in un'altra competizione le
+  aggiunge lega e stagione invece di duplicarla.
+  Spento di default, si accende per competizione con `crea: true`: sulla
+  Serie A resta spento apposta, perche' un abbinamento mancato non
+  sovrascriverebbe l'evento esistente ma ne creerebbe un secondo.
+  `SP_CREA_DRY=1` fa vedere cosa farebbe senza scrivere niente.
+
+- **Champions League configurata** (`crea: true`, `classifica: false`) e
+  termine `sp_league` creato sul sito insieme al calendario dedicato
+  (post 1353). La Roma e' arrivata terza in Serie A 2025/26 e va ai gironi;
+  football-data non ha ancora aperto la stagione 2026/27 della coppa, e
+  fino ad allora lo script lo scrive nel log e passa oltre. La classifica
+  resta spenta perche' la fase campionato e' una tabella da 36 squadre e
+  sul sito ci sono solo la Roma e le sue otto avversarie: verrebbe una
+  classifica di nove righe, cioe' una cosa sbagliata detta con sicurezza.
+
 - **Template Mailchimp per il tesseramento**
   (`newsletter/mailchimp-tesseramento.html`), caricato sull'account come
   *Tesseramento Roma Club Matera*. Struttura diversa dalla newsletter,
@@ -19,6 +44,24 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   L'importo e' lasciato a `€ 00,00` con sotto la riga "Importo da inserire
   prima dell'invio": un segnaposto che si nota, invece di una cifra
   inventata che potrebbe partire cosi' com'e'.
+
+### Corretto
+
+- **Andata e ritorno non si scambiano piu'.** I due turni di una
+  eliminatoria hanno le stesse due squadre a sei giorni di distanza: la
+  ricerca per data li vedeva identici e si arrendeva, e la guardia
+  anti-doppioni di create-fixtures scambiava il ritorno per l'andata,
+  cosi' il ritorno non veniva mai creato. Ora gli eventi creati portano
+  l'identificativo del match della API (`_rcm_fd_match_id`) e si abbinano
+  per quello; la guardia anti-doppioni controlla anche **chi gioca in
+  casa**, leggendolo dall'ordine dei meta `sp_team`.
+- **La "giornata 1" non pesca piu' un'andata di ottavi.** Negli
+  eliminatori `sp_day` vale 1 o 2 (andata e ritorno) e collideva con le
+  prime due giornate del girone; il controllo sul titolo non bastava a
+  fermarlo, perche' basta che una delle due squadre compaia. Gli eventi
+  che hanno l'identificativo sono ora esclusi dalla ricerca per giornata e
+  da quella per data: se non sono stati trovati per identificativo, quel
+  match non e' il loro.
 
 ## [1.2.0] - 2026-08-27
 

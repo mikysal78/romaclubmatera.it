@@ -22,4 +22,7 @@ FASI_GIORNATA="{{ c.fasi_giornata }}"
 {% if c.classifica is defined %}
 CLASSIFICA="{{ c.classifica | ternary(1, 0) }}"
 {% endif %}
+{% if c.crea is defined %}
+CREA="{{ c.crea | ternary(1, 0) }}"
+{% endif %}
 {% endfor %}

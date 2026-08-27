@@ -25,6 +25,7 @@ sportspress_fixtures_results: true
 #   giorni         ampiezza della finestra per l'abbinamento per data (7)
 #   fasi_giornata  fasi in cui la giornata identifica il match
 #   classifica     false per non riempirne la classifica (default: true)
+#   crea           true per creare gli eventi mancanti (default: false)
 #
 # "auto" usa la giornata (meta sp_day) nelle fasi a girone e la data nelle
 # fasi a eliminazione, dove la giornata NON identifica il match: in
@@ -34,13 +35,22 @@ sportspress_fixtures_competizioni:
   - nome: "Serie A"
     fd_competition: "SA"
     sp_league: "serie-a"
+    # I 38 eventi ci sono gia' con le date della Lega: creare qui vorrebbe
+    # dire rischiare doppioni, non colmare un buco.
+    crea: false
 
-  # Da riattivare quando esce il sorteggio della fase campionato: fino ad
-  # allora la API non ha match e lo script si limita a scriverlo nel log.
-  # Serve prima il termine sp_league "Champions League" e gli eventi.
-  # - nome: "Champions League"
-  #   fd_competition: "CL"
-  #   sp_league: "champions-league"
+  - nome: "Champions League"
+    fd_competition: "CL"
+    sp_league: "champions-league"
+    # Il sorteggio della fase campionato esce a fine agosto e i turni a
+    # eliminazione uno alla volta: gli eventi li crea lo script, appena la
+    # API li pubblica. Fino ad allora scrive nel log che non c'e' niente.
+    crea: true
+    # Nella fase campionato la classifica e' una sola tabella da 36
+    # squadre, ma sul sito ci sono solo la Roma e le sue otto avversarie:
+    # verrebbe una classifica di nove righe, cioe' una cosa sbagliata
+    # detta con sicurezza. Meglio niente.
+    classifica: false
 
 # Installazione WordPress (riusa le variabili del progetto)
 sportspress_fixtures_wp_path: "{{ wp_root | default('/var/www/' ~ wp_domain) }}"
