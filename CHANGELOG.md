@@ -8,6 +8,25 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Indirizzo, telefono, email e anno di fondazione nei dati strutturati**
+  (`roles/wordpress/files/rcm-schema-club.php`). Il nodo Organization che
+  Yoast stampa in ogni pagina diceva solo nome, sito e logo: ai motori di
+  ricerca il Club era un nome senza un posto nel mondo.
+  Il tipo resta `Organization` e basta. La tentazione era `SportsClub`, ma
+  in schema.org quello e' un *luogo dove si pratica sport*, e un club di
+  tifosi non lo e': sarebbe stata una parola in piu' e un'informazione
+  sbagliata.
+
+- **Privacy policy: sezione sugli auguri di compleanno.** L'informativa non
+  diceva che il Club tiene un'anagrafica dei soci sul sito ne' che la data
+  di nascita serve a mandare gli auguri, e da oggi c'e' di mezzo anche il
+  numero di cellulare per WhatsApp. Aggiunta la sezione, la voce
+  nell'elenco dei dati trattati, la finalita' con la sua base giuridica
+  (legittimo interesse, art. 6.1.f, con diritto di opposizione) e la riga
+  sulla conservazione. La parte newsletter era gia' completa - dati,
+  consenso, Mailchimp col trasferimento negli Stati Uniti - e il report
+  settimanale non aggiunge destinatari: e' il Club che scrive a se' stesso.
+
 - **Report settimanale della newsletter**
   (`roles/wordpress/files/rcm-newsletter-report.php`). Ogni lunedi' alle
   9:00 arriva a `info@romaclubmatera.it` il punto sugli iscritti: quanti
@@ -132,6 +151,43 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **SEO: il logo nel footer pesava 1 MB, scaricato in ogni pagina.**
+  `footer-logo-2.svg` non era un disegno vettoriale: era un PNG da
+  4000x5200 pixel impacchettato dentro un SVG, mostrato a 90x117. Ora
+  dentro c'e' un PNG da 270x352: il file passa da 1077 KB a 141 KB e la
+  home da 7,3 a 6,4 MB. Geometria dell'SVG e nome del file invariati,
+  quindi nessun riferimento da aggiornare; l'originale e' in
+  `/root/seo-backup/` sul server.
+  Un primo tentativo riduceva i colori a 128 e scendeva a 72 KB, ma
+  ingrandendo il confronto si vedeva la palette sui bordi e sui gradienti:
+  su un logo, che e' l'identita' del Club, non vale i 70 KB risparmiati.
+  Resta una differenza di circa il 3% dei pixel del logo, che non dipende
+  dalla compressione ma dal ridimensionamento: il browser rasterizza a
+  90 px partendo da 270 invece che da 4000, e l'antialiasing sui bordi
+  cade un filo diverso. Alla dimensione a cui si vede, le due versioni
+  sono indistinguibili.
+
+- **SEO: pagine sottili e doppioni fuori dall'indice.** Le pagine evento di
+  SportsPress (un tabellone e poco altro), gli archivi dei tag e l'archivio
+  di categoria erano indicizzabili. Quest'ultimo era il caso peggiore:
+  `/category/news/` e `/news/` mostravano gli stessi articoli con due
+  indirizzi diversi, cioe' due pagine che si facevano concorrenza da sole.
+  Ora sono tutte `noindex` e Yoast le ha tolte da se' dalla mappa del sito,
+  che passa da 24 a 18 indirizzi: meno pagine, ma tutte con qualcosa da
+  dire.
+
+- **SEO: il profilo Facebook nei dati strutturati era quello sbagliato.**
+  In `sameAs` finiva un indirizzo `profile.php?id=...`, cioe' un profilo
+  personale, mentre nel footer il Club pubblica
+  `facebook.com/romaclubmatera`. Instagram non c'era proprio. Ora
+  coincidono con quelli veri.
+
+- **SEO: cinque titoli oltre i 60 caratteri** venivano tagliati nei
+  risultati di ricerca. Riscritti come titolo SEO su misura, senza toccare
+  il titolo degli articoli. Tre articoli avevano la description mancante o
+  oltre i 160 caratteri: riscritte. Il controllo su tutte le pagine ora da'
+  18 su 18 con titolo nella misura, description, og:image e un solo H1.
 
 - **Dalle 22 in poi i compleanni scivolavano al giorno dopo.**
   `current_time( 'timestamp' )` restituisce un timestamp col fuso gia'

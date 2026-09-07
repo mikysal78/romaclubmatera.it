@@ -326,6 +326,17 @@
     group: www-data
     mode: "0644"
 
+# Indirizzo, telefono, email e anno di fondazione dentro il nodo Organization
+# dei dati strutturati: senza, ai motori il Club era un nome e un logo senza un
+# posto nel mondo.
+- name: Installa il mu-plugin dei dati strutturati del Club
+  ansible.builtin.copy:
+    src: rcm-schema-club.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-schema-club.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Il CSS su misura del sito stava in "Aspetto > Personalizza > CSS aggiuntivo",
 # cioe' dentro il database: un ripristino da zero se lo perdeva. Ora e' un file
 # del tema figlio, versionato qui. Il tema figlio pero' arriva con
