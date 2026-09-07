@@ -420,8 +420,11 @@ repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
 | `rcm-sponsor-hero.php` | `wordpress` | la frase in romanesco nell'hero della pagina Sponsor |
 | `rcm-link-social.php` | `wordpress` | apre i pulsanti social in una scheda nuova invece di sostituire la pagina |
 | `rcm-newsletter-report.php` | `wordpress` | report settimanale via email degli iscritti alla newsletter |
-| `rcm-enqueue-custom-css.php` | `wordpress` | stampa il CSS su misura del tema figlio su `wp_head` |
 | `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
+
+`rcm-enqueue-custom-css.php`, che sta nella stessa cartella, **non** è un mu-plugin: è lo
+snippet che il playbook innesta nel `functions.php` del tema figlio (con `blockinfile`) per
+stampare `rcm-custom.css` su `wp_head` a priorità 101, dopo Elementor.
 
 ### 9.1 Auguri di compleanno ai soci (`rcm-compleanni`)
 
