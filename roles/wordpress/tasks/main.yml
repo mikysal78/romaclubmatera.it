@@ -316,6 +316,16 @@
     group: www-data
     mode: "0644"
 
+# Report settimanale degli iscritti alla newsletter. La chiave API di Mailchimp
+# non la chiede: la legge da MC4WP, che ce l'ha gia'.
+- name: Installa il mu-plugin del report newsletter
+  ansible.builtin.copy:
+    src: rcm-newsletter-report.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-newsletter-report.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Il CSS su misura del sito stava in "Aspetto > Personalizza > CSS aggiuntivo",
 # cioe' dentro il database: un ripristino da zero se lo perdeva. Ora e' un file
 # del tema figlio, versionato qui. Il tema figlio pero' arriva con

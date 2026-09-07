@@ -419,6 +419,7 @@ repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
 | `rcm-romanista.php` | `wordpress` | rimando alla prima pagina de *Il Romanista* in fondo al footer |
 | `rcm-sponsor-hero.php` | `wordpress` | la frase in romanesco nell'hero della pagina Sponsor |
 | `rcm-link-social.php` | `wordpress` | apre i pulsanti social in una scheda nuova invece di sostituire la pagina |
+| `rcm-newsletter-report.php` | `wordpress` | report settimanale via email degli iscritti alla newsletter |
 | `rcm-enqueue-custom-css.php` | `wordpress` | stampa il CSS su misura del tema figlio su `wp_head` |
 | `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
 
@@ -493,6 +494,27 @@ Note di funzionamento:
 - niente doppioni: ogni socio ha `ultimo_invio_anno`, quindi più esecuzioni nello stesso
   giorno non rimandano la stessa email;
 - il 29 febbraio, negli anni non bisestili, gli auguri escono il 28.
+
+### 9.2 Report settimanale della newsletter (`rcm-newsletter-report`)
+
+Una volta a settimana (di default lunedì alle 9:00) arriva a `info@romaclubmatera.it` il
+punto sugli iscritti: quanti sono in tutto, chi si è iscritto e chi si è cancellato negli
+ultimi sette giorni, e il confronto con la settimana prima — un numero da solo non dice se
+si sta salendo o scendendo. Si regola da **Impostazioni › Report newsletter**, dove c'è
+anche un pulsante che manda subito il report vero a un indirizzo a scelta, per vederlo
+senza aspettare lunedì.
+
+A differenza del promemoria compleanni, questo **parte anche quando non è successo niente**:
+è un controllo periodico, e il silenzio sarebbe ambiguo — non si saprebbe se la settimana è
+stata vuota o se si è rotto qualcosa.
+
+I dati arrivano dalle API di Mailchimp. La chiave **non è configurata qui**: la legge da
+MC4WP, che ce l'ha già. Due copie della stessa chiave sono due cose da cambiare il giorno
+che si rigenera, e la seconda ci si scorda.
+
+> **Nota.** Mailchimp ha anche notifiche sue, impostabili dal suo pannello. Fanno una cosa
+> più grezza (il riepilogo delle iscrizioni, senza confronto né grafica) ma non richiedono
+> codice: se un giorno questo mu-plugin desse fastidio, quella è l'alternativa.
 
 > **WP-Cron e cron di sistema.** WP-Cron gira solo quando qualcuno visita il sito: su un
 > sito a basso traffico gli invii pianificati uscirebbero in ritardo. Il ruolo `wordpress`

@@ -8,6 +8,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Report settimanale della newsletter**
+  (`roles/wordpress/files/rcm-newsletter-report.php`). Ogni lunedi' alle
+  9:00 arriva a `info@romaclubmatera.it` il punto sugli iscritti: quanti
+  sono, chi e' entrato e chi e' uscito negli ultimi sette giorni, e il
+  confronto con la settimana prima - un numero da solo non dice se si sta
+  salendo o scendendo. Si regola da Impostazioni > Report newsletter, con
+  un pulsante che manda subito il report vero, per vederlo senza aspettare
+  lunedi'.
+  A differenza del promemoria compleanni parte anche a settimana vuota: e'
+  un controllo periodico, e il silenzio sarebbe ambiguo - non si saprebbe
+  se non e' successo niente o se si e' rotto qualcosa.
+  La chiave API di Mailchimp non si configura qui: si legge da MC4WP, che
+  ce l'ha gia'. Due copie della stessa chiave sono due cose da cambiare il
+  giorno che si rigenera, e la seconda ci si scorda.
+
 - **Compleanni: CSV di esempio da scaricare, tasto di modifica e promemoria
   alla vigilia** (`roles/wordpress/files/rcm-compleanni.php`).
   - Nella pagina di import un pulsante scarica un `soci-esempio.csv` gia'
