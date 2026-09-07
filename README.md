@@ -415,6 +415,11 @@ repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
 |---|---|---|
 | `rcm-image-sizes.php` | `wordpress` | registra il formato 16:9 (800x450) usato dalla gallery delle trasferte |
 | `rcm-compleanni.php` | `wordpress` | anagrafica soci e auguri di compleanno automatici |
+| `rcm-recensioni.php` | `wordpress` | recensioni dei soci: modulo pubblico, moderazione, striscia sopra il footer |
+| `rcm-romanista.php` | `wordpress` | rimando alla prima pagina de *Il Romanista* in fondo al footer |
+| `rcm-sponsor-hero.php` | `wordpress` | la frase in romanesco nell'hero della pagina Sponsor |
+| `rcm-link-social.php` | `wordpress` | apre i pulsanti social in una scheda nuova invece di sostituire la pagina |
+| `rcm-enqueue-custom-css.php` | `wordpress` | stampa il CSS su misura del tema figlio su `wp_head` |
 | `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
 
 ### 9.1 Auguri di compleanno ai soci (`rcm-compleanni`)

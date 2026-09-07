@@ -8,6 +8,20 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **I pulsanti social si aprono in una scheda nuova**
+  (`roles/wordpress/files/rcm-link-social.php`). Chi cliccava Facebook o
+  Instagram dal footer usciva dal sito e perdeva la pagina su cui stava.
+  Il tema non li apre mai in una scheda nuova e non ha un'opzione per
+  farlo: l'unico filtro che sembra servire, `thewebs_social_link_target`,
+  in realta' decide soltanto se stampare il `rel`. Il mu-plugin apre un
+  buffer attorno ai tre blocchi social del tema (intestazione, menu
+  mobile, footer) e aggiunge `target="_blank"` ai soli link che portano
+  fuori: telefono e email restano come sono, perche' `tel:` e `mailto:`
+  non aprono una pagina e una scheda vuota che si chiude da sola e' solo
+  fastidio. Aggiunge anche `rel="noopener noreferrer"` se manca, e
+  annota nell'`aria-label` che la scheda e' nuova - chi naviga con un
+  lettore di schermo altrimenti non se ne accorge.
+
 - **Il calendario della Champions e' in pagina.** Il sorteggio della fase
   campionato e' uscito e football-data ha aperto la stagione 2026/27: il
   timer del mattino ha creato da solo gli otto eventi della Roma (post

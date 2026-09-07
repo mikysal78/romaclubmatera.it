@@ -304,6 +304,18 @@
     group: www-data
     mode: "0644"
 
+# I pulsanti social di intestazione, menu mobile e footer se ne andavano
+# sostituendo la pagina del sito: il tema non li apre mai in una scheda nuova
+# e non ha un'opzione per farlo (il suo filtro thewebs_social_link_target
+# decide soltanto se stampare il rel).
+- name: Installa il mu-plugin dei link social in scheda nuova
+  ansible.builtin.copy:
+    src: rcm-link-social.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-link-social.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Il CSS su misura del sito stava in "Aspetto > Personalizza > CSS aggiuntivo",
 # cioe' dentro il database: un ripristino da zero se lo perdeva. Ora e' un file
 # del tema figlio, versionato qui. Il tema figlio pero' arriva con
