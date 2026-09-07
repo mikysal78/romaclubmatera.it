@@ -8,6 +8,20 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Il calendario della Champions e' in pagina.** Il sorteggio della fase
+  campionato e' uscito e football-data ha aperto la stagione 2026/27: il
+  timer del mattino ha creato da solo gli otto eventi della Roma (post
+  1431-1452) con squadre e stemmi, senza che nessuno toccasse niente.
+  La pagina `/calendario/` ora mostra due tabelle, Serie A e Champions
+  League, e i due calendari SportsPress si chiamano come le competizioni
+  (`Serie A 2026/27`, `Champions League 2026/27`): i loro titoli finiscono
+  in pagina come intestazioni di sezione, e sotto un H1 che dice gia'
+  "Calendario AS Roma" ripetere "Calendario" due volte non aggiungeva
+  niente.
+  Nel calendario della coppa la colonna Stadio e' spenta: football-data
+  non manda il campo `venue` per la Champions e sarebbero state otto righe
+  di "N/D".
+
 - **Gli eventi delle coppe se li crea lo script**
   (`roles/sportspress_fixtures/files/create-fixtures.php`). Fino a ieri il
   ruolo sapeva solo *aggiornare* eventi che dovevano gia' esserci: per la
@@ -26,9 +40,11 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 - **Champions League configurata** (`crea: true`, `classifica: false`) e
   termine `sp_league` creato sul sito insieme al calendario dedicato
-  (post 1353). La Roma e' arrivata terza in Serie A 2025/26 e va ai gironi;
-  football-data non ha ancora aperto la stagione 2026/27 della coppa, e
-  fino ad allora lo script lo scrive nel log e passa oltre. La classifica
+  (post 1353). La Roma e' arrivata terza in Serie A 2025/26 e va ai gironi.
+  Quando questa voce e' stata scritta football-data non aveva ancora
+  aperto la stagione 2026/27 della coppa e lo script lo annotava nel log
+  passando oltre: e' stato il comportamento giusto, il sorteggio e'
+  arrivato dopo e non e' servito rimettere le mani su niente. La classifica
   resta spenta perche' la fase campionato e' una tabella da 36 squadre e
   sul sito ci sono solo la Roma e le sue otto avversarie: verrebbe una
   classifica di nove righe, cioe' una cosa sbagliata detta con sicurezza.
@@ -46,6 +62,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Il titolo della striscia diceva "Cosa dicono i soci"**, ma le
+  recensioni non le lasciano solo i tesserati: ora dice "Cosa dicono di
+  noi". Cambiati insieme l'`h2` e l'`aria-label` della sezione, che devono
+  restare uguali.
+
+- **La striscia delle recensioni allargava la pagina sul telefono.**
+  Pubblicata la terza recensione la striscia ha superato la soglia ed e'
+  comparsa sopra il footer di *tutte* le pagine: su 390 px di schermo lo
+  scorrimento orizzontale arrivava a 748. Colpa delle didascalie per i
+  lettori di schermo dentro le schede, che stanno in `position:absolute`:
+  da telefono la pista non e' piu' animata, quindi sparisce la `transform`
+  che faceva da blocco contenitore e quelle didascalie sfuggivano al
+  taglio della striscia. Aggiunto `position: relative` a
+  `.rcm-recensioni-vista`.
 
 - **SEO: quattro problemi trovati con un controllo su tutte e 21 le pagine
   pubblicate.**
