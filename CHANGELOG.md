@@ -176,6 +176,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   Ora sono tutte `noindex` e Yoast le ha tolte da se' dalla mappa del sito,
   che passa da 24 a 18 indirizzi: meno pagine, ma tutte con qualcosa da
   dire.
+  Attenzione alla scala, perche' la mappa la racconta piccola: Search
+  Console ne teneva indicizzate **84**, trovate dai link interni e non
+  dalla mappa. Le pagine evento sono 46 e vengono tolte tutte, quindi nelle
+  prossime settimane quel numero scendera' verso la ventina. E' l'effetto
+  voluto, non un guasto.
+  La scelta e' stata confermata sapendo che quelle pagine qualche
+  impression la ricevevano: contengono pero' solo una data, due stemmi e un
+  punteggio, senza descrizione e senza dati strutturati. I dati
+  `SportsEvent` che possono valere i risultati arricchiti stanno su
+  `/calendario/`, che resta indicizzata: l'asset non si perde.
 
 - **SEO: il profilo Facebook nei dati strutturati era quello sbagliato.**
   In `sameAs` finiva un indirizzo `profile.php?id=...`, cioe' un profilo
