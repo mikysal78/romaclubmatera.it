@@ -1,5 +1,5 @@
 {
-  "_commento": "Pagine da sorvegliare. 'nascondi' e' l'elenco dei blocchi che cambiano contenuto a ogni caricamento (slider, mappa, citazioni a rotazione): vengono resi invisibili prima dello scatto, mantenendo il loro ingombro, cosi' il resto della pagina resta confrontabile riga per riga. 'tolleranza' e' la percentuale di pixel che puo' cambiare senza che sia un problema, per il rumore sparso.",
+  "_commento": "Pagine da sorvegliare. 'nascondi' e' l'elenco dei blocchi che cambiano contenuto a ogni caricamento (slider, mappa, citazioni a rotazione): vengono resi invisibili prima dello scatto, mantenendo il loro ingombro, cosi' il resto della pagina resta confrontabile riga per riga. 'nascondi_sempre' fa la stessa cosa ma su tutte le pagine, per i blocchi che il tema stampa ovunque. 'tolleranza' e' la percentuale di pixel che puo' cambiare senza che sia un problema, per il rumore sparso.",
   "base_url": "https://romaclubmatera.it",
   "viewports": [
     [
@@ -14,6 +14,11 @@
     ]
   ],
   "tolleranza_default": 0.05,
+  "_commento_nascondi_sempre": "La striscia delle recensioni sta sopra il footer di ogni pagina e pesca le schede a caso (orderby rand), quindi cambia a ogni caricamento; l'elenco sulla pagina Recensioni fa lo stesso. Si nasconde il contenuto e si lascia il titolo, cosi' l'ingombro resta.",
+  "nascondi_sempre": [
+    ".rcm-recensioni-vista",
+    ".rcm-recensioni-elenco"
+  ],
   "pagine": [
     {
       "path": "/",

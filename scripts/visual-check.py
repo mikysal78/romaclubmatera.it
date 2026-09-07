@@ -301,8 +301,15 @@ async def scatta(cfg: dict, dest: str, attesa: float) -> tuple[list[str], str]:
                     with contextlib.suppress(Exception):
                         await s.cmd("Runtime.evaluate", expression=JS_SCORRI, awaitPromise=True)
                     await asyncio.sleep(2)
+                    # "nascondi_sempre" vale per tutte le pagine: e' li' che
+                    # stanno i blocchi che il tema stampa ovunque, come la
+                    # striscia delle recensioni, che pesca a caso e quindi
+                    # cambierebbe a ogni scatto in fondo a ogni pagina.
                     congela = JS_CONGELA.replace(
-                        "(SELETTORI)", json.dumps(pagina.get("nascondi", []))
+                        "(SELETTORI)",
+                        json.dumps(
+                            cfg.get("nascondi_sempre", []) + pagina.get("nascondi", [])
+                        ),
                     )
                     await s.cmd("Runtime.evaluate", expression=congela)
                     png = await s.cmd(
