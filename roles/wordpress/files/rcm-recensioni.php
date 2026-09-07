@@ -551,11 +551,11 @@ function rcm_rec_striscia() {
 	// ~9 secondi a scheda: abbastanza lento da poterle leggere passando
 	$durata = max( 30, count( $recensioni ) * 9 );
 	?>
-	<section class="rcm-recensioni" id="recensioni-striscia" aria-label="Cosa dicono i soci">
+	<section class="rcm-recensioni" id="recensioni-striscia" aria-label="Cosa dicono di noi">
 		<?php if ( $anteprima ) : ?>
 			<p class="rcm-recensioni-anteprima">Anteprima: recensioni di esempio, le vedi solo tu perche' sei collegato.</p>
 		<?php endif; ?>
-		<h2 class="rcm-recensioni-titolo">Cosa dicono i soci</h2>
+		<h2 class="rcm-recensioni-titolo">Cosa dicono di noi</h2>
 		<div class="rcm-recensioni-vista">
 			<ul class="rcm-recensioni-pista" style="--rcm-rec-durata: <?php echo esc_attr( $durata ); ?>s">
 				<?php
