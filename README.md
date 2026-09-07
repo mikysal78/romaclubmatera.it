@@ -430,10 +430,17 @@ tabella dedicata `<prefisso>_rcm_soci`, popolata via import CSV.
 
 In bacheca compare il menu **Soci**, riservato agli amministratori:
 
-- **Elenco soci** — ricerca, paginazione, aggiunta manuale, eliminazione; in cima il
-  totale e quanti soci sono senza data di nascita (quelli vengono esclusi dagli invii);
+- **Elenco soci** — ricerca, paginazione, aggiunta, **modifica** ed eliminazione; in cima
+  il totale, quanti soci sono senza data di nascita (esclusi dagli invii) e quanti senza
+  cellulare (niente pulsante WhatsApp). *Modifica* riapre in fondo alla pagina lo stesso
+  modulo dell'inserimento, già compilato: cambiare l'email in una già presente viene
+  fermato con un messaggio invece che con un errore di database. La casella *riceve gli
+  auguri* serve a chi non è più socio, senza doverlo cancellare dall'archivio;
 - **Importa CSV** — prima riga con i nomi delle colonne (`nome`, `cognome`, `email`,
   `cellulare`, `data di nascita`), separatore `,` o `;`, date `gg/mm/aaaa` o `aaaa-mm-gg`.
+  Un pulsante scarica un **CSV di esempio** già impostato (con il BOM, così Excel su
+  Windows non storpia le accentate); il riquadro mostrato nella pagina e il file scaricato
+  escono dalla stessa funzione, quindi non possono divergere.
   L'import è **idempotente sull'email**: aggiorna invece di duplicare e le celle vuote non
   sovrascrivono i dati già in archivio;
 - **Auguri** — interruttore on/off, ora di invio, oggetto e testo con i segnaposto
@@ -465,9 +472,24 @@ import in cifre pure, come le vuole `wa.me`. Senza prefisso il numero si intende
 per un numero estero serve il `+`. Quello che non somiglia a un numero viene scartato e il
 socio resta senza pulsante, che è meglio di un pulsante che apre la chat sbagliata.
 
+#### Il promemoria alla vigilia
+
+Il giro giornaliero, oltre agli auguri, manda a `info@romaclubmatera.it` (indirizzo
+configurabile) **una sola email con i compleanni del giorno dopo**, con accanto a ciascuno
+il link *Auguri su WhatsApp*. È in HTML e non in testo semplice proprio per quei link: in
+chiaro sarebbero righe di centinaia di caratteri codificati, da telefono inservibili.
+
+Se domani non compie gli anni nessuno **non parte niente**: un promemoria vuoto tutte le
+mattine si impara a ignorare, e il giorno che serve non lo si legge.
+
+I due interruttori sono separati: si può volere il promemoria **senza** gli invii
+automatici, per esempio se gli auguri si mandano solo su WhatsApp.
+
 Note di funzionamento:
 
 - l'invio parte **spento**: si accende dalla scheda *Auguri* dopo aver importato la lista;
+- il promemoria invece parte **acceso**, perché finché non c'è un compleanno domani non
+  scrive a nessuno;
 - niente doppioni: ogni socio ha `ultimo_invio_anno`, quindi più esecuzioni nello stesso
   giorno non rimandano la stessa email;
 - il 29 febbraio, negli anni non bisestili, gli auguri escono il 28.

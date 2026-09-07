@@ -8,6 +8,27 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Compleanni: CSV di esempio da scaricare, tasto di modifica e promemoria
+  alla vigilia** (`roles/wordpress/files/rcm-compleanni.php`).
+  - Nella pagina di import un pulsante scarica un `soci-esempio.csv` gia'
+    impostato, col BOM perche' Excel su Windows senza quello apre il file in
+    ANSI e le accentate diventano scarabocchi (all'import il BOM viene tolto
+    da se'). Il riquadro mostrato nella pagina e il file scaricato escono
+    dalla stessa funzione: scritti due volte, prima o poi avrebbero detto
+    cose diverse.
+  - *Modifica* accanto a ogni socio riapre in fondo alla pagina lo stesso
+    modulo dell'inserimento, gia' compilato. L'email e' la chiave unica
+    della tabella: cambiarla in una gia' presente viene fermato con un
+    messaggio, invece che con un errore di database. Aggiunta anche la
+    casella *riceve gli auguri*, per chi non e' piu' socio e non si vuole
+    cancellare dall'archivio.
+  - Il giro giornaliero manda a `info@romaclubmatera.it` una sola email coi
+    compleanni del giorno dopo e il link WhatsApp di ciascuno. Se domani non
+    compie gli anni nessuno non parte niente: un promemoria vuoto tutte le
+    mattine si impara a ignorare, e il giorno che serve non lo si legge. Il
+    suo interruttore e' separato da quello degli invii, perche' si puo'
+    volere il promemoria mandando gli auguri solo su WhatsApp.
+
 - **Gli auguri di compleanno anche su WhatsApp**, a mano ma col testo gia'
   scritto (`roles/wordpress/files/rcm-compleanni.php`). Nella tabella dei
   prossimi compleanni ogni socio che ha lasciato il cellulare ha accanto il
@@ -96,6 +117,17 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Dalle 22 in poi i compleanni scivolavano al giorno dopo.**
+  `current_time( 'timestamp' )` restituisce un timestamp col fuso gia'
+  sommato dentro, e `wp_date()` glielo somma una seconda volta: d'estate,
+  passate le 22, "oggi" diventava domani e "domani" dopodomani. Il difetto
+  e' durato il tempo di una rifattorizzazione - il codice di prima usava
+  `current_time( 'm-d' )`, che e' corretto - ed e' saltato fuori perche' il
+  promemoria in prova diceva 9 settembre invece dell'8. Ora le date si
+  prendono da `current_datetime()`, e "domani" e' `modify( '+1 day' )` e non
+  piu' 86400 secondi: nella notte del cambio d'ora un giorno non dura
+  ventiquattro ore.
 
 - **Chi e' nato in un anno bisestile aveva il compleanno sfasato di un
   giorno** nella tabella dei prossimi compleanni. Il conto sottraeva i

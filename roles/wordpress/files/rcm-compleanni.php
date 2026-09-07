@@ -34,6 +34,11 @@ function rcm_compleanni_opzioni() {
 		// quello dell'email. Meglio un messaggio solo da tenere aggiornato
 		// che due che col tempo si contraddicono.
 		'whatsapp'  => '',
+		// Promemoria alla sede il giorno prima: e' acceso di suo, perche' non
+		// manda niente finche' non c'e' un compleanno domani, e quel giorno
+		// serve a qualcuno.
+		'promemoria'   => 1,
+		'promemoria_a' => 'info@romaclubmatera.it',
 	);
 	return wp_parse_args( get_option( RCM_COMPLEANNI_OPZIONI, array() ), $default );
 }
@@ -143,33 +148,91 @@ function rcm_compleanni_sostituisci( $testo, $socio ) {
  * Soci che compiono gli anni oggi e non hanno ancora ricevuto gli auguri quest'anno.
  * Il 28 febbraio degli anni non bisestili include anche i nati il 29.
  */
-function rcm_compleanni_soci_di_oggi() {
-	global $wpdb;
+/**
+ * I giorni ('m-d') da cercare per una certa data.
+ *
+ * Prende un DateTimeInterface e non un timestamp apposta. current_time(
+ * 'timestamp' ) restituisce un timestamp con il fuso gia' sommato dentro, e
+ * wp_date() glielo somma una seconda volta: dalle 22 in poi, d'estate, la data
+ * scivolava al giorno dopo e il promemoria avrebbe parlato di dopodomani.
+ * current_datetime() e' l'ora locale vera, senza doppi conteggi.
+ *
+ * @param DateTimeInterface $giorno Il giorno di cui cercare i compleanni.
+ * @return array
+ */
+function rcm_compleanni_date_del_giorno( DateTimeInterface $giorno ) {
+	$md   = $giorno->format( 'm-d' );
+	$date = array( $md );
 
-	$oggi = current_time( 'm-d' );
-	$anno = (int) current_time( 'Y' );
-	$date = array( $oggi );
-
-	if ( '02-28' === $oggi && ! wp_date( 'L' ) ) {
+	// Chi e' nato il 29 febbraio, negli anni non bisestili, festeggia il 28.
+	if ( '02-28' === $md && ! $giorno->format( 'L' ) ) {
 		$date[] = '02-29';
 	}
 
+	return $date;
+}
+
+/**
+ * Soci che compiono gli anni in uno di quei giorni (formato 'm-d').
+ *
+ * @param array $date            Giorni da cercare.
+ * @param bool  $solo_da_fare    Se true esclude chi ha gia' ricevuto gli auguri quest'anno.
+ * @param bool  $serve_email     Se true esclude chi non ha un indirizzo.
+ * @return array
+ */
+function rcm_compleanni_soci_nelle_date( $date, $solo_da_fare = false, $serve_email = true ) {
+	global $wpdb;
+
 	$segnaposto = implode( ',', array_fill( 0, count( $date ), '%s' ) );
 	$tabella    = rcm_compleanni_tabella();
+	$valori     = $date;
+
+	$filtro_email = $serve_email ? "AND email <> ''" : '';
+	$filtro_fatti = '';
+	if ( $solo_da_fare ) {
+		$filtro_fatti = 'AND ( ultimo_invio_anno IS NULL OR ultimo_invio_anno <> %d )';
+		$valori[]     = (int) current_time( 'Y' );
+	}
 
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- nome tabella e segnaposto generati internamente.
 	return $wpdb->get_results(
 		$wpdb->prepare(
 			"SELECT * FROM $tabella
 			 WHERE attivo = 1
-			   AND email <> ''
+			   $filtro_email
 			   AND data_nascita IS NOT NULL
 			   AND DATE_FORMAT( data_nascita, '%%m-%%d' ) IN ( $segnaposto )
-			   AND ( ultimo_invio_anno IS NULL OR ultimo_invio_anno <> %d )",
-			array_merge( $date, array( $anno ) )
+			   $filtro_fatti
+			 ORDER BY cognome, nome",
+			$valori
 		)
 	);
 	// phpcs:enable
+}
+
+function rcm_compleanni_soci_di_oggi() {
+	return rcm_compleanni_soci_nelle_date( rcm_compleanni_date_del_giorno( current_datetime() ), true, true );
+}
+
+/**
+ * Domani, in ora locale. modify( '+1 day' ) e non +86400: nella notte del
+ * cambio d'ora un giorno non dura ventiquattro ore.
+ */
+function rcm_compleanni_domani() {
+	return current_datetime()->modify( '+1 day' );
+}
+
+/**
+ * Soci che compiono gli anni domani. Qui l'email non serve: il promemoria
+ * riguarda il compleanno, non l'invio, e va segnalato anche chi si festeggia
+ * di persona o su WhatsApp.
+ */
+function rcm_compleanni_soci_di_domani() {
+	return rcm_compleanni_soci_nelle_date(
+		rcm_compleanni_date_del_giorno( rcm_compleanni_domani() ),
+		false,
+		false
+	);
 }
 
 /**
@@ -204,28 +267,115 @@ function rcm_compleanni_invia( $socio, $segna_come_inviato = true ) {
 /**
  * Giro giornaliero: auguri a chi compie gli anni oggi.
  */
+/**
+ * Promemoria alla sede: domani qualcuno compie gli anni.
+ *
+ * Una sola email con tutti i compleanni del giorno dopo, non una per socio: se
+ * ne compiono tre, tre righe nello stesso messaggio. Se non ne compie nessuno
+ * non parte niente, perche' un promemoria vuoto tutte le mattine si impara a
+ * ignorare, e il giorno che serve non lo si legge.
+ *
+ * E' in HTML e non in testo semplice come gli auguri, perche' porta i link
+ * "Auguri su WhatsApp": in chiaro sarebbero righe di centinaia di caratteri
+ * codificati, da telefono inservibili.
+ *
+ * @return bool True se un promemoria e' stato mandato.
+ */
+function rcm_compleanni_promemoria() {
+	$opzioni = rcm_compleanni_opzioni();
+
+	if ( empty( $opzioni['promemoria'] ) || ! is_email( $opzioni['promemoria_a'] ) ) {
+		return false;
+	}
+
+	// Il giro giornaliero e' pianificato una volta al giorno, ma un'esecuzione
+	// manuale o un cron ripetuto non devono far arrivare due volte la stessa cosa.
+	$oggi = current_time( 'Y-m-d' );
+	if ( get_option( 'rcm_compleanni_ultimo_promemoria' ) === $oggi ) {
+		return false;
+	}
+
+	$soci = rcm_compleanni_soci_di_domani();
+	if ( ! $soci ) {
+		return false;
+	}
+
+	$domani = rcm_compleanni_domani();
+	$anno   = (int) $domani->format( 'Y' );
+
+	$righe = '';
+	foreach ( $soci as $socio ) {
+		$nome = trim( $socio->nome . ' ' . $socio->cognome );
+		$eta  = $socio->data_nascita ? $anno - (int) substr( $socio->data_nascita, 0, 4 ) : 0;
+		$link = rcm_compleanni_link_whatsapp( $socio );
+
+		$righe .= '<li style="margin-bottom:10px">'
+			. '<strong>' . esc_html( $nome ) . '</strong>'
+			. ( $eta > 0 ? ' &middot; compie ' . (int) $eta . ' anni' : '' )
+			. '<br>'
+			. ( $socio->email ? '<span style="color:#6b6155">' . esc_html( $socio->email ) . '</span>' : '<span style="color:#6b6155">nessuna email</span>' )
+			. ( $link
+				? ' &middot; <a href="' . esc_attr( $link ) . '">Auguri su WhatsApp</a>'
+				: ' &middot; <span style="color:#6b6155">nessun cellulare</span>' )
+			. '</li>';
+	}
+
+	$quanti  = count( $soci );
+	$oggetto = 1 === $quanti
+		? sprintf( 'Promemoria: domani il compleanno di %s', trim( $soci[0]->nome . ' ' . $soci[0]->cognome ) )
+		: sprintf( 'Promemoria: domani il compleanno di %d soci', $quanti );
+
+	$corpo = '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px;color:#2b2b2b">'
+		. '<p>Domani, <strong>' . esc_html( wp_date( 'j F Y', $domani->getTimestamp() ) ) . '</strong>:</p>'
+		. '<ul style="padding-left:18px">' . $righe . '</ul>'
+		. '<p style="color:#6b6155;font-size:13px">'
+		. ( empty( $opzioni['attivo'] )
+			? 'L&rsquo;invio automatico degli auguri via email &egrave; spento: domani gli auguri li manda qualcuno a mano.'
+			: 'Gli auguri via email partono domani da soli. Questo &egrave; solo un promemoria.' )
+		. '</p></div>';
+
+	$esito = wp_mail(
+		$opzioni['promemoria_a'],
+		$oggetto,
+		$corpo,
+		array( 'Content-Type: text/html; charset=UTF-8' )
+	);
+
+	if ( $esito ) {
+		update_option( 'rcm_compleanni_ultimo_promemoria', $oggi, false );
+	}
+
+	return $esito;
+}
+
 function rcm_compleanni_giro_giornaliero() {
 	$opzioni = rcm_compleanni_opzioni();
-	if ( empty( $opzioni['attivo'] ) ) {
-		return;
-	}
 
 	$inviate = 0;
 	$errori  = 0;
-	foreach ( rcm_compleanni_soci_di_oggi() as $socio ) {
-		if ( rcm_compleanni_invia( $socio ) ) {
-			++$inviate;
-		} else {
-			++$errori;
+
+	// I due interruttori sono separati apposta: si puo' volere il promemoria
+	// senza gli invii automatici, per esempio se gli auguri si mandano solo
+	// su WhatsApp.
+	if ( ! empty( $opzioni['attivo'] ) ) {
+		foreach ( rcm_compleanni_soci_di_oggi() as $socio ) {
+			if ( rcm_compleanni_invia( $socio ) ) {
+				++$inviate;
+			} else {
+				++$errori;
+			}
 		}
 	}
+
+	$promemoria = rcm_compleanni_promemoria();
 
 	update_option(
 		'rcm_compleanni_ultimo_giro',
 		array(
-			'quando'  => current_time( 'mysql' ),
-			'inviate' => $inviate,
-			'errori'  => $errori,
+			'quando'     => current_time( 'mysql' ),
+			'inviate'    => $inviate,
+			'errori'     => $errori,
+			'promemoria' => (bool) $promemoria,
 		),
 		false
 	);
@@ -359,6 +509,57 @@ function rcm_compleanni_mappa_colonne( $intestazione ) {
 	}
 
 	return $mappa;
+}
+
+/**
+ * Le righe del CSV di esempio.
+ *
+ * Stanno qui, in un posto solo, perché servono a due cose: il file da
+ * scaricare e il riquadro che si vede nella pagina. Se fossero scritte due
+ * volte, prima o poi direbbero cose diverse.
+ *
+ * Le tre righe non sono a caso: la prima è il caso normale, la seconda ha il
+ * numero col prefisso internazionale, la terza non ha il cellulare (la colonna
+ * si può lasciare vuota), ha un nome accentato e come data il 29 febbraio, che
+ * è il caso limite del calendario.
+ */
+function rcm_compleanni_csv_esempio_righe() {
+	return array(
+		array( 'nome', 'cognome', 'email', 'cellulare', 'data di nascita' ),
+		array( 'Mario', 'Rossi', 'mario.rossi@example.it', '377 281 4538', '24/03/1978' ),
+		array( 'Anna', 'Bianchi', 'anna.bianchi@example.it', '+39 340 1234567', '02/11/1985' ),
+		array( 'Niccolò', 'Verdi', 'niccolo.verdi@example.it', '', '29/02/1980' ),
+	);
+}
+
+/**
+ * Manda in scaricamento il CSV di esempio.
+ */
+add_action( 'admin_post_rcm_compleanni_csv_esempio', 'rcm_compleanni_scarica_esempio' );
+function rcm_compleanni_scarica_esempio() {
+	if ( ! current_user_can( RCM_COMPLEANNI_CAP ) ) {
+		wp_die( 'Non hai i permessi per scaricare questo file.', '', array( 'response' => 403 ) );
+	}
+	check_admin_referer( 'rcm_csv_esempio' );
+
+	nocache_headers();
+	header( 'Content-Type: text/csv; charset=UTF-8' );
+	header( 'Content-Disposition: attachment; filename="soci-esempio.csv"' );
+
+	// Il BOM serve a Excel su Windows: senza, apre il file in ANSI e le
+	// accentate diventano scarabocchi. All'import non da' fastidio, perche'
+	// rcm_compleanni_mappa_colonne lo toglie dalla prima intestazione.
+	echo "\xEF\xBB\xBF";
+
+	// Punto e virgola come separatore: e' quello che si aspetta Excel in
+	// italiano, e l'import riconosce da se' anche la virgola.
+	$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+	foreach ( rcm_compleanni_csv_esempio_righe() as $riga ) {
+		fputcsv( $out, $riga, ';', '"', '' );
+	}
+	fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+
+	exit;
 }
 
 /**
@@ -503,7 +704,7 @@ function rcm_compleanni_pagina_elenco() {
 					'email'        => $email,
 					'telefono'     => rcm_compleanni_telefono( sanitize_text_field( wp_unslash( $_POST['telefono'] ?? '' ) ) ),
 					'data_nascita' => rcm_compleanni_data( sanitize_text_field( wp_unslash( $_POST['data_nascita'] ?? '' ) ) ) ?: null,
-					'attivo'       => 1,
+					'attivo'       => empty( $_POST['attivo'] ) ? 0 : 1,
 					'creato_il'    => current_time( 'mysql' ),
 				)
 			);
@@ -511,9 +712,57 @@ function rcm_compleanni_pagina_elenco() {
 		}
 	}
 
+	if ( isset( $_POST['rcm_azione'] ) && 'aggiorna' === $_POST['rcm_azione'] ) {
+		$id = (int) ( $_POST['id'] ?? 0 );
+		check_admin_referer( 'rcm_socio_' . $id );
+
+		$email = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
+		if ( ! $id ) {
+			rcm_compleanni_avviso( 'Socio non trovato.', 'error' );
+		} elseif ( ! is_email( $email ) ) {
+			rcm_compleanni_avviso( 'Email non valida: modifiche non salvate.', 'error' );
+		} else {
+			// L'email è la chiave unica della tabella: se qualcuno la cambia in
+			// una già presente l'UPDATE fallirebbe con un errore di database.
+			// Meglio dirlo prima, e con parole comprensibili.
+			$occupata = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $tabella WHERE email = %s AND id <> %d", $email, $id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+
+			if ( $occupata ) {
+				rcm_compleanni_avviso( 'C\'è già un altro socio con questa email: modifiche non salvate.', 'error' );
+			} else {
+				$wpdb->update(
+					$tabella,
+					array(
+						'nome'         => sanitize_text_field( wp_unslash( $_POST['nome'] ?? '' ) ),
+						'cognome'      => sanitize_text_field( wp_unslash( $_POST['cognome'] ?? '' ) ),
+						'email'        => $email,
+						'telefono'     => rcm_compleanni_telefono( sanitize_text_field( wp_unslash( $_POST['telefono'] ?? '' ) ) ),
+						'data_nascita' => rcm_compleanni_data( sanitize_text_field( wp_unslash( $_POST['data_nascita'] ?? '' ) ) ) ?: null,
+						'attivo'       => empty( $_POST['attivo'] ) ? 0 : 1,
+					),
+					array( 'id' => $id ),
+					null,
+					array( '%d' )
+				);
+				rcm_compleanni_avviso( 'Socio aggiornato.' );
+			}
+		}
+	}
+
 	if ( isset( $_GET['elimina'] ) && check_admin_referer( 'rcm_elimina_' . (int) $_GET['elimina'] ) ) {
 		$wpdb->delete( $tabella, array( 'id' => (int) $_GET['elimina'] ), array( '%d' ) );
 		rcm_compleanni_avviso( 'Socio eliminato.' );
+	}
+
+	// Con ?modifica=<id> il modulo in fondo alla pagina passa da "aggiungi" a
+	// "modifica" e si presenta gia' compilato: un modulo solo per due mestieri,
+	// invece di due moduli che col tempo divergono.
+	$in_modifica = null;
+	if ( isset( $_GET['modifica'] ) ) {
+		$in_modifica = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $tabella WHERE id = %d", (int) $_GET['modifica'] ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		if ( ! $in_modifica ) {
+			rcm_compleanni_avviso( 'Socio non trovato: forse è stato eliminato.', 'warning' );
+		}
 	}
 
 	$cerca   = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
@@ -581,6 +830,8 @@ function rcm_compleanni_pagina_elenco() {
 					<td><?php echo $socio->data_nascita ? esc_html( mysql2date( 'd/m/Y', $socio->data_nascita ) ) : '<em>—</em>'; ?></td>
 					<td><?php echo $socio->ultimo_invio_anno ? esc_html( $socio->ultimo_invio_anno ) : '—'; ?></td>
 					<td>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci&modifica=' . $socio->id ) . '#rcm-modulo-socio' ); ?>">Modifica</a>
+						|
 						<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=rcm-soci&elimina=' . $socio->id ), 'rcm_elimina_' . $socio->id ) ); ?>"
 						   onclick="return confirm('Eliminare <?php echo esc_js( $socio->email ); ?>?')">Elimina</a>
 					</td>
@@ -607,21 +858,43 @@ function rcm_compleanni_pagina_elenco() {
 		}
 		?>
 
-		<h2>Aggiungi un socio</h2>
+		<?php
+		$modifica = (bool) $in_modifica;
+		$val      = static function ( $campo, $default = '' ) use ( $in_modifica ) {
+			return $in_modifica ? (string) $in_modifica->$campo : $default;
+		};
+		?>
+		<h2 id="rcm-modulo-socio"><?php echo $modifica ? 'Modifica socio' : 'Aggiungi un socio'; ?></h2>
 		<form method="post">
-			<?php wp_nonce_field( 'rcm_socio' ); ?>
-			<input type="hidden" name="rcm_azione" value="aggiungi">
+			<?php wp_nonce_field( $modifica ? 'rcm_socio_' . $in_modifica->id : 'rcm_socio' ); ?>
+			<input type="hidden" name="rcm_azione" value="<?php echo $modifica ? 'aggiorna' : 'aggiungi'; ?>">
+			<?php if ( $modifica ) : ?>
+				<input type="hidden" name="id" value="<?php echo (int) $in_modifica->id; ?>">
+			<?php endif; ?>
 			<table class="form-table">
-				<tr><th><label for="rcm-nome">Nome</label></th><td><input id="rcm-nome" name="nome" class="regular-text"></td></tr>
-				<tr><th><label for="rcm-cognome">Cognome</label></th><td><input id="rcm-cognome" name="cognome" class="regular-text"></td></tr>
-				<tr><th><label for="rcm-email">Email</label></th><td><input id="rcm-email" name="email" type="email" class="regular-text" required></td></tr>
+				<tr><th><label for="rcm-nome">Nome</label></th><td><input id="rcm-nome" name="nome" class="regular-text" value="<?php echo esc_attr( $val( 'nome' ) ); ?>"></td></tr>
+				<tr><th><label for="rcm-cognome">Cognome</label></th><td><input id="rcm-cognome" name="cognome" class="regular-text" value="<?php echo esc_attr( $val( 'cognome' ) ); ?>"></td></tr>
+				<tr><th><label for="rcm-email">Email</label></th><td><input id="rcm-email" name="email" type="email" class="regular-text" required value="<?php echo esc_attr( $val( 'email' ) ); ?>"></td></tr>
 				<tr><th><label for="rcm-telefono">Cellulare</label></th><td>
-					<input id="rcm-telefono" name="telefono" class="regular-text" placeholder="377 281 4538">
+					<input id="rcm-telefono" name="telefono" class="regular-text" placeholder="377 281 4538" value="<?php echo esc_attr( $val( 'telefono' ) ); ?>">
 					<p class="description">Serve per il pulsante WhatsApp nella pagina Auguri. Senza prefisso si intende italiano; per un numero estero scrivi il <code>+</code>.</p>
 				</td></tr>
-				<tr><th><label for="rcm-data">Data di nascita</label></th><td><input id="rcm-data" name="data_nascita" placeholder="gg/mm/aaaa" class="regular-text"></td></tr>
+				<tr><th><label for="rcm-data">Data di nascita</label></th><td><input id="rcm-data" name="data_nascita" placeholder="gg/mm/aaaa" class="regular-text" value="<?php echo esc_attr( $in_modifica && $in_modifica->data_nascita ? mysql2date( 'd/m/Y', $in_modifica->data_nascita ) : '' ); ?>"></td></tr>
+				<tr><th>Auguri</th><td>
+					<label><input type="checkbox" name="attivo" value="1" <?php checked( $modifica ? (int) $in_modifica->attivo : 1, 1 ); ?>> riceve gli auguri di compleanno</label>
+					<p class="description">Da togliere a chi non è più socio, senza doverlo cancellare dall'archivio.</p>
+				</td></tr>
 			</table>
-			<?php submit_button( 'Aggiungi socio' ); ?>
+			<?php
+			submit_button( $modifica ? 'Salva modifiche' : 'Aggiungi socio', 'primary', 'submit', false );
+			if ( $modifica ) {
+				printf(
+					' <a class="button" href="%s">Annulla</a>',
+					esc_url( admin_url( 'admin.php?page=rcm-soci' ) )
+				);
+			}
+			?>
+			<p></p>
 		</form>
 	</div>
 	<?php
@@ -666,9 +939,21 @@ function rcm_compleanni_pagina_import() {
 			prefisso il numero si intende italiano; per un numero estero serve il <code>+</code> davanti.</p>
 		<p>I soci già presenti vengono <strong>aggiornati</strong> in base all'email, non duplicati. Le celle vuote non
 			cancellano i dati già in archivio.</p>
-		<pre style="background:#fff;border:1px solid #ccd0d4;padding:1em;display:inline-block">nome;cognome;email;cellulare;data di nascita
-Mario;Rossi;mario.rossi@example.it;377 281 4538;24/03/1978
-Anna;Bianchi;anna.bianchi@example.it;+39 340 1234567;02/11/1985</pre>
+		<p>
+			<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rcm_compleanni_csv_esempio' ), 'rcm_csv_esempio' ) ); ?>">Scarica un CSV di esempio</a>
+			<span class="description">Da aprire con Excel o LibreOffice: si sostituiscono le righe con quelle vere e si ricarica qui.</span>
+		</p>
+		<?php
+		// Il riquadro mostra le stesse righe del file, prese dalla stessa
+		// funzione: cosi' non possono raccontare due storie diverse.
+		$esempio = array_map(
+			static function ( $riga ) {
+				return implode( ';', $riga );
+			},
+			rcm_compleanni_csv_esempio_righe()
+		);
+		?>
+		<pre style="background:#fff;border:1px solid #ccd0d4;padding:1em;display:inline-block"><?php echo esc_html( implode( "\n", $esempio ) ); ?></pre>
 		<form method="post" enctype="multipart/form-data">
 			<?php wp_nonce_field( 'rcm_import' ); ?>
 			<input type="hidden" name="rcm_azione" value="importa">
@@ -699,6 +984,8 @@ function rcm_compleanni_pagina_auguri() {
 				'messaggio' => sanitize_textarea_field( wp_unslash( $_POST['messaggio'] ?? '' ) ),
 				'copia_a'   => sanitize_email( wp_unslash( $_POST['copia_a'] ?? '' ) ),
 				'whatsapp'  => sanitize_textarea_field( wp_unslash( $_POST['whatsapp'] ?? '' ) ),
+				'promemoria'   => empty( $_POST['promemoria'] ) ? 0 : 1,
+				'promemoria_a' => sanitize_email( wp_unslash( $_POST['promemoria_a'] ?? '' ) ),
 			);
 			update_option( RCM_COMPLEANNI_OPZIONI, $opzioni );
 			rcm_compleanni_pianifica( $ora_prima !== $opzioni['ora'] );
@@ -781,7 +1068,9 @@ function rcm_compleanni_pagina_auguri() {
 							<?php endif; ?>
 							<?php if ( $ultimo ) : ?>
 								Ultimo giro: <?php echo esc_html( mysql2date( 'd/m/Y H:i', $ultimo['quando'] ) ); ?>
-								— <?php echo (int) $ultimo['inviate']; ?> inviate, <?php echo (int) $ultimo['errori']; ?> errori.
+								— <?php echo (int) $ultimo['inviate']; ?> inviate, <?php echo (int) $ultimo['errori']; ?> errori<?php
+								echo ! empty( $ultimo['promemoria'] ) ? ', promemoria mandato' : '';
+								?>.
 							<?php endif; ?>
 						</p>
 					</td>
@@ -817,6 +1106,21 @@ function rcm_compleanni_pagina_auguri() {
 					<td>
 						<input id="rcm-copia" name="copia_a" type="email" class="regular-text" value="<?php echo esc_attr( $opzioni['copia_a'] ); ?>">
 						<p class="description">Facoltativo: riceve in Ccn una copia di ogni messaggio inviato.</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">Promemoria il giorno prima</th>
+					<td>
+						<label><input type="checkbox" name="promemoria" value="1" <?php checked( $opzioni['promemoria'], 1 ); ?>> avvisa alla vigilia chi tiene la posta del club</label>
+						<p>
+							<input id="rcm-promemoria-a" name="promemoria_a" type="email" class="regular-text" value="<?php echo esc_attr( $opzioni['promemoria_a'] ); ?>" placeholder="info@romaclubmatera.it">
+						</p>
+						<p class="description">
+							Una sola email con i compleanni del giorno dopo e il link WhatsApp di ciascuno.
+							Se domani non compie gli anni nessuno, non parte niente: un promemoria vuoto tutte le
+							mattine si impara a ignorare, e il giorno che serve non lo si legge.
+							Funziona anche a invio automatico spento.
+						</p>
 					</td>
 				</tr>
 			</table>
