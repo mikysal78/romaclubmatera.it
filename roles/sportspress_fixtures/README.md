@@ -125,7 +125,19 @@ turno non è un dato che SportsPress registri.
 
 ### Come si vede in pagina
 
-La pagina Calendario contiene `[event_list id="873"]`. Con
+La pagina Calendario contiene un elenco per competizione:
+`[event_list id="873"]` (calendario *Serie A 2026/27*) e
+`[event_list id="1353"]` (*Champions League 2026/27*). I due calendari sono
+filtrati per `sp_league`, quindi non si pestano i piedi, e il loro titolo
+esce in pagina come intestazione della sezione: per questo si chiamano come
+la competizione e non "Calendario ...", che sotto l'H1 della pagina sarebbe
+stato detto due volte.
+
+Nel calendario della coppa la colonna **Stadio** è spenta (`sp_columns`
+senza `venue`): football-data non manda il campo `venue` per la Champions e
+sarebbe una colonna di "N/D".
+
+Con
 `sportspress_event_list_time_format` su `combined` (l'impostazione attuale)
 la colonna è **"Orario/Risultati"**: mostra l'orario finché la partita non è
 giocata e il punteggio appena l'evento ha un risultato, senza bisogno di
