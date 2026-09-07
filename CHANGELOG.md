@@ -8,6 +8,31 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Le pagine delle partite si presentano nei motori**
+  (`roles/wordpress/files/rcm-eventi-seo.php`). Titolo con la data dentro
+  (`AS Roma-Real Madrid, 14 ottobre 2026`), descrizione generata dai dati
+  che ci sono gia' - squadre, giorno, ora, stadio, giornata, e il
+  risultato per le partite giocate - e `SportsEvent` nei dati strutturati.
+  I dati strutturati escono **solo per le 38 partite che hanno lo stadio**:
+  Google, per un evento dal vivo, pretende nome, data e luogo *con
+  indirizzo*, e senza quello il markup non e' incompleto, e' sbagliato, e
+  finisce in Search Console come errore. Le diciotto sedi di Serie A hanno
+  indirizzo e coordinate in archivio; le otto di Champions no, perche'
+  football-data non manda il campo, e per quelle restano titolo e
+  descrizione.
+  Nota di lingua: la localizzazione di WordPress scrive "31 Agosto 2026",
+  ma in italiano il mese vuole la minuscola e in un titolo di ricerca la
+  maiuscola di troppo si nota.
+
+- **Redirect permanenti per i vecchi indirizzi**
+  (`webserver_redirect_permanenti` nel ruolo `webserver`). `/one-team-one-goal/`
+  e' un contenuto demo del tema, cancellato da tempo: Google lo tiene in
+  posizione 4,5 e in due mesi ha portato **nove clic atterrati su "Pagina
+  non trovata"**, cioe' il 13% dei clic del sito. Ora e' un 301 verso la
+  home. Consolidati sulla pagina `/calendario/` anche i tre indirizzi
+  `/calendar/...` dei calendari SportsPress, che da soli valevano altri sei
+  clic e 772 impressioni.
+
 - **Indirizzo, telefono, email e anno di fondazione nei dati strutturati**
   (`roles/wordpress/files/rcm-schema-club.php`). Il nodo Organization che
   Yoast stampa in ogni pagina diceva solo nome, sito e logo: ai motori di
@@ -151,6 +176,29 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Un passaggio del ruolo `webserver` lasciava il sito senza HTTPS.**
+  Il vhost lo scrive il template del ruolo, che contiene solo il blocco
+  sulla porta 80: l'HTTPS lo aggiunge certbot dentro lo stesso file. Il
+  ruolo `letsencrypt` pero' si fermava a "il certificato esiste, non faccio
+  niente", quindi dopo ogni riscrittura del vhost nessuno rimetteva il
+  blocco 443, e al reload il sito restava raggiungibile solo in HTTP -
+  cioe' irraggiungibile, perche' la porta 80 rimanda alla 443 che non
+  ascolta piu'. E' successo davvero: tre minuti di sito giu'.
+  Ora si controlla il vhost, non solo l'esistenza del certificato, e se
+  l'HTTPS non c'e' certbot lo reinstalla (senza riemettere niente).
+  Verificato rilanciando il ruolo: certbot rimette il blocco 443 subito
+  dopo il template, e il reload arriva a fine play su una configurazione
+  gia' completa. Il sito non e' andato giu' un solo istante.
+
+- **Il dry-run di certbot partiva senza che nessuno lo chiedesse**, e da
+  solo faceva durare minuti ogni passaggio sul webserver. Aveva il tag
+  `never`, che di norma basta, ma questo ruolo arriva da un `include_role`
+  dentro `webserver` e l'inclusione propaga ai task inclusi i tag del
+  chiamante: con `--tags nginx` il task si ritrovava addosso anche `nginx`,
+  che batte `never`. Ora la condizione e' esplicita
+  (`letsencrypt_verify`), e i tag non la aggirano. Il ruolo passa da oltre
+  400 secondi a 12.
 
 - **SEO: il logo nel footer pesava 1 MB, scaricato in ogni pagina.**
   `footer-logo-2.svg` non era un disegno vettoriale: era un PNG da

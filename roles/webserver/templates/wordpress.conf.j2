@@ -32,6 +32,12 @@ server {
     location ~ /\.(?!well-known) { deny all; access_log off; log_not_found off; }
     location ~* ^/wp-content/uploads/.*\.(?:php|phtml|php\d)$ { deny all; }
 
+    # Vecchi indirizzi ancora in classifica sui motori (vedi
+    # webserver_redirect_permanenti): meglio un 301 che un 404.
+{% for r in webserver_redirect_permanenti | default([]) %}
+    location = {{ r.da }} { return 301 https://$host{{ r.a }}; }
+{% endfor %}
+
     location / {
         try_files $uri $uri/ /index.php?$args;
     }

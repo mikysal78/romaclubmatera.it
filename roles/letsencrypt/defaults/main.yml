@@ -17,3 +17,8 @@ letsencrypt_staging: false
 # Forza la ri-emissione anche se il certificato esiste già
 # (serve per passare da staging a produzione).
 letsencrypt_force: false
+
+# Il dry-run del rinnovo dura minuti: parte solo se lo si chiede, sia con
+# --tags verify sia con -e letsencrypt_verify=true. Il tag da solo non basta,
+# perche' l'inclusione da webserver propaga i tag del chiamante.
+letsencrypt_verify: false

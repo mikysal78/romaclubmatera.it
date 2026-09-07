@@ -2,3 +2,24 @@
 webserver_nginx_packages:
   - nginx
 webserver_client_max_body_size: "{{ php_upload_max_filesize }}"
+
+# Indirizzi vecchi che i motori di ricerca tengono ancora in classifica ma che
+# oggi risponderebbero 404, oppure doppioni da consolidare. Un 301 vale un
+# 404 piu' i visitatori che ci arrivano: /one-team-one-goal/ e' un contenuto
+# demo del tema, cancellato da tempo, e in due mesi ha portato nove clic
+# atterrati su "Pagina non trovata".
+# Le pagine /calendar/... sono i calendari SportsPress: il contenuto vero sta
+# su /calendario/, che li mostra entrambi.
+webserver_redirect_permanenti:
+  - da: "/one-team-one-goal/"
+    a: "/"
+  - da: "/score-the-winning-goal/"
+    a: "/"
+  - da: "/roma-juventus-2013/"
+    a: "/news/"
+  - da: "/calendar/calendario-as-roma-2026-27/"
+    a: "/calendario/"
+  - da: "/calendar/calendario-champions-league-2026-27/"
+    a: "/calendario/"
+  - da: "/calendar/calendario/"
+    a: "/calendario/"

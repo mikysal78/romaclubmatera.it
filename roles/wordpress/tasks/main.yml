@@ -337,6 +337,17 @@
     group: www-data
     mode: "0644"
 
+# Titolo, descrizione e dati strutturati per le pagine delle partite. Stavano
+# in prima pagina per ricerche tipo "roma real madrid data" e prendevano zero
+# clic, perche' nel risultato non dicevano nulla.
+- name: Installa il mu-plugin SEO delle pagine evento
+  ansible.builtin.copy:
+    src: rcm-eventi-seo.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-eventi-seo.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Il CSS su misura del sito stava in "Aspetto > Personalizza > CSS aggiuntivo",
 # cioe' dentro il database: un ripristino da zero se lo perdeva. Ora e' un file
 # del tema figlio, versionato qui. Il tema figlio pero' arriva con

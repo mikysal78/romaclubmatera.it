@@ -46,6 +46,18 @@
     path: "/etc/letsencrypt/live/{{ wp_domain }}/fullchain.pem"
   register: letsencrypt_cert
 
+# Il vhost lo scrive il ruolo webserver da un template che contiene solo il
+# blocco sulla porta 80: l'HTTPS lo aggiunge certbot, dentro lo stesso file.
+# Quindi ogni passaggio del ruolo webserver ricrea il file senza HTTPS, e se
+# qui ci si limitasse a "il certificato esiste, non faccio niente" il reload
+# successivo lascerebbe il sito raggiungibile solo in HTTP - cioe' irraggiungibile,
+# perche' la porta 80 rimanda alla 443 che non ascolta piu'. E' successo davvero.
+- name: Verifica se il vhost ha davvero l'HTTPS installato
+  ansible.builtin.command: grep -q '^\s*ssl_certificate ' /etc/nginx/sites-available/{{ wp_domain }}.conf
+  register: letsencrypt_vhost_https
+  changed_when: false
+  failed_when: false
+
 - name: Emetti/installa il certificato con certbot (plugin nginx)
   ansible.builtin.command:
     cmd: >-
@@ -56,7 +68,10 @@
       {{ '--staging' if letsencrypt_staging | bool else '' }}
       {{ '--force-renewal' if letsencrypt_force | bool else '' }}
   register: letsencrypt_certbot_run
-  when: (not letsencrypt_cert.stat.exists) or (letsencrypt_force | bool)
+  when: >-
+    (not letsencrypt_cert.stat.exists)
+    or (letsencrypt_force | bool)
+    or (letsencrypt_vhost_https.rc | default(1) != 0)
   changed_when: "'Congratulations' in letsencrypt_certbot_run.stdout or 'Successfully' in letsencrypt_certbot_run.stdout"
   notify: Reload nginx
 
@@ -67,8 +82,16 @@
     state: started
   failed_when: false
 
-- name: Test a vuoto del rinnovo (dry-run) - solo con tag 'verify'
+# Il tag 'never' da solo non basta: questo ruolo arriva da include_role dentro
+# webserver, e l'inclusione propaga ai task inclusi i tag del chiamante. Con
+# --tags nginx il task si ritrova addosso anche 'nginx', che batte 'never' e lo
+# fa partire: un dry-run di certbot dura minuti e allunga ogni passaggio sul
+# webserver senza che nessuno l'abbia chiesto. La condizione esplicita non si
+# lascia aggirare dai tag.
+- name: Test a vuoto del rinnovo (dry-run) - solo su richiesta
   ansible.builtin.command: certbot renew --dry-run
   changed_when: false
-  when: letsencrypt_cert.stat.exists or (letsencrypt_certbot_run is defined and letsencrypt_certbot_run is changed)
+  when:
+    - letsencrypt_verify | default(false) | bool
+    - letsencrypt_cert.stat.exists or (letsencrypt_certbot_run is defined and letsencrypt_certbot_run is changed)
   tags: [never, verify]
