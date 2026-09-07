@@ -1,13 +1,13 @@
 <?php
 /**
  * Plugin Name: RCM Compleanni
- * Description: Anagrafica soci importabile da CSV e invio automatico degli auguri di compleanno via il relay SMTP del sito.
+ * Description: Anagrafica soci importabile da CSV e invio automatico degli auguri di compleanno via il relay SMTP del sito. Per chi ha lasciato il numero, nella pagina Auguri c'e' anche il pulsante che apre WhatsApp col messaggio gia' scritto: l'invio resta a mano, ma il testo no.
  * Author: Roma Club Matera
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'RCM_COMPLEANNI_DB_VERSION', '1.0' );
+define( 'RCM_COMPLEANNI_DB_VERSION', '1.1' );
 define( 'RCM_COMPLEANNI_OPZIONI', 'rcm_compleanni_opzioni' );
 define( 'RCM_COMPLEANNI_HOOK', 'rcm_compleanni_invio_giornaliero' );
 define( 'RCM_COMPLEANNI_CAP', 'manage_options' );
@@ -30,6 +30,10 @@ function rcm_compleanni_opzioni() {
 		'oggetto'   => 'Tanti auguri, {nome}!',
 		'messaggio' => "Caro {nome},\n\ntutto il Roma Club Matera ti augura un felice compleanno!\n\nForza Roma sempre.\n\nIl Direttivo\nRoma Club Matera \"Francesco Totti\"",
 		'copia_a'   => '',
+		// Vuoto apposta: se nessuno scrive un testo diverso, su WhatsApp va
+		// quello dell'email. Meglio un messaggio solo da tenere aggiornato
+		// che due che col tempo si contraddicono.
+		'whatsapp'  => '',
 	);
 	return wp_parse_args( get_option( RCM_COMPLEANNI_OPZIONI, array() ), $default );
 }
@@ -54,6 +58,7 @@ function rcm_compleanni_installa() {
 		nome varchar(100) NOT NULL DEFAULT '',
 		cognome varchar(100) NOT NULL DEFAULT '',
 		email varchar(191) NOT NULL,
+		telefono varchar(20) NOT NULL DEFAULT '',
 		data_nascita date DEFAULT NULL,
 		attivo tinyint(1) NOT NULL DEFAULT 1,
 		ultimo_invio_anno smallint(6) DEFAULT NULL,
@@ -255,6 +260,83 @@ function rcm_compleanni_data( $valore ) {
 }
 
 /**
+ * Riduce un numero di telefono alla forma che vuole WhatsApp: solo cifre,
+ * col prefisso internazionale e senza il "+".
+ *
+ * I numeri nei fogli dei soci arrivano scritti in tutti i modi: "377 281 4538",
+ * "+39 377-281-4538", "0039 377 2814538". Le prime due forme dicono la stessa
+ * cosa, la terza pure. Quello che non si puo' indovinare e' il paese quando non
+ * c'e': senza prefisso si assume l'Italia, che per un club di Matera e'
+ * l'ipotesi ragionevole, e chi ha un numero estero lo scrive col "+".
+ *
+ * Restituisce '' se quel che resta non somiglia a un numero: meglio nessun
+ * pulsante che un pulsante che apre una chat con lo sconosciuto sbagliato.
+ */
+function rcm_compleanni_telefono( $grezzo ) {
+	$grezzo = trim( (string) $grezzo );
+	if ( '' === $grezzo ) {
+		return '';
+	}
+
+	$internazionale = ( '+' === substr( $grezzo, 0, 1 ) );
+	$cifre          = preg_replace( '/\D+/', '', $grezzo );
+
+	if ( '' === $cifre ) {
+		return '';
+	}
+
+	if ( '00' === substr( $cifre, 0, 2 ) ) {
+		// "00" e' il "+" scritto a parole.
+		$cifre          = substr( $cifre, 2 );
+		$internazionale = true;
+	}
+
+	if ( ! $internazionale ) {
+		// Numero nazionale italiano: il prefisso va aggiunto davanti a com'e'
+		// scritto. Sui fissi lo zero fa parte del numero (+39 0835 ...), quindi
+		// non si tocca.
+		$cifre = '39' . $cifre;
+	}
+
+	// E.164: al massimo 15 cifre. Sotto le otto non e' un numero raggiungibile.
+	if ( strlen( $cifre ) < 8 || strlen( $cifre ) > 15 ) {
+		return '';
+	}
+
+	return $cifre;
+}
+
+/**
+ * Indirizzo wa.me con gli auguri gia' scritti dentro.
+ *
+ * Il testo e' quello configurato per WhatsApp, o quello dell'email se non ne
+ * e' stato scritto uno apposta.
+ *
+ * @param object $socio Riga della tabella soci.
+ * @return string Indirizzo, oppure '' se il socio non ha un numero utilizzabile.
+ */
+function rcm_compleanni_link_whatsapp( $socio ) {
+	// In archivio il numero c'e' gia' in forma canonica, messo li' da
+	// rcm_compleanni_telefono() quando e' entrato. Ripassarlo di li' sarebbe
+	// sbagliato: "393772814538" non ha il "+" davanti e verrebbe scambiato per
+	// un numero nazionale, con un altro 39 appiccicato in testa. Qui si
+	// controlla solo che sia rimasto un numero plausibile.
+	$numero = preg_replace( '/\D+/', '', (string) ( $socio->telefono ?? '' ) );
+	if ( strlen( $numero ) < 8 || strlen( $numero ) > 15 ) {
+		return '';
+	}
+
+	$opzioni = rcm_compleanni_opzioni();
+	$testo   = '' !== trim( $opzioni['whatsapp'] ) ? $opzioni['whatsapp'] : $opzioni['messaggio'];
+
+	// La textarea rimanda i ritorni a capo come CRLF; a WhatsApp basta LF, e
+	// mezzo carattere in meno per riga e' mezzo carattere in meno da codificare.
+	$testo = str_replace( "\r\n", "\n", rcm_compleanni_sostituisci( $testo, $socio ) );
+
+	return 'https://wa.me/' . $numero . '?text=' . rawurlencode( $testo );
+}
+
+/**
  * Riconosce le colonne del CSV dall'intestazione, con i nomi più probabili.
  */
 function rcm_compleanni_mappa_colonne( $intestazione ) {
@@ -263,6 +345,7 @@ function rcm_compleanni_mappa_colonne( $intestazione ) {
 		'cognome'      => array( 'cognome', 'surname', 'last name', 'lastname' ),
 		'email'        => array( 'email', 'e-mail', 'mail', 'indirizzo email', 'posta elettronica' ),
 		'data_nascita' => array( 'data_nascita', 'data di nascita', 'data nascita', 'nascita', 'compleanno', 'birthday', 'data' ),
+		'telefono'     => array( 'telefono', 'tel', 'cellulare', 'cell', 'cellulare/whatsapp', 'whatsapp', 'mobile', 'phone', 'numero', 'numero di telefono' ),
 	);
 
 	$mappa = array();
@@ -335,9 +418,15 @@ function rcm_compleanni_importa( $percorso ) {
 			$esito['avvisi'][] = sprintf( 'Riga %d: data di nascita "%s" non riconosciuta, socio importato senza data.', $riga, $leggi( 'data_nascita' ) );
 		}
 
+		$telefono = rcm_compleanni_telefono( $leggi( 'telefono' ) );
+		if ( ! $telefono && $leggi( 'telefono' ) && count( $esito['avvisi'] ) < 10 ) {
+			$esito['avvisi'][] = sprintf( 'Riga %d: numero "%s" non riconosciuto, socio importato senza telefono.', $riga, $leggi( 'telefono' ) );
+		}
+
 		$dati = array(
 			'nome'         => sanitize_text_field( $leggi( 'nome' ) ),
 			'cognome'      => sanitize_text_field( $leggi( 'cognome' ) ),
+			'telefono'     => $telefono,
 			'data_nascita' => $data ? $data : null,
 		);
 
@@ -412,6 +501,7 @@ function rcm_compleanni_pagina_elenco() {
 					'nome'         => sanitize_text_field( wp_unslash( $_POST['nome'] ?? '' ) ),
 					'cognome'      => sanitize_text_field( wp_unslash( $_POST['cognome'] ?? '' ) ),
 					'email'        => $email,
+					'telefono'     => rcm_compleanni_telefono( sanitize_text_field( wp_unslash( $_POST['telefono'] ?? '' ) ) ),
 					'data_nascita' => rcm_compleanni_data( sanitize_text_field( wp_unslash( $_POST['data_nascita'] ?? '' ) ) ) ?: null,
 					'attivo'       => 1,
 					'creato_il'    => current_time( 'mysql' ),
@@ -450,6 +540,7 @@ function rcm_compleanni_pagina_elenco() {
 		)
 	);
 	$senza_data = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $tabella WHERE data_nascita IS NULL" );
+	$senza_tel  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $tabella WHERE telefono = ''" );
 	// phpcs:enable
 
 	?>
@@ -459,6 +550,9 @@ function rcm_compleanni_pagina_elenco() {
 			<strong><?php echo esc_html( $totale ); ?></strong> soci in archivio<?php
 			if ( $senza_data ) {
 				printf( ', di cui <strong>%d</strong> senza data di nascita (non ricevono gli auguri)', (int) $senza_data );
+			}
+			if ( $senza_tel ) {
+				printf( ' e <strong>%d</strong> senza cellulare (niente pulsante WhatsApp)', (int) $senza_tel );
 			}
 			?>.
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci-import' ) ); ?>">Importa da CSV</a>
@@ -473,16 +567,17 @@ function rcm_compleanni_pagina_elenco() {
 		</form>
 
 		<table class="widefat striped">
-			<thead><tr><th>Cognome</th><th>Nome</th><th>Email</th><th>Data di nascita</th><th>Ultimi auguri</th><th></th></tr></thead>
+			<thead><tr><th>Cognome</th><th>Nome</th><th>Email</th><th>Cellulare</th><th>Data di nascita</th><th>Ultimi auguri</th><th></th></tr></thead>
 			<tbody>
 			<?php if ( ! $soci ) : ?>
-				<tr><td colspan="6">Nessun socio. Comincia importando il CSV.</td></tr>
+				<tr><td colspan="7">Nessun socio. Comincia importando il CSV.</td></tr>
 			<?php endif; ?>
 			<?php foreach ( $soci as $socio ) : ?>
 				<tr>
 					<td><?php echo esc_html( $socio->cognome ); ?></td>
 					<td><?php echo esc_html( $socio->nome ); ?></td>
 					<td><?php echo esc_html( $socio->email ); ?></td>
+					<td><?php echo $socio->telefono ? esc_html( '+' . $socio->telefono ) : '<em>—</em>'; ?></td>
 					<td><?php echo $socio->data_nascita ? esc_html( mysql2date( 'd/m/Y', $socio->data_nascita ) ) : '<em>—</em>'; ?></td>
 					<td><?php echo $socio->ultimo_invio_anno ? esc_html( $socio->ultimo_invio_anno ) : '—'; ?></td>
 					<td>
@@ -520,6 +615,10 @@ function rcm_compleanni_pagina_elenco() {
 				<tr><th><label for="rcm-nome">Nome</label></th><td><input id="rcm-nome" name="nome" class="regular-text"></td></tr>
 				<tr><th><label for="rcm-cognome">Cognome</label></th><td><input id="rcm-cognome" name="cognome" class="regular-text"></td></tr>
 				<tr><th><label for="rcm-email">Email</label></th><td><input id="rcm-email" name="email" type="email" class="regular-text" required></td></tr>
+				<tr><th><label for="rcm-telefono">Cellulare</label></th><td>
+					<input id="rcm-telefono" name="telefono" class="regular-text" placeholder="377 281 4538">
+					<p class="description">Serve per il pulsante WhatsApp nella pagina Auguri. Senza prefisso si intende italiano; per un numero estero scrivi il <code>+</code>.</p>
+				</td></tr>
 				<tr><th><label for="rcm-data">Data di nascita</label></th><td><input id="rcm-data" name="data_nascita" placeholder="gg/mm/aaaa" class="regular-text"></td></tr>
 			</table>
 			<?php submit_button( 'Aggiungi socio' ); ?>
@@ -560,13 +659,16 @@ function rcm_compleanni_pagina_import() {
 	<div class="wrap">
 		<h1>Importa soci da CSV</h1>
 		<p>Il file deve avere <strong>la prima riga con i nomi delle colonne</strong>. Vengono riconosciute le colonne
-			<code>nome</code>, <code>cognome</code>, <code>email</code>, <code>data di nascita</code>
+			<code>nome</code>, <code>cognome</code>, <code>email</code>, <code>data di nascita</code> e
+			<code>cellulare</code> (o <code>telefono</code>, <code>whatsapp</code>)
 			(separatore virgola o punto e virgola, date in <code>gg/mm/aaaa</code> o <code>aaaa-mm-gg</code>).</p>
+		<p>I numeri si possono scrivere come vengono: spazi, trattini e <code>+39</code> vengono tolti da soli. Senza
+			prefisso il numero si intende italiano; per un numero estero serve il <code>+</code> davanti.</p>
 		<p>I soci già presenti vengono <strong>aggiornati</strong> in base all'email, non duplicati. Le celle vuote non
 			cancellano i dati già in archivio.</p>
-		<pre style="background:#fff;border:1px solid #ccd0d4;padding:1em;display:inline-block">nome;cognome;email;data di nascita
-Mario;Rossi;mario.rossi@example.it;24/03/1978
-Anna;Bianchi;anna.bianchi@example.it;02/11/1985</pre>
+		<pre style="background:#fff;border:1px solid #ccd0d4;padding:1em;display:inline-block">nome;cognome;email;cellulare;data di nascita
+Mario;Rossi;mario.rossi@example.it;377 281 4538;24/03/1978
+Anna;Bianchi;anna.bianchi@example.it;+39 340 1234567;02/11/1985</pre>
 		<form method="post" enctype="multipart/form-data">
 			<?php wp_nonce_field( 'rcm_import' ); ?>
 			<input type="hidden" name="rcm_azione" value="importa">
@@ -596,6 +698,7 @@ function rcm_compleanni_pagina_auguri() {
 				'oggetto'   => sanitize_text_field( wp_unslash( $_POST['oggetto'] ?? '' ) ),
 				'messaggio' => sanitize_textarea_field( wp_unslash( $_POST['messaggio'] ?? '' ) ),
 				'copia_a'   => sanitize_email( wp_unslash( $_POST['copia_a'] ?? '' ) ),
+				'whatsapp'  => sanitize_textarea_field( wp_unslash( $_POST['whatsapp'] ?? '' ) ),
 			);
 			update_option( RCM_COMPLEANNI_OPZIONI, $opzioni );
 			rcm_compleanni_pianifica( $ora_prima !== $opzioni['ora'] );
@@ -625,10 +728,27 @@ function rcm_compleanni_pagina_auguri() {
 
 	$tabella = rcm_compleanni_tabella();
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+	/*
+	 * La ricorrenza di quest'anno: giorno e mese di nascita riportati sull'anno
+	 * corrente. Serve costruirla davvero, invece di sottrarre i DAYOFYEAR: chi
+	 * e' nato in un anno bisestile dopo il 29 febbraio ha un giorno dell'anno
+	 * in piu' di oggi, e la differenza usciva sfasata di uno - il compleanno di
+	 * oggi risultava "domani".
+	 * Per chi e' nato il 29 febbraio, negli anni non bisestili STR_TO_DATE
+	 * restituisce NULL e si ripiega sul 28, cioe' la stessa data su cui cade
+	 * l'invio automatico.
+	 */
+	$ricorrenza = "COALESCE(
+		STR_TO_DATE( CONCAT( YEAR( CURDATE() ), '-', DATE_FORMAT( data_nascita, '%m-%d' ) ), '%Y-%m-%d' ),
+		STR_TO_DATE( CONCAT( YEAR( CURDATE() ), '-02-28' ), '%Y-%m-%d' )
+	)";
+
 	$prossimi = $wpdb->get_results(
-		"SELECT nome, cognome, email, data_nascita,
+		"SELECT nome, cognome, email, telefono, data_nascita,
 		        DATE_FORMAT( data_nascita, '%d/%m' ) AS giorno,
-		        ( DAYOFYEAR( data_nascita ) - DAYOFYEAR( CURDATE() ) + 366 ) % 366 AS mancano
+		        IF( $ricorrenza >= CURDATE(),
+		            DATEDIFF( $ricorrenza, CURDATE() ),
+		            DATEDIFF( $ricorrenza + INTERVAL 1 YEAR, CURDATE() ) ) AS mancano
 		 FROM $tabella
 		 WHERE attivo = 1 AND data_nascita IS NOT NULL
 		 HAVING mancano <= 30
@@ -682,6 +802,17 @@ function rcm_compleanni_pagina_auguri() {
 					</td>
 				</tr>
 				<tr>
+					<th scope="row"><label for="rcm-whatsapp">Messaggio WhatsApp</label></th>
+					<td>
+						<textarea id="rcm-whatsapp" name="whatsapp" rows="6" class="large-text" placeholder="Lascia vuoto per usare il messaggio qui sopra"><?php echo esc_textarea( $opzioni['whatsapp'] ); ?></textarea>
+						<p class="description">
+							Testo del pulsante WhatsApp nella tabella qui sotto. Stessi segnaposto.
+							Se lo lasci vuoto si usa il messaggio dell'email: su WhatsApp pero' si scrive piu' corto,
+							e la firma in fondo di solito non serve.
+						</p>
+					</td>
+				</tr>
+				<tr>
 					<th scope="row"><label for="rcm-copia">Copia nascosta a</label></th>
 					<td>
 						<input id="rcm-copia" name="copia_a" type="email" class="regular-text" value="<?php echo esc_attr( $opzioni['copia_a'] ); ?>">
@@ -705,21 +836,54 @@ function rcm_compleanni_pagina_auguri() {
 
 		<h2>Prossimi compleanni (30 giorni)</h2>
 		<table class="widefat striped">
-			<thead><tr><th>Giorno</th><th>Socio</th><th>Email</th><th>Mancano</th></tr></thead>
+			<thead><tr><th>Giorno</th><th>Socio</th><th>Email</th><th>Mancano</th><th>WhatsApp</th></tr></thead>
 			<tbody>
 			<?php if ( ! $prossimi ) : ?>
-				<tr><td colspan="4">Nessun compleanno nei prossimi 30 giorni.</td></tr>
+				<tr><td colspan="5">Nessun compleanno nei prossimi 30 giorni.</td></tr>
 			<?php endif; ?>
-			<?php foreach ( $prossimi as $socio ) : ?>
+			<?php
+			foreach ( $prossimi as $socio ) :
+				$oggi = 0 === (int) $socio->mancano;
+				$link = rcm_compleanni_link_whatsapp( $socio );
+				?>
 				<tr>
 					<td><?php echo esc_html( $socio->giorno ); ?></td>
 					<td><?php echo esc_html( trim( $socio->nome . ' ' . $socio->cognome ) ); ?></td>
 					<td><?php echo esc_html( $socio->email ); ?></td>
-					<td><?php echo 0 === (int) $socio->mancano ? '<strong>oggi</strong>' : esc_html( $socio->mancano . ' giorni' ); ?></td>
+					<td><?php
+						if ( $oggi ) {
+							echo '<strong>oggi</strong>';
+						} else {
+							echo 1 === (int) $socio->mancano ? 'domani' : esc_html( $socio->mancano . ' giorni' );
+						}
+					?></td>
+					<td>
+						<?php if ( $link ) : ?>
+							<?php
+							/*
+							 * esc_attr e non esc_url: esc_url cancella %0d e %0a - giusto,
+							 * contro l'iniezione di intestazioni - e qui quelle sequenze
+							 * sono i ritorni a capo del messaggio, che finirebbero in una
+							 * sbrodolata di righe attaccate. L'indirizzo non arriva da
+							 * fuori: il numero e' solo cifre e il testo passa da
+							 * rawurlencode, che neutralizza virgolette e maggiore/minore.
+							 */
+							?>
+							<a class="button <?php echo $oggi ? 'button-primary' : ''; ?>"
+							   href="<?php echo esc_attr( $link ); ?>"
+							   target="_blank" rel="noopener noreferrer">Auguri su WhatsApp</a>
+						<?php else : ?>
+							<span class="description">nessun cellulare</span>
+						<?php endif; ?>
+					</td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>
 		</table>
+		<p class="description">
+			Il pulsante apre WhatsApp col messaggio gia' scritto: l'invio resta a chi clicca, cosi' gli auguri
+			partono da una persona e non da un automatismo. Il pulsante pieno e' quello di chi compie gli anni oggi.
+		</p>
 	</div>
 	<?php
 }

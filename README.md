@@ -433,12 +433,37 @@ In bacheca compare il menu **Soci**, riservato agli amministratori:
 - **Elenco soci** — ricerca, paginazione, aggiunta manuale, eliminazione; in cima il
   totale e quanti soci sono senza data di nascita (quelli vengono esclusi dagli invii);
 - **Importa CSV** — prima riga con i nomi delle colonne (`nome`, `cognome`, `email`,
-  `data di nascita`), separatore `,` o `;`, date `gg/mm/aaaa` o `aaaa-mm-gg`. L'import è
-  **idempotente sull'email**: aggiorna invece di duplicare e le celle vuote non
+  `cellulare`, `data di nascita`), separatore `,` o `;`, date `gg/mm/aaaa` o `aaaa-mm-gg`.
+  L'import è **idempotente sull'email**: aggiorna invece di duplicare e le celle vuote non
   sovrascrivono i dati già in archivio;
 - **Auguri** — interruttore on/off, ora di invio, oggetto e testo con i segnaposto
   `{nome}` `{cognome}` `{eta}` `{anno_nascita}`, indirizzo in Ccn, prova di invio con dati
-  finti e tabella dei compleanni nei 30 giorni successivi.
+  finti e tabella dei compleanni nei 30 giorni successivi, con accanto il pulsante WhatsApp.
+
+#### Gli auguri su WhatsApp
+
+Nella tabella dei prossimi compleanni, ogni socio che ha lasciato il cellulare ha accanto
+un pulsante **Auguri su WhatsApp**: apre WhatsApp (app o web) con il messaggio già scritto
+e i segnaposto sostituiti. Chi compie gli anni oggi ha il pulsante pieno, gli altri quello
+scarico. A premere invio è una persona, non il sito.
+
+È una scelta, non un ripiego. Mandare messaggi WhatsApp da soli richiederebbe la
+**Cloud API** di Meta: un numero dedicato che non può stare anche sull'app normale (quello
+del club invece ci sta), la verifica dell'azienda, un template approvato — un augurio di
+compleanno ricade in categoria *marketing*, quindi **a pagamento a messaggio** — e il
+consenso esplicito del socio da raccogliere al tesseramento. Le scorciatoie non ufficiali
+(whatsapp-web.js, Baileys) violano i termini e si portano dietro il rischio che il numero
+del club venga bannato: il numero è il contatto pubblico, non vale la pena.
+
+Il testo del messaggio WhatsApp si imposta nella scheda *Auguri*. Lasciandolo vuoto si usa
+quello dell'email: un messaggio solo da tenere aggiornato invece di due che col tempo si
+contraddicono.
+
+I numeri si scrivono come vengono (`377 281 4538`, `+39 377-281-4538`, `0039 377 2814538`
+sono la stessa cosa): spazi, punti, trattini e prefissi vengono normalizzati in fase di
+import in cifre pure, come le vuole `wa.me`. Senza prefisso il numero si intende italiano;
+per un numero estero serve il `+`. Quello che non somiglia a un numero viene scartato e il
+socio resta senza pulsante, che è meglio di un pulsante che apre la chat sbagliata.
 
 Note di funzionamento:
 

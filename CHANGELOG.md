@@ -8,6 +8,26 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Gli auguri di compleanno anche su WhatsApp**, a mano ma col testo gia'
+  scritto (`roles/wordpress/files/rcm-compleanni.php`). Nella tabella dei
+  prossimi compleanni ogni socio che ha lasciato il cellulare ha accanto il
+  pulsante *Auguri su WhatsApp*: apre `wa.me` col messaggio pronto e i
+  segnaposto sostituiti, e a premere invio e' una persona. Chi compie gli
+  anni oggi ha il pulsante pieno.
+  Automatizzarlo davvero avrebbe voluto dire la Cloud API di Meta: numero
+  dedicato che non puo' stare anche sull'app normale (quello del club
+  invece ci sta), verifica dell'azienda, template approvato in categoria
+  marketing quindi a pagamento a messaggio, consenso da raccogliere al
+  tesseramento. Le librerie non ufficiali si portano dietro il rischio che
+  il numero pubblico del club venga bannato. Il pulsante costa zero e si
+  puo' usare da subito; se un giorno la lista cresce, il lavoro fatto
+  (colonna telefono, import, consenso) serve identico anche all'API.
+  Schema dei soci alla versione 1.1 con la colonna `telefono`, import CSV
+  che riconosce `cellulare`/`telefono`/`whatsapp` e normalizza i numeri in
+  cifre pure con prefisso internazionale, campo nel modulo di inserimento
+  manuale e testo del messaggio WhatsApp configurabile a parte (vuoto =
+  quello dell'email).
+
 - **I pulsanti social si aprono in una scheda nuova**
   (`roles/wordpress/files/rcm-link-social.php`). Chi cliccava Facebook o
   Instagram dal footer usciva dal sito e perdeva la pagina su cui stava.
@@ -76,6 +96,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Chi e' nato in un anno bisestile aveva il compleanno sfasato di un
+  giorno** nella tabella dei prossimi compleanni. Il conto sottraeva i
+  `DAYOFYEAR` della data di nascita e di oggi, ma dopo il 29 febbraio un
+  anno bisestile ha un giorno dell'anno in piu': chi compiva gli anni oggi
+  leggeva "domani". Ora la ricorrenza si costruisce davvero, portando
+  giorno e mese sull'anno corrente (col 28 febbraio come ripiego per i nati
+  il 29, la stessa data su cui gia' cade l'invio). Veniva fuori provando il
+  pulsante WhatsApp, che sul giorno sbagliato si accendeva alla riga
+  sbagliata.
 
 - **Il titolo della striscia diceva "Cosa dicono i soci"**, ma le
   recensioni non le lasciano solo i tesserati: ora dice "Cosa dicono di
