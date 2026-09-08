@@ -8,6 +8,29 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Biglietteria: una richiesta per partita**
+  (`roles/wordpress/files/rcm-biglietti.php`). Nelle tabelle del calendario
+  c'e' una colonna in piu' con il link *Biglietteria* accanto a ogni gara
+  **ancora da giocare** - su una partita finita sarebbe un invito a chiedere
+  biglietti per qualcosa che e' successo. Il link porta a `/biglietti/` con
+  la partita attaccata all'indirizzo, e il modulo si apre gia' compilato.
+  La colonna si aggancia agli hook `sportspress_event_list_head_row` e
+  `sportspress_event_list_row`: SportsPress non viene toccato, quindi un suo
+  aggiornamento non porta via niente.
+  Il modulo e' un Contact Form 7 (numero di biglietti, nome, cognome,
+  telefono, email, settore, note) e arriva a `info@`. Il campo della partita
+  e' di sola lettura e obbligatorio: **senza partita il modulo non si mostra
+  affatto**, perche' una richiesta che non dice per quale gara e'
+  inservibile per chi la riceve e una delusione per chi l'ha scritta.
+  Accanto c'e' lo schema dei quattro settori dell'Olimpico, **disegnato qui**
+  in SVG (2 KB): le piantine della societa' e delle biglietterie sono opere
+  protette e non si copiano, mentre quali siano i settori e' un fatto.
+  L'anello e' diviso sulle diagonali e non sugli assi, cosi' ogni settore sta
+  tutto in un colore e la sua etichetta non finisce a cavallo di due fondi.
+  Aggiornata anche la privacy policy: dati raccolti, finalita' (misure
+  precontrattuali richieste dall'interessato, art. 6.1.b) e conservazione.
+  Il modulo non raccoglie pagamenti, e l'informativa lo dice.
+
 - **La locandina de Il Romanista e' accesa.** L'autorizzazione della
   redazione e' arrivata, e la card in fondo alla colonna destra del footer
   mostra la prima pagina del giorno al posto del testo. Il filtro

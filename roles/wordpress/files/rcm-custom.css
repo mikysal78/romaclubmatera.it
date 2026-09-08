@@ -403,3 +403,86 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 52px;
   }
 }
+
+
+/* === Biglietteria: modulo di richiesta accanto allo schema dei settori === */
+/* markup nel mu-plugin rcm-biglietti.php */
+.rcm-big {
+  display: grid;
+  /* Il modulo e' la cosa da compilare, lo schema serve a decidere: al modulo
+     lo spazio maggiore. Sotto i 900px vanno uno sotto l'altro, con lo schema
+     per primo - da telefono si guarda la piantina e poi si scrive. */
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .rcm-big {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .rcm-big-settori { order: -1; }
+}
+
+.rcm-big-partita {
+  margin: 0 0 22px;
+  padding: 14px 18px;
+  border-left: 3px solid #e6af14;
+  background: rgba(230, 175, 20, 0.07);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.rcm-big-partita strong {
+  font-size: 18px;
+  color: #e6af14;
+}
+
+.rcm-big-avviso {
+  border-left-color: #8e1f2f;
+  background: rgba(142, 31, 47, 0.08);
+}
+
+.rcm-big-nota {
+  margin-top: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #9a9a9a;
+}
+
+.rcm-big-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.rcm-big-didascalia {
+  max-width: 460px;
+  margin: 14px auto 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #9a9a9a;
+  text-align: center;
+}
+
+/* Il link nella colonna Biglietteria delle tabelle del calendario */
+.rcm-big-link {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid rgba(230, 175, 20, 0.5);
+  border-radius: 4px;
+  color: #e6af14;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.rcm-big-link:hover,
+.rcm-big-link:focus-visible {
+  border-color: #e6af14;
+  background: rgba(230, 175, 20, 0.14);
+}

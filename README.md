@@ -422,6 +422,7 @@ repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
 | `rcm-newsletter-report.php` | `wordpress` | report settimanale via email degli iscritti alla newsletter |
 | `rcm-schema-club.php` | `wordpress` | mette indirizzo, telefono, email e anno di fondazione nei dati strutturati |
 | `rcm-eventi-seo.php` | `wordpress` | titolo con la data, descrizione e `SportsEvent` sulle pagine delle partite |
+| `rcm-biglietti.php` | `wordpress` | colonna "Biglietteria" nel calendario e modulo di richiesta per partita |
 | `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
 
 `rcm-enqueue-custom-css.php`, che sta nella stessa cartella, **non** è un mu-plugin: è lo

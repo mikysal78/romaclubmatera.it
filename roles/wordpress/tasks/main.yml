@@ -348,6 +348,16 @@
     group: www-data
     mode: "0644"
 
+# Colonna "Biglietteria" nelle tabelle del calendario e pagina con il modulo di
+# richiesta accanto allo schema dei settori dell'Olimpico.
+- name: Installa il mu-plugin della richiesta biglietti
+  ansible.builtin.copy:
+    src: rcm-biglietti.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-biglietti.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Il CSS su misura del sito stava in "Aspetto > Personalizza > CSS aggiuntivo",
 # cioe' dentro il database: un ripristino da zero se lo perdeva. Ora e' un file
 # del tema figlio, versionato qui. Il tema figlio pero' arriva con
