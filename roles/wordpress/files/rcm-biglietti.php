@@ -196,7 +196,8 @@ function rcm_big_riservato() {
 	$link    = $tessera ? get_permalink( $tessera ) : home_url( '/' );
 
 	return sprintf(
-		'<p class="rcm-big-tesserati">Il servizio &egrave; riservato ai <strong>tesserati del Club</strong>.'
+		'<p class="rcm-big-tesserati">Il servizio &egrave; riservato ai <strong>tesserati del Roma Club '
+		. 'Matera &ldquo;Francesco Totti&rdquo;</strong>.'
 		. '<br>Non sei ancora tesserato? <a href="%s">Tesserati al Roma Club Matera</a>.</p>',
 		esc_url( $link )
 	);
