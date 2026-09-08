@@ -37,6 +37,15 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   dettaglio che lo rende riconoscibile dall'alto. Disegnata come forma da
   stadio - due rettilinei e due curve - con dentro il prato e il campo, non
   il vuoto.
+  La mappa dei settori e' la veduta prospettica dell'Olimpico indicata dal
+  Club. Lo sfondo bianco non e' stato scontornato: lo stadio e' quasi tutto
+  bianco e ritagliato sul nero sembrava un adesivo. Il bianco resta e si
+  dissolve **seguendo la sagoma dello stadio** - la maschera e' la sagoma
+  stessa allargata e sfocata - invece che dentro un rettangolo o un ovale,
+  che si vedevano come una forma appiccicata sopra. Le etichette dei
+  settori restano nella zona piena, quindi non sbiadiscono.
+  Il disegno SVG resta nel codice come riserva: se la figura non si trova
+  in libreria, la pagina ripiega su quello invece di mostrare un buco.
   Aggiornata anche la privacy policy: dati raccolti, finalita' (misure
   precontrattuali richieste dall'interessato, art. 6.1.b) e conservazione.
   Il modulo non raccoglie pagamenti, e l'informativa lo dice.
