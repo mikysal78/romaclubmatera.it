@@ -55,6 +55,12 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   fuori dalla tendina** ed e' disegnata in grigio con la dicitura "solo
   abbonati": lasciarla selezionabile avrebbe fatto chiedere l'unica cosa che
   non si puo' avere.
+  Chi invia riceve una **risposta automatica bilingue, italiano e inglese**:
+  riepilogo della richiesta, e le due condizioni ripetute nero su bianco -
+  che e' solo un'informativa e non un acquisto, e che il servizio e' per i
+  tesserati, col link per tesserarsi. Sulla pagina quelle condizioni ci
+  sono gia', ma chi compila e chiude la scheda non se le porta dietro:
+  nell'email restano.
   In pagina si dice che **gli accrediti online sono solo informativi** - non
   una vendita - e che chi li chiede viene ricontattato via email, telefono o
   WhatsApp; e che il servizio e' **riservato ai tesserati**, con il link al
