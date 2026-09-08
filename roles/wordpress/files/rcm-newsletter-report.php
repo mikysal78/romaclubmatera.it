@@ -208,6 +208,20 @@ function rcm_nl_dati() {
 }
 
 /**
+ * Una data in italiano, coi mesi minuscoli.
+ *
+ * La localizzazione di WordPress scrive "8 Settembre 2026": in italiano il
+ * mese vuole la minuscola.
+ *
+ * @param int    $quando  Timestamp.
+ * @param string $formato Formato per wp_date().
+ * @return string
+ */
+function rcm_nl_data( $quando, $formato ) {
+	return mb_strtolower( wp_date( $formato, $quando ), 'UTF-8' );
+}
+
+/**
  * Il corpo del messaggio, in HTML.
  */
 function rcm_nl_corpo( $dati ) {
@@ -215,8 +229,8 @@ function rcm_nl_corpo( $dati ) {
 
 	$html = '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px;color:#2b2b2b">';
 	$html .= '<p style="color:#6b6155">Newsletter <strong>' . esc_html( $dati['lista']['nome'] ) . '</strong><br>'
-		. 'dal ' . esc_html( wp_date( 'j F', $dati['da']->getTimestamp() ) )
-		. ' al ' . esc_html( wp_date( 'j F Y', $fino->getTimestamp() ) ) . '</p>';
+		. 'dal ' . esc_html( rcm_nl_data( $dati['da']->getTimestamp(), 'j F' ) )
+		. ' al ' . esc_html( rcm_nl_data( $fino->getTimestamp(), 'j F Y' ) ) . '</p>';
 
 	$html .= '<p style="font-size:34px;line-height:40px;margin:18px 0 0"><strong>' . (int) $dati['lista']['iscritti'] . '</strong></p>'
 		. '<p style="margin:0;color:#6b6155">iscritti in tutto</p>';
@@ -237,7 +251,7 @@ function rcm_nl_corpo( $dati ) {
 				. ( $nome ? '<strong>' . esc_html( $nome ) . '</strong> &middot; ' : '' )
 				. esc_html( $m['email_address'] )
 				. '<br><span style="color:#6b6155;font-size:13px">'
-				. esc_html( wp_date( 'j F, H:i', strtotime( $m['timestamp_opt'] ) ) )
+				. esc_html( rcm_nl_data( strtotime( $m['timestamp_opt'] ), 'j F, H:i' ) )
 				. '</span></li>';
 		}
 		$html .= '</ul>';
