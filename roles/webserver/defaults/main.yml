@@ -3,6 +3,28 @@ webserver_nginx_packages:
   - nginx
 webserver_client_max_body_size: "{{ php_upload_max_filesize }}"
 
+# ---------------------------------------------------------------------------
+#  HTTPS
+# ---------------------------------------------------------------------------
+# Il certificato NON lo emette questo progetto: arriva gia' pronto sul CT,
+# depositato dal playbook ansible-dns, che lo ottiene per validazione DNS.
+# Qui lo si serve e basta.
+#
+# Il blocco 443 sta nel template del vhost, non aggiunto dopo da certbot. La
+# differenza non e' di stile: finche' l'HTTPS lo iniettava certbot, ogni
+# riscrittura del vhost lasciava il sito con la sola porta 80, che rimanda
+# alla 443 - cioe' irraggiungibile finche' qualcuno non rimetteva il blocco.
+# E' successo davvero, per tre minuti. Con il template autosufficiente quella
+# finestra non esiste.
+webserver_tls: true
+webserver_tls_cert: "/etc/ssl/acme/{{ wp_domain }}.fullchain.pem"
+webserver_tls_key: "/etc/ssl/acme/{{ wp_domain }}.key"
+
+# Emissione del certificato con certbot dal ruolo 'letsencrypt'. Spenta: se ne
+# occupa ansible-dns. Riaccenderla solo su host che non passano di li', e
+# sapendo che certbot riscrive il vhost per conto suo.
+webserver_certbot: false
+
 # Indirizzi vecchi che i motori di ricerca tengono ancora in classifica ma che
 # oggi risponderebbero 404, oppure doppioni da consolidare. Un 301 vale un
 # 404 piu' i visitatori che ci arrivano: /one-team-one-goal/ e' un contenuto

@@ -177,6 +177,26 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Il certificato lo deposita ansible-dns, non questo progetto.** Il vhost
+  ora porta il blocco 443 dentro il proprio template, puntato a
+  `/etc/ssl/acme/<dominio>.fullchain.pem`, e certbot esce dal giro
+  (`webserver_certbot: false`). Prima l'HTTPS lo iniettava certbot nello
+  stesso file che il ruolo riscrive, quindi due strumenti si contendevano
+  il vhost e ogni passaggio del ruolo lasciava il sito sulla sola porta 80
+  - che rimanda alla 443, cioe' irraggiungibile.
+  Il blocco 443 si scrive solo se il certificato c'e' davvero: un
+  `ssl_certificate` che punta al vuoto non degrada il servizio, impedisce a
+  nginx di partire. Se manca, il ruolo lo dice e serve il solo HTTP finche'
+  ansible-dns non l'ha depositato.
+  Tolti anche gli `include` da `/etc/letsencrypt/`: su un host dove certbot
+  non gira sono una dipendenza nascosta da una directory di un altro
+  strumento. I parametri TLS (gli stessi, da ssl-config.mozilla.org) sono
+  ora nel template. Approfittandone, **HTTP/2 acceso**: non c'era.
+  La correzione di poche ore fa - far reinstallare certbot quando il vhost
+  perde l'HTTPS - era il rimedio giusto per la diagnosi sbagliata: curava
+  il sintomo tenendo in piedi la causa, cioe' certbot dentro un file che
+  non gli appartiene.
+
 - **Un passaggio del ruolo `webserver` lasciava il sito senza HTTPS.**
   Il vhost lo scrive il template del ruolo, che contiene solo il blocco
   sulla porta 80: l'HTTPS lo aggiunge certbot dentro lo stesso file. Il

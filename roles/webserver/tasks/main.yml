@@ -38,11 +38,33 @@
     - /etc/nginx/sites-available/default
   notify: Reload nginx
 
+# Il certificato lo deposita ansible-dns, non questo progetto: prima di
+# scrivere il vhost si guarda se c'e'. Se manca si serve il solo HTTP, che e'
+# spiacevole ma funziona; un ssl_certificate che punta al vuoto invece
+# impedisce a nginx di partire, e il sito sparisce del tutto.
+- name: Verifica se il certificato TLS e' gia' sul CT
+  ansible.builtin.stat:
+    path: "{{ webserver_tls_cert }}"
+  register: webserver_cert
+  when: webserver_tls | bool
+
+- name: Avviso - certificato TLS assente, il vhost restera' in HTTP
+  ansible.builtin.debug:
+    msg: >-
+      {{ webserver_tls_cert }} non c'e': il vhost viene scritto senza HTTPS.
+      Il certificato lo deposita il playbook ansible-dns; una volta li',
+      basta rilanciare questo ruolo.
+  when:
+    - webserver_tls | bool
+    - not (webserver_cert.stat.exists | default(false))
+
 - name: Configura il vhost WordPress
   ansible.builtin.template:
     src: wordpress.conf.j2
     dest: "/etc/nginx/sites-available/{{ wp_domain }}.conf"
     mode: "0644"
+  vars:
+    webserver_tls_presente: "{{ webserver_cert.stat.exists | default(false) }}"
   notify: Reload nginx
 
 - name: Abilita il vhost WordPress
@@ -73,10 +95,17 @@
     enabled: true
     state: started
 
-# ---------- HTTPS Let's Encrypt (opzionale) ----------
-# La logica certbot vive nel ruolo dedicato 'letsencrypt' (riusabile anche
-# tramite il playbook standalone letsencrypt.yml).
-- name: Emetti il certificato Let's Encrypt
+# ---------- Emissione con certbot (spenta) ----------
+# Su questo sito il certificato arriva da ansible-dns, per validazione DNS, e
+# il vhost qui sopra lo serve gia' da se'. Certbot resta disponibile per host
+# che non passano da li' - si accende con webserver_certbot -, ma va acceso
+# sapendo che riscrive il vhost per conto suo e che allora due strumenti
+# scrivono lo stesso file.
+# enable_https continua a significare "questo sito parla HTTPS"; a emetterlo
+# ci pensa qualcun altro.
+- name: Emetti il certificato con certbot
   ansible.builtin.include_role:
     name: letsencrypt
-  when: enable_https | bool
+  when:
+    - enable_https | bool
+    - webserver_certbot | default(false) | bool

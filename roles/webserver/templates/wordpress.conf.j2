@@ -3,11 +3,48 @@
 # Bypass cache per utenti loggati / POST / area admin
 map $request_method $wp_skip_method { default 0; POST 1; }
 {% endif %}
+{# Il certificato lo deposita ansible-dns: si serve l'HTTPS solo se i file
+   ci sono davvero. Un ssl_certificate che punta a un file inesistente non
+   degrada il servizio, impedisce a nginx di partire del tutto. #}
+{% set tls = (webserver_tls | default(true) | bool) and (webserver_tls_presente | default(false) | bool) %}
+{% set nomi = wp_domain ~ (' www.' ~ wp_domain if wp_canonical != 'non-www' else '') %}
+{% if tls %}
 
+# Tutto quello che arriva in chiaro passa a HTTPS.
 server {
     listen 80;
     listen [::]:80;
-    server_name {{ wp_domain }}{{ ' www.' ~ wp_domain if wp_canonical != 'non-www' else '' }};
+    server_name {{ nomi }};
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+{% endif %}
+
+server {
+{% if tls %}
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+
+    ssl_certificate     {{ webserver_tls_cert }};
+    ssl_certificate_key {{ webserver_tls_key }};
+
+    # Parametri da ssl-config.mozilla.org, scritti qui e non inclusi da
+    # /etc/letsencrypt/: su questo host certbot non gira, e un include che
+    # punta a una directory di un altro strumento e' una dipendenza nascosta.
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
+{% else %}
+    listen 80;
+    listen [::]:80;
+{% endif %}
+    server_name {{ nomi }};
 
     root {{ wp_root }};
     index index.php;
@@ -35,7 +72,7 @@ server {
     # Vecchi indirizzi ancora in classifica sui motori (vedi
     # webserver_redirect_permanenti): meglio un 301 che un 404.
 {% for r in webserver_redirect_permanenti | default([]) %}
-    location = {{ r.da }} { return 301 https://$host{{ r.a }}; }
+    location = {{ r.da }} { return 301 {{ 'https' if tls else 'http' }}://$host{{ r.a }}; }
 {% endfor %}
 
     location / {
