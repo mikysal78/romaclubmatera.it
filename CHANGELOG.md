@@ -44,10 +44,8 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   una vendita - e che chi li chiede viene ricontattato via email, telefono o
   WhatsApp; e che il servizio e' **riservato ai tesserati**, con il link al
   tesseramento per chi non lo e' ancora e una casella di conferma nel
-  modulo. Le richieste dei Roma Club infatti passano dall'Unione Tifosi
-  Romanisti, che tiene la biglietteria per i club affiliati
-  (`biglietti.utr@gmail.com` per le casalinghe,
-  `trasferteeuropa.utr@gmail.com` per le gare in Europa).
+  modulo: il Club puo' procurare i biglietti solo ai propri tesserati, e il
+  requisito cosi' non resta soltanto scritto.
 
 - **La locandina de Il Romanista e' accesa.** L'autorizzazione della
   redazione e' arrivata, e la card in fondo alla colonna destra del footer

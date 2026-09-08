@@ -187,19 +187,17 @@ function rcm_big_pagina( $atts ) {
 /**
  * Il riquadro che dice a chi e' riservato il servizio.
  *
- * Le richieste dei Roma Club passano dall'Unione Tifosi Romanisti, che le
- * gestisce per i club affiliati: per questo il servizio vale per i tesserati.
- * Chi non lo e' non va lasciato davanti a una porta chiusa, ma davanti al
- * modulo di tesseramento.
+ * Il Club puo' procurare i biglietti solo ai propri tesserati. Chi non lo e'
+ * non va lasciato davanti a una porta chiusa, ma davanti al modulo di
+ * tesseramento: e' l'unica cosa che deve fare per rientrare.
  */
 function rcm_big_riservato() {
 	$tessera = get_page_by_path( 'tesseramento-2026-27' );
 	$link    = $tessera ? get_permalink( $tessera ) : home_url( '/' );
 
 	return sprintf(
-		'<p class="rcm-big-tesserati">Il servizio &egrave; riservato ai <strong>tesserati del Club</strong>: '
-		. 'le richieste vengono inoltrate all&rsquo;Unione Tifosi Romanisti, che tiene la biglietteria per i '
-		. 'Roma Club affiliati.<br>Non sei ancora tesserato? <a href="%s">Tesserati al Roma Club Matera</a>.</p>',
+		'<p class="rcm-big-tesserati">Il servizio &egrave; riservato ai <strong>tesserati del Club</strong>.'
+		. '<br>Non sei ancora tesserato? <a href="%s">Tesserati al Roma Club Matera</a>.</p>',
 		esc_url( $link )
 	);
 }
