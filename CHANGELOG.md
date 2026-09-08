@@ -8,6 +8,24 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **La locandina de Il Romanista e' accesa.** L'autorizzazione della
+  redazione e' arrivata, e la card in fondo alla colonna destra del footer
+  mostra la prima pagina del giorno al posto del testo. Il filtro
+  `rcm_romanista_locandina_url` era gia' pronto da mesi proprio per questo:
+  non c'e' stato niente da riscrivere nel markup.
+  Due scelte che restano quelle di prima: l'immagine si **copia** sul nostro
+  server due volte al giorno, non si aggancia alla loro (un hotlink consuma
+  banda altrui e si rompe appena cambiano un percorso); e se la copia di
+  oggi non c'e', la card torna al testo - meglio nessuna locandina che la
+  prima pagina di ieri spacciata per quella di oggi.
+  L'originale pesa 2,1 MB a 1831x2599: nel footer di ogni pagina sarebbe
+  stato assurdo per una figura alta poco piu' di trecento pixel. Viene
+  ridotta a 480 px di larghezza, **76 KB**. Sotto l'immagine c'e' il credito
+  alla testata.
+  Aggiunta anche a `nascondi_sempre` del controllo visivo: cambia ogni
+  giorno, che e' il suo mestiere, e senza quello avrebbe segnalato una
+  differenza su ogni pagina ogni mattina.
+
 - **Le pagine delle partite si presentano nei motori**
   (`roles/wordpress/files/rcm-eventi-seo.php`). Titolo con la data dentro
   (`AS Roma-Real Madrid, 14 ottobre 2026`), descrizione generata dai dati

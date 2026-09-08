@@ -14,10 +14,11 @@
     ]
   ],
   "tolleranza_default": 0.05,
-  "_commento_nascondi_sempre": "La striscia delle recensioni sta sopra il footer di ogni pagina e pesca le schede a caso (orderby rand), quindi cambia a ogni caricamento; l'elenco sulla pagina Recensioni fa lo stesso. Si nasconde il contenuto e si lascia il titolo, cosi' l'ingombro resta.",
+  "_commento_nascondi_sempre": "La striscia delle recensioni sta sopra il footer di ogni pagina e pesca le schede a caso (orderby rand), quindi cambia a ogni caricamento; l'elenco sulla pagina Recensioni fa lo stesso. La locandina de Il Romanista cambia ogni giorno, che e' il suo mestiere. Si nasconde il contenuto e si lascia il titolo, cosi' l'ingombro resta.",
   "nascondi_sempre": [
     ".rcm-recensioni-vista",
-    ".rcm-recensioni-elenco"
+    ".rcm-recensioni-elenco",
+    ".rcm-romanista-locandina"
   ],
   "pagine": [
     {
