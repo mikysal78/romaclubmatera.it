@@ -31,6 +31,12 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   basso: **le curve stanno dietro le porte**, e nella prima versione erano
   finite sui lati lunghi. Girato il campo torna anche la geografia vera -
   Nord a nord, Sud a sud, Monte Mario a ovest e il Tevere a est.
+  Ci sono voluti tre passaggi perche' somigliasse all'Olimpico e non a uno
+  stadio qualunque: quello che mancava era la **pista d'atletica**, che e'
+  poi il motivo per cui li' le tribune sono cosi' lontane dal campo ed e' il
+  dettaglio che lo rende riconoscibile dall'alto. Disegnata come forma da
+  stadio - due rettilinei e due curve - con dentro il prato e il campo, non
+  il vuoto.
   Aggiornata anche la privacy policy: dati raccolti, finalita' (misure
   precontrattuali richieste dall'interessato, art. 6.1.b) e conservazione.
   Il modulo non raccoglie pagamenti, e l'informativa lo dice.

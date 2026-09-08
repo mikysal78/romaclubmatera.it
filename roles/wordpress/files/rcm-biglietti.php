@@ -214,45 +214,59 @@ function rcm_big_schema() {
 	return <<<'SVG'
 <svg class="rcm-big-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 460" role="img" aria-labelledby="rcm-olimpico-t rcm-olimpico-d">
   <title id="rcm-olimpico-t">Stadio Olimpico: i settori</title>
-  <desc id="rcm-olimpico-d">Schema dei settori dello Stadio Olimpico di Roma: Curva Nord e Curva Sud dietro le porte, Tribuna Monte Mario a ovest, e sul lato Tevere i Distinti Nord, la Tribuna Tevere e i Distinti Sud. La Curva Sud &#232; riservata agli abbonati.</desc>
+  <desc id="rcm-olimpico-d">Schema dello Stadio Olimpico di Roma visto dall&#8217;alto: il campo, la pista d&#8217;atletica che lo circonda e l&#8217;anello delle tribune, diviso in Curva Nord, Distinti Nord, Tribuna Tevere, Distinti Sud, Curva Sud e Tribuna Monte Mario. La Curva Sud &#232; riservata agli abbonati.</desc>
 
-  <ellipse cx="170" cy="230" rx="155" ry="220" fill="#141414" stroke="#2c2c2c" stroke-width="1"/>
+  <ellipse cx="170" cy="230" rx="158" ry="222" fill="#141414" stroke="#2c2c2c" stroke-width="1"/>
 
-  <!-- Sul lato Tevere l'anello si divide in tre: Distinti Nord, Tribuna
-       Tevere e Distinti Sud. Sono quelli in cui il Club prende posto di
-       solito. La Curva Sud e' grigia perche' e' riservata agli abbonati:
-       disegnarla come le altre avrebbe fatto chiedere l'unica cosa che non
-       si puo' avere. -->
+  <!-- I settori come spicchi che partono dal centro: il buco al centro lo
+       fa la sagoma scura disegnata subito dopo. Sul lato Tevere l'anello si
+       divide in tre, perche' fra la tribuna e le curve ci sono i Distinti,
+       che sono poi quelli in cui il Club prende posto di solito.
+       La Curva Sud e' grigia perche' e' riservata agli abbonati: dipingerla
+       come le altre avrebbe fatto chiedere l'unica cosa che non si puo' avere. -->
   <g stroke="#141414" stroke-width="2">
-    <path d="M170 230 L92.5 39.5 A155 220 0 0 1 247.5 39.5 Z" fill="#8e1f2f"/>
-    <path d="M170 230 L247.5 39.5 A155 220 0 0 1 315.6 154.8 Z" fill="#c9a227"/>
-    <path d="M170 230 L315.6 154.8 A155 220 0 0 1 315.6 305.2 Z" fill="#e6af14"/>
-    <path d="M170 230 L315.6 305.2 A155 220 0 0 1 247.5 420.5 Z" fill="#c9a227"/>
-    <path d="M170 230 L247.5 420.5 A155 220 0 0 1 92.5 420.5 Z" fill="#3a3a3a"/>
-    <path d="M170 230 L92.5 420.5 A155 220 0 0 1 92.5 39.5 Z" fill="#e6af14"/>
+    <path d="M170 230 L91 38 A158 222 0 0 1 249 38 Z" fill="#8e1f2f"/>
+    <path d="M170 230 L249 38 A158 222 0 0 1 318.5 154 Z" fill="#c9a227"/>
+    <path d="M170 230 L318.5 154 A158 222 0 0 1 318.5 306 Z" fill="#e6af14"/>
+    <path d="M170 230 L318.5 306 A158 222 0 0 1 249 422 Z" fill="#c9a227"/>
+    <path d="M170 230 L249 422 A158 222 0 0 1 91 422 Z" fill="#3a3a3a"/>
+    <path d="M170 230 L91 422 A158 222 0 0 1 91 38 Z" fill="#e6af14"/>
   </g>
 
-  <ellipse cx="170" cy="230" rx="100" ry="155" fill="#1b1b1b" stroke="#2c2c2c" stroke-width="1"/>
+  <!-- Il vuoto dentro l'anello -->
+  <ellipse cx="170" cy="230" rx="113" ry="169" fill="#131313"/>
+
+  <!-- La pista d'atletica: e' questa che all'Olimpico tiene le tribune
+       lontane dal campo, ed e' il dettaglio che lo rende riconoscibile.
+       Forma da stadio - due rettilinei e due curve - non un'ellisse. -->
+  <rect x="63" y="68" width="214" height="324" rx="107" fill="#8a4a34"/>
+  <rect x="76" y="82" width="188" height="296" rx="94" fill="none" stroke="#a35c42" stroke-width="1.2"/>
+  <rect x="89" y="96" width="162" height="268" rx="81" fill="none" stroke="#a35c42" stroke-width="1.2"/>
+  <!-- Dentro la pista non c'e' il vuoto ma il prato: il campo ci sta dentro,
+       con attorno la fascia d'erba che all'Olimpico e' piuttosto larga. -->
+  <rect x="100" y="107" width="140" height="246" rx="70" fill="#17482a" stroke="#a35c42" stroke-width="1.2"/>
 
   <!-- Il campo, con le porte in alto e in basso: e' li' che stanno le curve -->
-  <rect x="110" y="120" width="120" height="220" rx="3" fill="#1f5c34" stroke="#2a7a45" stroke-width="1.5"/>
-  <line x1="110" y1="230" x2="230" y2="230" stroke="#2a7a45" stroke-width="1.5"/>
-  <circle cx="170" cy="230" r="22" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
-  <rect x="145" y="120" width="50" height="18" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
-  <rect x="145" y="322" width="50" height="18" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
+  <rect x="107" y="122" width="126" height="216" rx="2" fill="#1f5c34" stroke="#4a9c63" stroke-width="1.5"/>
+  <line x1="107" y1="230" x2="233" y2="230" stroke="#4a9c63" stroke-width="1.5"/>
+  <circle cx="170" cy="230" r="22" fill="none" stroke="#4a9c63" stroke-width="1.5"/>
+  <rect x="139" y="122" width="62" height="24" fill="none" stroke="#4a9c63" stroke-width="1.5"/>
+  <rect x="139" y="314" width="62" height="24" fill="none" stroke="#4a9c63" stroke-width="1.5"/>
+  <rect x="156" y="122" width="28" height="9" fill="none" stroke="#4a9c63" stroke-width="1.2"/>
+  <rect x="156" y="329" width="28" height="9" fill="none" stroke="#4a9c63" stroke-width="1.2"/>
 
   <g font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
-    <text x="170" y="47" font-size="14" fill="#f7ecd5">CURVA NORD</text>
-    <text x="170" y="418" font-size="14" fill="#c4c4c4">CURVA SUD</text>
-    <text x="170" y="434" font-size="10" font-weight="400" fill="#9a9a9a">solo abbonati</text>
-    <text x="42" y="230" font-size="12" fill="#3a2c05" dominant-baseline="middle"
-          transform="rotate(-90 42 230)">TRIBUNA MONTE MARIO</text>
-    <text x="298" y="230" font-size="12" fill="#3a2c05" dominant-baseline="middle"
-          transform="rotate(90 298 230)">TRIBUNA TEVERE</text>
-    <text x="266" y="112" font-size="11" fill="#3a2c05" dominant-baseline="middle"
-          transform="rotate(52 266 112)">DISTINTI NORD</text>
-    <text x="266" y="348" font-size="11" fill="#3a2c05" dominant-baseline="middle"
-          transform="rotate(-52 266 348)">DISTINTI SUD</text>
+    <text x="170" y="46" font-size="14" fill="#f7ecd5">CURVA NORD</text>
+    <text x="170" y="410" font-size="14" fill="#c4c4c4">CURVA SUD</text>
+    <text x="170" y="426" font-size="10" font-weight="400" fill="#9a9a9a">solo abbonati</text>
+    <text x="41" y="230" font-size="12" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(-90 41 230)">TRIBUNA MONTE MARIO</text>
+    <text x="299" y="230" font-size="12" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(90 299 230)">TRIBUNA TEVERE</text>
+    <text x="268" y="110" font-size="11" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(52 268 110)">DISTINTI NORD</text>
+    <text x="268" y="350" font-size="11" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(-52 268 350)">DISTINTI SUD</text>
   </g>
 </svg>
 SVG;
