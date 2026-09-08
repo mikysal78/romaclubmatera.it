@@ -55,6 +55,15 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   fuori dalla tendina** ed e' disegnata in grigio con la dicitura "solo
   abbonati": lasciarla selezionabile avrebbe fatto chiedere l'unica cosa che
   non si puo' avere.
+  Il numero di telefono viene **controllato e normalizzato**. Quello di
+  Contact Form 7 non bastava: la sua regola accetta "0", "12" e "333" -
+  qualunque cosa fatta di cifre - e rifiuta "(377) 281 4538", che e' un
+  modo normale di scrivere un numero. Passavano cioe' proprio i numeri
+  troncati, quelli su cui poi il Club non riesce a richiamare. Ora si
+  applicano le stesse regole dei compleanni, e nell'email il numero arriva
+  sempre nella stessa forma (`+39 377 281 4538`), coi cellulari italiani
+  raggruppati 3-3-4 e i fissi lasciati come sono - `0835 123456` spezzato
+  a gruppi di tre non somiglierebbe piu' a un numero di Matera.
   Chi invia riceve una **risposta automatica bilingue, italiano e inglese**:
   riepilogo della richiesta, e le due condizioni ripetute nero su bianco -
   che e' solo un'informativa e non un acquisto, e che il servizio e' per i

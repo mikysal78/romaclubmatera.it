@@ -127,6 +127,109 @@ function rcm_big_compila_partita( $tag ) {
 }
 
 /* -------------------------------------------------------------------------
+ * Il numero di telefono
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Riduce un numero alla forma internazionale, solo cifre.
+ *
+ * Stesse regole di rcm-compleanni: "377 281 4538", "+39 377-281-4538" e
+ * "0039 377 2814538" sono lo stesso numero. Senza prefisso si assume
+ * l'Italia; chi ha un numero estero scrive il "+".
+ *
+ * @param string $grezzo Come l'ha scritto chi compila.
+ * @return string Cifre pure, oppure '' se non somiglia a un numero.
+ */
+function rcm_big_telefono( $grezzo ) {
+	$grezzo = trim( (string) $grezzo );
+	if ( '' === $grezzo ) {
+		return '';
+	}
+
+	$internazionale = ( '+' === substr( $grezzo, 0, 1 ) );
+	$cifre          = preg_replace( '/\D+/', '', $grezzo );
+
+	if ( '' === $cifre ) {
+		return '';
+	}
+	if ( '00' === substr( $cifre, 0, 2 ) ) {
+		$cifre          = substr( $cifre, 2 );
+		$internazionale = true;
+	}
+	if ( ! $internazionale ) {
+		$cifre = '39' . $cifre;
+	}
+
+	// E.164: al massimo 15 cifre. Sotto le undici, con il 39 davanti, non e'
+	// un numero italiano completo.
+	if ( strlen( $cifre ) < 11 || strlen( $cifre ) > 15 ) {
+		return '';
+	}
+
+	return $cifre;
+}
+
+/**
+ * Controlla il numero prima di accettare la richiesta.
+ *
+ * Quello di Contact Form 7 non basta: la sua regola accetta "0", "12" e
+ * "333" - qualunque cosa fatta di cifre - e rifiuta "(377) 281 4538", che e'
+ * un modo normale di scrivere un numero. Il risultato e' che passano i numeri
+ * troncati, cioe' proprio quelli su cui poi il Club non riesce a richiamare.
+ */
+add_filter( 'wpcf7_validate_tel*', 'rcm_big_valida_telefono', 20, 2 );
+function rcm_big_valida_telefono( $risultato, $tag ) {
+	if ( 'telefono' !== $tag->name ) {
+		return $risultato;
+	}
+
+	$valore = isset( $_POST['telefono'] ) ? sanitize_text_field( wp_unslash( $_POST['telefono'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- ci pensa Contact Form 7.
+
+	// Se e' vuoto se ne occupa l'obbligatorieta', non questo controllo.
+	if ( '' !== trim( $valore ) && ! rcm_big_telefono( $valore ) ) {
+		$risultato->invalidate(
+			$tag,
+			'Questo numero non sembra completo. Scrivilo per intero, per esempio 377 281 4538; se e\' estero mettici il prefisso con il +.'
+		);
+	}
+
+	return $risultato;
+}
+
+/**
+ * Nell'email il numero arriva sempre nella stessa forma.
+ *
+ * Chi compila lo scrive come gli viene; chi lo legge in sede deve poterlo
+ * toccare e chiamare senza ricopiarlo.
+ */
+add_filter( 'wpcf7_posted_data', 'rcm_big_normalizza_telefono' );
+function rcm_big_normalizza_telefono( $dati ) {
+	if ( empty( $dati['telefono'] ) ) {
+		return $dati;
+	}
+
+	$cifre = rcm_big_telefono( $dati['telefono'] );
+	if ( ! $cifre ) {
+		return $dati;
+	}
+
+	$nazionale = ( '39' === substr( $cifre, 0, 2 ) ) ? substr( $cifre, 2 ) : '';
+
+	// I cellulari italiani cominciano per 3 e si leggono a gruppi di 3-3-4.
+	// Un fisso no: 0835 123456 spezzato allo stesso modo diventerebbe
+	// "083 512 3456", che non somiglia piu' a un numero di Matera.
+	if ( $nazionale && '3' === $nazionale[0] && 10 === strlen( $nazionale ) ) {
+		$dati['telefono'] = '+39 ' . substr( $nazionale, 0, 3 ) . ' ' . substr( $nazionale, 3, 3 ) . ' ' . substr( $nazionale, 6 );
+	} elseif ( $nazionale ) {
+		$dati['telefono'] = '+39 ' . $nazionale;
+	} else {
+		$dati['telefono'] = '+' . $cifre;
+	}
+
+	return $dati;
+}
+
+/* -------------------------------------------------------------------------
  * La pagina: modulo a sinistra, settori a destra
  * ---------------------------------------------------------------------- */
 
