@@ -444,6 +444,22 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(142, 31, 47, 0.08);
 }
 
+.rcm-big-tesserati {
+  margin: 0 0 22px;
+  padding: 12px 16px;
+  border: 1px solid rgba(230, 175, 20, 0.3);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #c9c9c9;
+}
+
+.rcm-big-tesserati a {
+  color: #e6af14;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .rcm-big-nota {
   margin-top: 18px;
   font-size: 13px;

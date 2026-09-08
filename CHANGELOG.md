@@ -34,6 +34,20 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   Aggiornata anche la privacy policy: dati raccolti, finalita' (misure
   precontrattuali richieste dall'interessato, art. 6.1.b) e conservazione.
   Il modulo non raccoglie pagamenti, e l'informativa lo dice.
+  I settori sono quelli veri, non i quattro macro-settori della prima
+  versione: sul lato Tevere ci sono anche i **Distinti Nord** e **Sud**, che
+  sono poi quelli in cui il Club prende posto di solito. La **Curva Sud e'
+  fuori dalla tendina** ed e' disegnata in grigio con la dicitura "solo
+  abbonati": lasciarla selezionabile avrebbe fatto chiedere l'unica cosa che
+  non si puo' avere.
+  In pagina si dice che **gli accrediti online sono solo informativi** - non
+  una vendita - e che chi li chiede viene ricontattato via email, telefono o
+  WhatsApp; e che il servizio e' **riservato ai tesserati**, con il link al
+  tesseramento per chi non lo e' ancora e una casella di conferma nel
+  modulo. Le richieste dei Roma Club infatti passano dall'Unione Tifosi
+  Romanisti, che tiene la biglietteria per i club affiliati
+  (`biglietti.utr@gmail.com` per le casalinghe,
+  `trasferteeuropa.utr@gmail.com` per le gare in Europa).
 
 - **La locandina de Il Romanista e' accesa.** L'autorizzazione della
   redazione e' arrivata, e la card in fondo alla colonna destra del footer

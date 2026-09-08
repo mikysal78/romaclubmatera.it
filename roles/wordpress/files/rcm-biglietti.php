@@ -141,11 +141,14 @@ function rcm_big_pagina( $atts ) {
 		<div class="rcm-big-modulo">
 			<?php if ( $p ) : ?>
 				<p class="rcm-big-partita">Richiesta biglietti per<br><strong><?php echo esc_html( $p['testo'] ); ?></strong></p>
+
+				<?php echo rcm_big_riservato(); // phpcs:ignore WordPress.Security.EscapeOutput -- markup scritto qui dentro. ?>
 				<?php echo do_shortcode( '[contact-form-7 id="' . (int) $atts['form'] . '"]' ); ?>
 
 				<p class="rcm-big-nota">
-					La richiesta non e' un acquisto: serve al Club per capire quanti siamo e in quale settore.
-					Ti ricontattiamo noi con disponibilita' e prezzi.
+					<strong>Gli accrediti online sono solo informativi</strong>: non &egrave; una vendita e non
+					impegna a niente. Il Club raccoglie la richiesta, verifica la disponibilit&agrave; e ti ricontatta
+					<strong>via email, telefono o WhatsApp</strong>.
 					<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>">Come trattiamo i tuoi dati</a>.
 				</p>
 			<?php else : ?>
@@ -161,21 +164,44 @@ function rcm_big_pagina( $atts ) {
 					Per chiedere i biglietti scegli prima la partita: apri il
 					<a href="<?php echo esc_url( home_url( '/calendario/' ) ); ?>">calendario</a>
 					e usa il link <strong>Biglietteria</strong> sulla riga della gara che ti interessa.
-					Il modulo si apre gia' compilato.
+					Il modulo si apre gi&agrave; compilato.
 				</p>
+
+				<?php echo rcm_big_riservato(); // phpcs:ignore WordPress.Security.EscapeOutput -- markup scritto qui dentro. ?>
 			<?php endif; ?>
 		</div>
 
 		<div class="rcm-big-settori">
 			<?php echo rcm_big_schema(); // phpcs:ignore WordPress.Security.EscapeOutput -- SVG scritto qui dentro. ?>
 			<p class="rcm-big-didascalia">
-				I quattro settori dello Stadio Olimpico. Dentro ognuno ci sono altre suddivisioni
-				(centrale, laterale, parterre): se hai una preferenza precisa, scrivila nelle note.
+				I settori dello Stadio Olimpico. La <strong>Curva Sud</strong> &egrave; riservata agli abbonati
+				e non si pu&ograve; richiedere. Dentro ogni settore ci sono altre suddivisioni (centrale,
+				laterale, parterre): se hai una preferenza precisa, scrivila nelle note.
 			</p>
 		</div>
 	</div>
 	<?php
 	return ob_get_clean();
+}
+
+/**
+ * Il riquadro che dice a chi e' riservato il servizio.
+ *
+ * Le richieste dei Roma Club passano dall'Unione Tifosi Romanisti, che le
+ * gestisce per i club affiliati: per questo il servizio vale per i tesserati.
+ * Chi non lo e' non va lasciato davanti a una porta chiusa, ma davanti al
+ * modulo di tesseramento.
+ */
+function rcm_big_riservato() {
+	$tessera = get_page_by_path( 'tesseramento-2026-27' );
+	$link    = $tessera ? get_permalink( $tessera ) : home_url( '/' );
+
+	return sprintf(
+		'<p class="rcm-big-tesserati">Il servizio &egrave; riservato ai <strong>tesserati del Club</strong>: '
+		. 'le richieste vengono inoltrate all&rsquo;Unione Tifosi Romanisti, che tiene la biglietteria per i '
+		. 'Roma Club affiliati.<br>Non sei ancora tesserato? <a href="%s">Tesserati al Roma Club Matera</a>.</p>',
+		esc_url( $link )
+	);
 }
 
 /**
@@ -189,20 +215,22 @@ function rcm_big_schema() {
 	return <<<'SVG'
 <svg class="rcm-big-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 460" role="img" aria-labelledby="rcm-olimpico-t rcm-olimpico-d">
   <title id="rcm-olimpico-t">Stadio Olimpico: i settori</title>
-  <desc id="rcm-olimpico-d">Schema dei quattro settori principali dello Stadio Olimpico di Roma: Curva Nord e Curva Sud dietro le due porte, Tribuna Monte Mario e Tribuna Tevere lungo i lati del campo.</desc>
+  <desc id="rcm-olimpico-d">Schema dei settori dello Stadio Olimpico di Roma: Curva Nord e Curva Sud dietro le porte, Tribuna Monte Mario a ovest, e sul lato Tevere i Distinti Nord, la Tribuna Tevere e i Distinti Sud. La Curva Sud &#232; riservata agli abbonati.</desc>
 
   <ellipse cx="170" cy="230" rx="155" ry="220" fill="#141414" stroke="#2c2c2c" stroke-width="1"/>
 
-  <!-- L'anello si divide sulle diagonali, non sugli assi: cosi' ogni settore
-       sta tutto in un colore e la sua etichetta non finisce a cavallo di due
-       fondi diversi. Curve in rosso dietro le porte, tribune in giallo sui
-       lati lunghi: e' anche la geografia vera dell'Olimpico, con la Nord a
-       nord, Monte Mario a ovest e il Tevere a est. -->
+  <!-- Sul lato Tevere l'anello si divide in tre: Distinti Nord, Tribuna
+       Tevere e Distinti Sud. Sono quelli in cui il Club prende posto di
+       solito. La Curva Sud e' grigia perche' e' riservata agli abbonati:
+       disegnarla come le altre avrebbe fatto chiedere l'unica cosa che non
+       si puo' avere. -->
   <g stroke="#141414" stroke-width="2">
-    <path d="M170 230 L60.4 74.4 A155 220 0 0 1 279.6 74.4 Z" fill="#8e1f2f"/>
-    <path d="M170 230 L279.6 385.6 A155 220 0 0 1 60.4 385.6 Z" fill="#8e1f2f"/>
-    <path d="M170 230 L279.6 74.4 A155 220 0 0 1 279.6 385.6 Z" fill="#e6af14"/>
-    <path d="M170 230 L60.4 385.6 A155 220 0 0 1 60.4 74.4 Z" fill="#e6af14"/>
+    <path d="M170 230 L92.5 39.5 A155 220 0 0 1 247.5 39.5 Z" fill="#8e1f2f"/>
+    <path d="M170 230 L247.5 39.5 A155 220 0 0 1 315.6 154.8 Z" fill="#c9a227"/>
+    <path d="M170 230 L315.6 154.8 A155 220 0 0 1 315.6 305.2 Z" fill="#e6af14"/>
+    <path d="M170 230 L315.6 305.2 A155 220 0 0 1 247.5 420.5 Z" fill="#c9a227"/>
+    <path d="M170 230 L247.5 420.5 A155 220 0 0 1 92.5 420.5 Z" fill="#3a3a3a"/>
+    <path d="M170 230 L92.5 420.5 A155 220 0 0 1 92.5 39.5 Z" fill="#e6af14"/>
   </g>
 
   <ellipse cx="170" cy="230" rx="100" ry="155" fill="#1b1b1b" stroke="#2c2c2c" stroke-width="1"/>
@@ -215,12 +243,17 @@ function rcm_big_schema() {
   <rect x="145" y="322" width="50" height="18" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
 
   <g font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
-    <text x="170" y="47" font-size="15" fill="#f7ecd5">CURVA NORD</text>
-    <text x="170" y="424" font-size="15" fill="#f7ecd5">CURVA SUD</text>
-    <text x="42" y="230" font-size="13" fill="#3a2c05" dominant-baseline="middle"
+    <text x="170" y="47" font-size="14" fill="#f7ecd5">CURVA NORD</text>
+    <text x="170" y="418" font-size="14" fill="#c4c4c4">CURVA SUD</text>
+    <text x="170" y="434" font-size="10" font-weight="400" fill="#9a9a9a">solo abbonati</text>
+    <text x="42" y="230" font-size="12" fill="#3a2c05" dominant-baseline="middle"
           transform="rotate(-90 42 230)">TRIBUNA MONTE MARIO</text>
-    <text x="298" y="230" font-size="13" fill="#3a2c05" dominant-baseline="middle"
+    <text x="298" y="230" font-size="12" fill="#3a2c05" dominant-baseline="middle"
           transform="rotate(90 298 230)">TRIBUNA TEVERE</text>
+    <text x="266" y="112" font-size="11" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(52 266 112)">DISTINTI NORD</text>
+    <text x="266" y="348" font-size="11" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(-52 266 348)">DISTINTI SUD</text>
   </g>
 </svg>
 SVG;
