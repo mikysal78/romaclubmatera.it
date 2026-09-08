@@ -8,6 +8,26 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Uno standard per l'immagine in evidenza delle news**
+  (`scripts/locandina-card.py`). La locandina del Fenerbahce, messa in
+  evidenza cosi' com'e', in home veniva **tagliata del 38% in altezza**:
+  via la testata sopra e "Forza Roma" sotto. Il riquadro del widget e'
+  quasi quadrato - 1,08:1 su desktop, 1,16:1 a 390px - e ritaglia con
+  `object-fit: cover`, mentre una locandina e' verticale 2:3. Le news
+  vecchie non davano problema perche' usavano foto orizzontali, che il
+  ritaglio lo tollerano.
+  Lo script ricava dalla locandina un **quadrato 1200x1200** con dentro la
+  locandina intera e, come fondo, la locandina stessa sfocata e scurita:
+  cosi' i colori sono quelli della serata invece di una banda nera.
+  Un secondo dettaglio, misurato in pagina: il widget scrive titolo ed
+  estratto **dal 77,6% dell'altezza in giu'**. Centrando la locandina nel
+  quadrato, quel testo finiva sopra l'orario e l'apertura della sede, cioe'
+  sull'unica cosa per cui uno guarda una locandina. Percio' lo script la
+  tiene nella parte alta: si perde un po' di dimensione e non si perde
+  niente di leggibile.
+  Applicato alle due news di partita; la locandina piena resta dentro
+  l'articolo.
+
 - **Biglietteria: una richiesta per partita**
   (`roles/wordpress/files/rcm-biglietti.php`). Nelle tabelle del calendario
   c'e' una colonna in piu' con il link *Biglietteria* accanto a ogni gara

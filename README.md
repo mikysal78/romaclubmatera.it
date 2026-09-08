@@ -558,7 +558,35 @@ sudo -u www-data wp --path=/var/www/example.com core update
 
 ---
 
-## 10.1 Controllo visivo dopo gli aggiornamenti
+## 10.1 Immagine in evidenza delle news (`locandina-card.py`)
+
+Per le news di partita l'immagine in evidenza si ricava dalla locandina:
+
+```sh
+python3 scripts/locandina-card.py "Torino-Roma.jpeg" card-torino-roma-14-settembre-2026.jpg
+```
+
+Produce un **quadrato 1200×1200**. Non è un capriccio: il widget delle news in home
+ha il riquadro quasi quadrato (**1,08:1** su desktop, **1,16:1** a 390px) e ritaglia
+con `object-fit: cover`. Una locandina è verticale 2:3 e veniva tagliata del **38% in
+altezza** — via la testata in alto e "Forza Roma" in fondo. Le news con foto
+orizzontali non davano problema, perché una foto il ritaglio lo tollera.
+
+Lo stesso widget **scrive titolo ed estratto sopra l'immagine a partire dal 77,6%
+dell'altezza**, quindi la locandina va tenuta nella parte alta: centrandola, il testo
+finisce sull'orario e sull'apertura della sede, cioè sull'informazione per cui uno la
+guarda. Il fondo è la locandina stessa sfocata e scurita, così i colori sono quelli
+della serata invece di una banda nera.
+
+La locandina originale, intera, resta **dentro l'articolo**: la carta quadrata serve
+solo come immagine in evidenza.
+
+> Se cambiano tema o widget, rimisurare il rapporto del riquadro e l'inizio della
+> fascia di testo prima di toccare le costanti dello script.
+
+---
+
+## 10.2 Controllo visivo dopo gli aggiornamenti
 
 Aggiornare WordPress, un plugin o un tema può cambiare l'aspetto del sito senza
 che nessuno se ne accorga: un margine diverso, un font che non carica, una
@@ -621,7 +649,7 @@ python3-numpy` più `google-chrome` (o `chromium`).
 
 ---
 
-## 10.2 Newsletter ai soci (Mailchimp)
+## 10.3 Newsletter ai soci (Mailchimp)
 
 Le email al gruppo non partono dal sito ma da **Mailchimp** (account `us18`,
 mittente `info@romaclubmatera.it`). Il sito raccoglie solo gli iscritti, con
