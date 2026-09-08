@@ -172,10 +172,10 @@ function rcm_big_pagina( $atts ) {
 		</div>
 
 		<div class="rcm-big-settori">
-			<?php echo rcm_big_schema(); // phpcs:ignore WordPress.Security.EscapeOutput -- SVG scritto qui dentro. ?>
+			<?php echo rcm_big_mappa(); // phpcs:ignore WordPress.Security.EscapeOutput -- markup montato qui dentro. ?>
 			<p class="rcm-big-didascalia">
 				I settori dello Stadio Olimpico. La <strong>Curva Sud</strong> &egrave; riservata agli abbonati
-				e non si pu&ograve; richiedere. Dentro ogni settore ci sono altre suddivisioni (centrale,
+				e non compare fra le scelte. Dentro ogni settore ci sono altre suddivisioni (centrale,
 				laterale, parterre): se hai una preferenza precisa, scrivila nelle note.
 			</p>
 		</div>
@@ -204,7 +204,41 @@ function rcm_big_riservato() {
 }
 
 /**
- * Lo schema dei settori.
+ * La mappa dei settori: la figura caricata in libreria, se c'e'.
+ *
+ * Si cerca per slug e non per identificativo fisso: un id scritto nel codice
+ * si rompe al primo ripristino da backup su un sito diverso, uno slug no.
+ * Se manca si ripiega sul disegno qui sotto, che non dipende da niente.
+ */
+function rcm_big_mappa() {
+	$trovati = get_posts(
+		array(
+			'post_type'      => 'attachment',
+			'name'           => 'olimpico-settori',
+			'posts_per_page' => 1,
+			'post_status'    => 'inherit',
+			'fields'         => 'ids',
+		)
+	);
+
+	if ( ! $trovati ) {
+		return rcm_big_schema();
+	}
+
+	return wp_get_attachment_image(
+		$trovati[0],
+		'full',
+		false,
+		array(
+			'class'    => 'rcm-big-mappa',
+			'loading'  => 'lazy',
+			'decoding' => 'async',
+		)
+	);
+}
+
+/**
+ * Lo schema dei settori, di riserva.
  *
  * E' un disegno originale, non la piantina della societa' o della biglietteria:
  * quelle sono opere protette e non si possono copiare. I nomi e la posizione
