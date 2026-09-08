@@ -163,7 +163,7 @@ function rcm_romanista_card( $index, $ha_widget = true ) {
 			<?php if ( $locandina ) : ?>
 				<img class="rcm-romanista-locandina" src="<?php echo esc_url( $locandina ); ?>"
 					alt="La prima pagina de Il Romanista di oggi" loading="lazy" decoding="async">
-				<span class="rcm-romanista-credito">&copy; Il Romanista &middot; riprodotta su autorizzazione</span>
+				<span class="rcm-romanista-credito">&copy; Il Romanista</span>
 			<?php else : ?>
 				<span class="rcm-romanista-occhiello">In edicola oggi</span>
 				<span class="rcm-romanista-testata">Il Romanista</span>
