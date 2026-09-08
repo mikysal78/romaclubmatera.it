@@ -27,6 +27,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   protette e non si copiano, mentre quali siano i settori e' un fatto.
   L'anello e' diviso sulle diagonali e non sugli assi, cosi' ogni settore sta
   tutto in un colore e la sua etichetta non finisce a cavallo di due fondi.
+  Il disegno e' ovale e verticale, col campo girato e le porte in alto e in
+  basso: **le curve stanno dietro le porte**, e nella prima versione erano
+  finite sui lati lunghi. Girato il campo torna anche la geografia vera -
+  Nord a nord, Sud a sud, Monte Mario a ovest e il Tevere a est.
   Aggiornata anche la privacy policy: dati raccolti, finalita' (misure
   precontrattuali richieste dall'interessato, art. 6.1.b) e conservazione.
   Il modulo non raccoglie pagamenti, e l'informativa lo dice.

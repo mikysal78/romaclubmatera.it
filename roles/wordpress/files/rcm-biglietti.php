@@ -187,35 +187,40 @@ function rcm_big_pagina( $atts ) {
  */
 function rcm_big_schema() {
 	return <<<'SVG'
-<svg class="rcm-big-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 340" role="img" aria-labelledby="rcm-olimpico-t rcm-olimpico-d">
+<svg class="rcm-big-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 460" role="img" aria-labelledby="rcm-olimpico-t rcm-olimpico-d">
   <title id="rcm-olimpico-t">Stadio Olimpico: i settori</title>
-  <desc id="rcm-olimpico-d">Schema dei quattro settori principali dello Stadio Olimpico di Roma: Curva Sud e Curva Nord dietro le porte, Tribuna Monte Mario e Tribuna Tevere sui lati lunghi.</desc>
-  <ellipse cx="210" cy="170" rx="198" ry="158" fill="#141414" stroke="#2c2c2c" stroke-width="1"/>
+  <desc id="rcm-olimpico-d">Schema dei quattro settori principali dello Stadio Olimpico di Roma: Curva Nord e Curva Sud dietro le due porte, Tribuna Monte Mario e Tribuna Tevere lungo i lati del campo.</desc>
+
+  <ellipse cx="170" cy="230" rx="155" ry="220" fill="#141414" stroke="#2c2c2c" stroke-width="1"/>
+
   <!-- L'anello si divide sulle diagonali, non sugli assi: cosi' ogni settore
        sta tutto in un colore e la sua etichetta non finisce a cavallo di due
-       fondi diversi. Curve in rosso, tribune in giallo. -->
+       fondi diversi. Curve in rosso dietro le porte, tribune in giallo sui
+       lati lunghi: e' anche la geografia vera dell'Olimpico, con la Nord a
+       nord, Monte Mario a ovest e il Tevere a est. -->
   <g stroke="#141414" stroke-width="2">
-    <path d="M210 170 L70 58.3 A198 158 0 0 1 350 58.3 Z" fill="#8e1f2f"/>
-    <path d="M210 170 L350 281.7 A198 158 0 0 1 70 281.7 Z" fill="#8e1f2f"/>
-    <path d="M210 170 L350 58.3 A198 158 0 0 1 350 281.7 Z" fill="#e6af14"/>
-    <path d="M210 170 L70 281.7 A198 158 0 0 1 70 58.3 Z" fill="#e6af14"/>
+    <path d="M170 230 L60.4 74.4 A155 220 0 0 1 279.6 74.4 Z" fill="#8e1f2f"/>
+    <path d="M170 230 L279.6 385.6 A155 220 0 0 1 60.4 385.6 Z" fill="#8e1f2f"/>
+    <path d="M170 230 L279.6 74.4 A155 220 0 0 1 279.6 385.6 Z" fill="#e6af14"/>
+    <path d="M170 230 L60.4 385.6 A155 220 0 0 1 60.4 74.4 Z" fill="#e6af14"/>
   </g>
-  <ellipse cx="210" cy="170" rx="126" ry="96" fill="#1b1b1b" stroke="#2c2c2c" stroke-width="1"/>
-  <rect x="118" y="103" width="184" height="134" rx="3" fill="#1f5c34" stroke="#2a7a45" stroke-width="1.5"/>
-  <line x1="210" y1="103" x2="210" y2="237" stroke="#2a7a45" stroke-width="1.5"/>
-  <circle cx="210" cy="170" r="20" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
-  <rect x="118" y="140" width="16" height="60" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
-  <rect x="286" y="140" width="16" height="60" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
+
+  <ellipse cx="170" cy="230" rx="100" ry="155" fill="#1b1b1b" stroke="#2c2c2c" stroke-width="1"/>
+
+  <!-- Il campo, con le porte in alto e in basso: e' li' che stanno le curve -->
+  <rect x="110" y="120" width="120" height="220" rx="3" fill="#1f5c34" stroke="#2a7a45" stroke-width="1.5"/>
+  <line x1="110" y1="230" x2="230" y2="230" stroke="#2a7a45" stroke-width="1.5"/>
+  <circle cx="170" cy="230" r="22" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
+  <rect x="145" y="120" width="50" height="18" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
+  <rect x="145" y="322" width="50" height="18" fill="none" stroke="#2a7a45" stroke-width="1.5"/>
+
   <g font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
-    <text x="210" y="48" font-size="15" fill="#f7ecd5">CURVA NORD</text>
-    <text x="210" y="304" font-size="15" fill="#f7ecd5">CURVA SUD</text>
-    <!-- Ai lati l'anello e' largo 72px e il testo orizzontale ne chiederebbe
-         di piu': ruotato lungo la tribuna ci sta comodo, ed e' anche come
-         si leggono le piantine vere. -->
-    <text x="48" y="170" font-size="13" fill="#3a2c05" dominant-baseline="middle"
-          transform="rotate(-90 48 170)">TRIBUNA MONTE MARIO</text>
-    <text x="372" y="170" font-size="13" fill="#3a2c05" dominant-baseline="middle"
-          transform="rotate(90 372 170)">TRIBUNA TEVERE</text>
+    <text x="170" y="47" font-size="15" fill="#f7ecd5">CURVA NORD</text>
+    <text x="170" y="424" font-size="15" fill="#f7ecd5">CURVA SUD</text>
+    <text x="42" y="230" font-size="13" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(-90 42 230)">TRIBUNA MONTE MARIO</text>
+    <text x="298" y="230" font-size="13" fill="#3a2c05" dominant-baseline="middle"
+          transform="rotate(90 298 230)">TRIBUNA TEVERE</text>
   </g>
 </svg>
 SVG;
