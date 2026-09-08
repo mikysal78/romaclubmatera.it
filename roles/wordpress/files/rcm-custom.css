@@ -471,12 +471,14 @@ h1, h2, h3, h4, h5, h6 {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 320px;
+  /* lo schema e' orizzontale (472x314): a meno di 380px le etichette dei
+     Distinti diventano illeggibili */
+  max-width: 440px;
   margin: 0 auto;
 }
 
 .rcm-big-didascalia {
-  max-width: 380px;
+  max-width: 440px;
   margin: 14px auto 0;
   font-size: 13px;
   line-height: 1.55;
