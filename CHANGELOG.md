@@ -14,6 +14,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   l'indirizzo, la nota che le serate sono per i tesserati col link al
   tesseramento, il bottone per richiedere i biglietti di quella partita e,
   quando esiste, il rimando alla news del Club.
+  Alla voce «Dove» risponde il nome del Club per esteso - *nella sede del
+  Roma Club Matera “Francesco Totti”* - con l'indirizzo sotto in piccolo:
+  chi arriva da una ricerca su Google non sa cosa sia Via Lupo Protospata,
+  sa cos'e' un Roma Club.
   E' la proposta numero uno dell'analisi sui siti dei Roma Club, e nasce da
   un dato: quelle pagine stanno gia' in posizione 6-8 per ricerche come
   "roma real madrid data" e fanno il 14% dei clic del sito **dicendo una

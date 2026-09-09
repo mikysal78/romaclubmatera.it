@@ -545,6 +545,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .rcm-dove-dati > div { min-width: 150px; }
 
+/* Il nome del Club per esteso ha bisogno di piu' respiro dell'orario,
+   o va a capo dopo tre parole */
+.rcm-dove-sede { flex: 1 1 320px; }
+
 .rcm-dove-dati dt {
   margin-bottom: 4px;
   color: #9a9a9a;

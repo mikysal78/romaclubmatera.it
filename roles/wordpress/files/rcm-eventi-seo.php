@@ -127,9 +127,10 @@ function rcm_ev_dove_vederla( $contenuto ) {
 				<dd><strong><?php echo esc_html( wp_date( 'H:i', $apertura->getTimestamp() ) ); ?></strong>
 					<span>&mdash; <?php echo (int) $minuti; ?> minuti prima</span></dd>
 			</div>
-			<div>
+			<div class="rcm-dove-sede">
 				<dt>Dove</dt>
-				<dd>Via Lupo Protospata 62 bis<br><span>75100 Matera</span></dd>
+				<dd>Nella sede del Roma Club Matera &ldquo;Francesco Totti&rdquo;<br>
+					<span>Via Lupo Protospata 62 bis &middot; 75100 Matera</span></dd>
 			</div>
 			<?php
 			$tv = get_post_meta( $id, '_rcm_tv', true );
