@@ -723,6 +723,47 @@ copia buona sta nel repo.
 | Redis "Connection refused" | Verifica `systemctl status redis-server` e `wp redis status` |
 | Certbot fallisce | Il dominio deve risolvere all'IP del CT e la porta 80 essere pubblica |
 | Errore moduli MySQL | Il ruolo installa `python3-pymysql`; assicurati che il run sia arrivato al ruolo `database` |
+| SSH `Connection refused` a intermittenza | **Non è un guasto**: è UFW che limita la porta SSH. Vedi sotto |
+
+### SSH che rifiuta la connessione ogni tanto
+
+Il ruolo `hardening` mette la porta SSH in `LIMIT` su UFW. Tradotto in regola:
+
+```
+--dport 2400 -m recent --update --seconds 30 --hitcount 6 -j ufw-user-limit
+ufw-user-limit -j REJECT --reject-with icmp-port-unreachable
+```
+
+Oltre **6 connessioni nuove in 30 secondi dallo stesso IP**, le successive vengono
+respinte — e con un REJECT esplicito, quindi il client dice `Connection refused` invece
+di andare in timeout. È lo stesso messaggio che darebbe un servizio spento, ed è per
+questo che confonde.
+
+Chi lavora a colpi di `ssh` e `scp` brevi in sequenza ci sbatte contro di continuo.
+Ansible no, perché multiplexa di suo con `ControlPersist`. **La regola non va toccata**:
+protegge una porta SSH esposta e funziona. Si risolve dal lato client, riusando una sola
+connessione:
+
+```sshconfig
+# ~/.ssh/config
+Host rcm
+    HostName 10.27.22.16
+    Port 2400
+    User root
+    ControlMaster auto
+    ControlPath ~/.ssh/cm/%r@%h:%p
+    ControlPersist 30m
+```
+
+Poi `mkdir -p ~/.ssh/cm` una volta sola, e da lì in avanti `ssh rcm` e `scp file rcm:/percorso`
+passano tutti dentro la stessa connessione TCP: il limite non si tocca mai.
+
+Per verificare se è successo davvero:
+
+```bash
+iptables -L ufw-user-limit -v -n     # il contatore dei REJECT
+grep 'UFW LIMIT BLOCK' /var/log/syslog | tail
+```
 
 ---
 

@@ -311,6 +311,20 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Documentato perche' l'SSH al CT rifiuta la connessione ogni tanto.**
+  Non e' un guasto: e' UFW che tiene la porta SSH in `LIMIT`, cioe' respinge
+  oltre 6 connessioni nuove in 30 secondi dallo stesso IP. Il REJECT e'
+  esplicito, quindi il client dice `Connection refused` - lo stesso
+  messaggio di un servizio spento, ed e' per questo che depista.
+  Escluse le altre piste prima di concludere: fail2ban non ha mai bannato
+  nessuno (zero ban in assoluto) e sshd non e' mai stato riavviato.
+  La regola resta com'e': protegge una porta SSH esposta e sta facendo il
+  suo mestiere. Si risolve dal lato client riusando una sola connessione
+  (`ControlMaster` + `ControlPersist`), che e' poi il motivo per cui
+  Ansible non ci sbatte mai contro - multiplexa di suo.
+  In `README.md` §11 c'e' la spiegazione, lo snippet di `~/.ssh/config` e i
+  due comandi per verificare che sia successo davvero.
+
 - **Il certificato lo deposita ansible-dns, non questo progetto.** Il vhost
   ora porta il blocco 443 dentro il proprio template, puntato a
   `/etc/ssl/acme/<dominio>.fullchain.pem`, e certbot esce dal giro
