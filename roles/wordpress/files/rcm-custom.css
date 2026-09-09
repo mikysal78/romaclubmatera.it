@@ -505,3 +505,105 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #e6af14;
   background: rgba(230, 175, 20, 0.14);
 }
+
+
+/* === "Dove vederla": il riquadro in fondo alla pagina di ogni partita === */
+/* markup nel mu-plugin rcm-eventi-seo.php */
+.rcm-dove {
+  margin: 38px 0 8px;
+  padding: 26px 28px 24px;
+  border: 1px solid rgba(230, 175, 20, 0.35);
+  border-left: 3px solid #e6af14;
+  border-radius: 8px;
+  background: rgba(230, 175, 20, 0.05);
+}
+
+.rcm-dove-titolo {
+  margin: 0 0 14px;
+  color: #e6af14;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.rcm-dove-frase {
+  margin: 0 0 20px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* I tre dati stanno in riga finche' c'e' spazio: sono brevi e si leggono
+   a colpo d'occhio, che e' il motivo per cui uno apre questa pagina. */
+.rcm-dove-dati {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 34px;
+  margin: 0 0 20px;
+  padding: 18px 0;
+  border-top: 1px solid rgba(230, 175, 20, 0.22);
+  border-bottom: 1px solid rgba(230, 175, 20, 0.22);
+}
+
+.rcm-dove-dati > div { min-width: 150px; }
+
+.rcm-dove-dati dt {
+  margin-bottom: 4px;
+  color: #9a9a9a;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rcm-dove-dati dd {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.rcm-dove-dati dd strong { font-size: 21px; color: #e6af14; }
+.rcm-dove-dati dd span   { color: #9a9a9a; font-size: 13px; }
+
+.rcm-dove-nota {
+  margin: 0 0 18px;
+  color: #c4c4c4;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.rcm-dove-nota a,
+.rcm-dove-link {
+  color: #e6af14;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rcm-dove-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  margin: 0;
+}
+
+.rcm-dove-bottone {
+  display: inline-block;
+  padding: 11px 20px;
+  border-radius: 5px;
+  background: #e6af14;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.rcm-dove-bottone:hover,
+.rcm-dove-bottone:focus-visible { background: #f0c23f; color: #1a1a1a; }
+
+.rcm-dove-link { font-size: 14px; }
+
+@media (max-width: 600px) {
+  .rcm-dove { padding: 20px 18px; }
+  .rcm-dove-dati { gap: 16px; }
+  .rcm-dove-dati > div { min-width: 100%; }
+  .rcm-dove-bottone { display: block; text-align: center; }
+}

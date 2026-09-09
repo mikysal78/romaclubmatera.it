@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: RCM - Le pagine delle partite si presentano nei motori
- * Description: Titolo, descrizione e dati strutturati per le pagine evento di SportsPress. Stavano gia' in prima pagina per ricerche come "roma real madrid data", ma nel risultato non dicevano niente: nessuna descrizione, e un titolo senza la data che la ricerca chiedeva. Zero clic su duecento impressioni.
+ * Description: Le pagine delle partite: titolo con la data, descrizione, dati strutturati e il riquadro "Dove vederla" con sede, orario di apertura e richiesta biglietti. Stavano gia' in prima pagina per ricerche come "roma real madrid data" e prendevano zero clic, perche' nel risultato non dicevano niente e nella pagina non c'era una risposta.
  * Version: 1.0.0
  * Author: Roma Club Matera
  */
@@ -64,6 +64,154 @@ function rcm_ev_risultato( $id, $squadre ) {
 	}
 
 	return count( $gol ) === 2 ? $gol[0] . '-' . $gol[1] : '';
+}
+
+/* -------------------------------------------------------------------------
+ * Il riquadro "Dove vederla"
+ * ---------------------------------------------------------------------- */
+
+/** Quanto prima del fischio d'inizio apre la sede. */
+const RCM_EV_APERTURA = 30;
+
+/**
+ * Attacca il riquadro in fondo alla pagina della partita.
+ *
+ * Si aggancia a the_content con priorita' 20, cioe' dopo SportsPress, invece
+ * che a un hook dei suoi template: cosi' un aggiornamento del plugin non se
+ * lo porta via.
+ *
+ * Solo sulle partite da giocare. Su una gia' giocata un invito a venire in
+ * sede sarebbe una presa in giro, e la pagina resta il tabellino.
+ */
+add_filter( 'the_content', 'rcm_ev_dove_vederla', 20 );
+function rcm_ev_dove_vederla( $contenuto ) {
+	if ( ! is_singular( 'sp_event' ) || ! in_the_loop() || ! is_main_query() ) {
+		return $contenuto;
+	}
+
+	$id = get_the_ID();
+	$d  = rcm_ev_dati( $id );
+	if ( ! $d ) {
+		return $contenuto;
+	}
+
+	$quando = $d['quando'];
+	if ( $quando->getTimestamp() < time() ) {
+		return $contenuto;
+	}
+
+	$minuti   = (int) apply_filters( 'rcm_evento_apertura_minuti', RCM_EV_APERTURA, $id );
+	$apertura = $quando->modify( '-' . $minuti . ' minutes' );
+
+	ob_start();
+	?>
+	<aside class="rcm-dove" aria-labelledby="rcm-dove-titolo">
+		<h2 id="rcm-dove-titolo" class="rcm-dove-titolo">Dove vederla</h2>
+
+		<p class="rcm-dove-frase">
+			<strong><?php echo esc_html( $d['casa'] . '-' . $d['ospiti'] ); ?></strong>
+			si vede in sede, insieme.
+			<?php if ( $d['sede'] ) : ?>
+				Si gioca <?php echo esc_html( rcm_ev_data( $quando, 'l j F' ) ); ?>
+				alle <?php echo esc_html( wp_date( 'H:i', $quando->getTimestamp() ) ); ?>
+				allo <?php echo esc_html( $d['sede']->name ); ?>.
+			<?php else : ?>
+				Si gioca <?php echo esc_html( rcm_ev_data( $quando, 'l j F' ) ); ?>
+				alle <?php echo esc_html( wp_date( 'H:i', $quando->getTimestamp() ) ); ?>.
+			<?php endif; ?>
+		</p>
+
+		<dl class="rcm-dove-dati">
+			<div>
+				<dt>La sede apre alle</dt>
+				<dd><strong><?php echo esc_html( wp_date( 'H:i', $apertura->getTimestamp() ) ); ?></strong>
+					<span>&mdash; <?php echo (int) $minuti; ?> minuti prima</span></dd>
+			</div>
+			<div>
+				<dt>Dove</dt>
+				<dd>Via Lupo Protospata 62 bis<br><span>75100 Matera</span></dd>
+			</div>
+			<?php
+			$tv = get_post_meta( $id, '_rcm_tv', true );
+			if ( $tv ) :
+				?>
+				<div>
+					<dt>In TV su</dt>
+					<dd><?php echo esc_html( $tv ); ?></dd>
+				</div>
+			<?php endif; ?>
+		</dl>
+
+		<p class="rcm-dove-nota">
+			Le serate in sede sono riservate ai tesserati.
+			<a href="<?php echo esc_url( rcm_ev_link_tesseramento() ); ?>">Come ci si tessera</a>.
+		</p>
+
+		<?php
+		$biglietti = function_exists( 'rcm_big_indirizzo' ) ? rcm_big_indirizzo( $id ) : '';
+		$news      = rcm_ev_news_collegata( $id, $d );
+		if ( $biglietti || $news ) :
+			?>
+			<p class="rcm-dove-azioni">
+				<?php if ( $biglietti ) : ?>
+					<a class="rcm-dove-bottone" href="<?php echo esc_url( $biglietti ); ?>">Vai allo stadio: richiedi i biglietti</a>
+				<?php endif; ?>
+				<?php if ( $news ) : ?>
+					<a class="rcm-dove-link" href="<?php echo esc_url( get_permalink( $news ) ); ?>">Leggi la locandina della serata</a>
+				<?php endif; ?>
+			</p>
+		<?php endif; ?>
+	</aside>
+	<?php
+	return $contenuto . ob_get_clean();
+}
+
+/** La pagina del tesseramento, cercata per slug e non per id fisso. */
+function rcm_ev_link_tesseramento() {
+	$p = get_page_by_path( 'tesseramento-2026-27' );
+	return $p ? get_permalink( $p ) : home_url( '/' );
+}
+
+/**
+ * La news del Club su questa partita, se c'e'.
+ *
+ * Si cerca per nome dell'avversario fra gli articoli usciti nel mese prima
+ * della gara. Accostare per data soltanto non basterebbe: nella stessa
+ * settimana ci sono piu' partite.
+ *
+ * @return WP_Post|null
+ */
+function rcm_ev_news_collegata( $id, $d ) {
+	$avversario = ( false !== stripos( $d['casa'], 'roma' ) ) ? $d['ospiti'] : $d['casa'];
+	$avversario = trim( str_ireplace( array( 'AS ', 'FC ', 'SS ', 'US ' ), '', $avversario ) );
+	if ( '' === $avversario ) {
+		return null;
+	}
+
+	$trovati = get_posts(
+		array(
+			'post_type'      => 'post',
+			'post_status'    => 'publish',
+			'posts_per_page' => 5,
+			's'              => $avversario,
+			'date_query'     => array(
+				array(
+					'after'  => $d['quando']->modify( '-40 days' )->format( 'Y-m-d' ),
+					'before' => $d['quando']->modify( '+2 days' )->format( 'Y-m-d' ),
+				),
+			),
+		)
+	);
+
+	foreach ( $trovati as $post ) {
+		// La ricerca di WordPress guarda anche nel corpo: si tiene solo chi ha
+		// l'avversario nel titolo, o si aggancia la news sbagliata.
+		if ( false !== mb_stripos( $post->post_title, $avversario ) ) {
+			return $post;
+		}
+	}
+
+	return null;
 }
 
 /**
@@ -136,9 +284,18 @@ function rcm_ev_descrizione( $desc ) {
 		$turno = ', ' . $d['lega'];
 	}
 
-	$coda = $giocata
-		? ' Il calendario della Roma sul sito del Roma Club Matera.'
-		: ' Dove vederla con il Roma Club Matera.';
+	// Per una partita da giocare la coda dice la cosa che nessun altro sito
+	// puo' dire, ed e' quella che si cerca: dove la si vede e a che ora si apre.
+	if ( $giocata ) {
+		$coda = ' Il calendario della Roma sul sito del Roma Club Matera.';
+	} else {
+		$minuti   = (int) apply_filters( 'rcm_evento_apertura_minuti', RCM_EV_APERTURA, get_the_ID() );
+		$apertura = $d['quando']->modify( '-' . $minuti . ' minutes' );
+		$coda     = sprintf(
+			' Si vede in sede a Matera, apriamo alle %s.',
+			wp_date( 'H:i', $apertura->getTimestamp() )
+		);
+	}
 
 	$testo = $scontro . ', ' . $quando . $dove . $turno . '.' . $coda;
 

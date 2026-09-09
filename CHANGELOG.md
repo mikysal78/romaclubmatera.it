@@ -8,6 +8,33 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **«Dove vederla»: ogni partita da giocare ora risponde**
+  (`roles/wordpress/files/rcm-eventi-seo.php`). In fondo alla pagina di
+  ogni gara futura c'e' un riquadro con l'ora di apertura della sede,
+  l'indirizzo, la nota che le serate sono per i tesserati col link al
+  tesseramento, il bottone per richiedere i biglietti di quella partita e,
+  quando esiste, il rimando alla news del Club.
+  E' la proposta numero uno dell'analisi sui siti dei Roma Club, e nasce da
+  un dato: quelle pagine stanno gia' in posizione 6-8 per ricerche come
+  "roma real madrid data" e fanno il 14% dei clic del sito **dicendo una
+  data e due stemmi**. Il traffico c'era, mancava la risposta - ed e'
+  l'unica domanda su cui nessun grande sito puo' competere, perche' dove si
+  vede la partita a Matera lo sappiamo solo noi.
+  L'orario di apertura si calcola: fischio d'inizio meno trenta minuti,
+  con `rcm_evento_apertura_minuti` per cambiarlo. Verificato contro le
+  locandine vere - 18:15 per il Fenerbahce, 18:00 per il Torino - e
+  combaciano.
+  La news collegata si cerca per nome dell'avversario fra gli articoli del
+  mese prima della gara, e si accetta solo se l'avversario compare nel
+  **titolo**: la ricerca di WordPress guarda anche nel corpo, e senza quel
+  controllo si sarebbe agganciata la news sbagliata.
+  Il riquadro non compare sulle partite gia' giocate: invitare in sede per
+  una gara finita sarebbe una presa in giro. E la description ora finisce
+  con "Si vede in sede a Matera, apriamo alle 17:30" invece di una frase
+  generica: e' quella la riga che deve convincere a cliccare.
+  Agganciato a `the_content` con priorita' 20, dopo SportsPress, e non a un
+  hook dei suoi template: un aggiornamento del plugin non se lo porta via.
+
 - **Uno standard per l'immagine in evidenza delle news**
   (`scripts/locandina-card.py`). La locandina del Fenerbahce, messa in
   evidenza cosi' com'e', in home veniva **tagliata del 38% in altezza**:
