@@ -611,3 +611,175 @@ h1, h2, h3, h4, h5, h6 {
   .rcm-dove-dati > div { min-width: 100%; }
   .rcm-dove-bottone { display: block; text-align: center; }
 }
+
+
+/* === Tesseramento: quote, vantaggi e pagamenti sopra il modulo === */
+/* markup nel mu-plugin rcm-tesseramento.php */
+/* La pagina ha fondo nero e testo bianco, come /biglietti/: i grigi qui sotto
+   sono scritti per quel fondo. La larghezza e' la stessa dell'avviso privacy
+   che sta subito sotto (760px), cosi' le due colonne si allineano. */
+.rcm-tess {
+  max-width: 760px;
+  margin: 0 auto 34px;
+}
+
+.rcm-tess-apertura {
+  margin: 0 0 30px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #e8e8e8;
+}
+
+.rcm-tess-titolo {
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(230, 175, 20, 0.28);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e6af14;
+}
+
+/* --- il listino --- */
+/* Righe e non schede: le descrizioni hanno lunghezze diverse e una tessera
+   puo' non averne, e in una griglia di riquadri quel vuoto si vede. */
+.rcm-tess-quote {
+  margin: 0 0 34px;
+  padding: 0;
+  list-style: none;
+}
+
+.rcm-tess-quota {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 18px;
+  padding: 14px 0 14px 14px;
+  border-left: 3px solid rgba(230, 175, 20, 0.22);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rcm-tess-quota:last-child { border-bottom: 0; }
+
+/* La tessera che prende la maggior parte dei soci: si stacca dalle altre senza
+   diventare un riquadro a parte. */
+.rcm-tess-quota.is-evidenza {
+  border-left-color: #e6af14;
+  background: rgba(230, 175, 20, 0.06);
+  padding-right: 14px;
+}
+
+.rcm-tess-nome {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.rcm-tess-prezzo {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: #e6af14;
+}
+
+.rcm-tess-dettaglio {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #9a9a9a;
+}
+
+/* --- cosa ottieni --- */
+.rcm-tess-vantaggi {
+  margin: 0 0 34px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.rcm-tess-vantaggi li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #c9c9c9;
+}
+
+/* Un trattino giallo al posto del punto elenco: il tema mette il proprio
+   marcatore fuori dal riquadro e su fondo nero non si vede. */
+.rcm-tess-vantaggi li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 10px;
+  height: 2px;
+  background: #e6af14;
+}
+
+.rcm-tess-vantaggi strong { color: #ffffff; }
+
+.rcm-tess-vantaggi a,
+.rcm-tess-nota a {
+  color: #e6af14;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --- come si paga --- */
+.rcm-tess-pagamenti {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+.rcm-tess-pagamenti li {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+}
+
+.rcm-tess-pagamenti strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.rcm-tess-pagamenti span {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #9a9a9a;
+}
+
+.rcm-tess-nota {
+  margin: 0 0 30px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #9a9a9a;
+}
+
+.rcm-tess-avanti {
+  margin: 0;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 16px;
+  font-weight: 700;
+  color: #e6af14;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .rcm-tess-apertura { font-size: 16px; }
+  .rcm-tess-quota { padding-left: 12px; }
+  .rcm-tess-nome { font-size: 16px; }
+  .rcm-tess-prezzo { font-size: 18px; }
+}

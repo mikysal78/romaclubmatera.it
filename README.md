@@ -423,6 +423,7 @@ repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
 | `rcm-schema-club.php` | `wordpress` | mette indirizzo, telefono, email e anno di fondazione nei dati strutturati |
 | `rcm-eventi-seo.php` | `wordpress` | titolo con la data, descrizione e `SportsEvent` sulle pagine delle partite |
 | `rcm-biglietti.php` | `wordpress` | colonna "Biglietteria" nel calendario e modulo di richiesta per partita |
+| `rcm-tesseramento.php` | `wordpress` | quote, vantaggi e modalità di pagamento sopra il modulo di tesseramento |
 | `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
 
 `rcm-enqueue-custom-css.php`, che sta nella stessa cartella, **non** è un mu-plugin: è lo
@@ -534,6 +535,41 @@ sudo -u www-data wp --path=/var/www/example.com cron event run rcm_compleanni_in
 ```
 
 ---
+
+### 9.3 Cosa si ottiene tesserandosi (`rcm-tesseramento`)
+
+La pagina `/tesseramento-2026-27/` conteneva l'avviso privacy e il modulo
+JotForm, e basta: chi ci arrivava doveva compilare per scoprire quanto costa.
+Il mu-plugin ci mette davanti tre sezioni — **Le tessere**, **Cosa ottieni**,
+**Come si paga** — e lascia l'avviso privacy attaccato al modulo, che è il
+punto in cui serve.
+
+Il blocco si aggancia a `the_content` con **priorità 20**. Elementor monta il
+suo contenuto sullo stesso filtro a 9, quindi a 20 il blocco si trova davanti
+alla pagina già costruita invece che in mezzo ai widget: il testo resta
+versionato nel repo e non finisce dentro un widget nel database.
+
+Due elenchi si modificano nel PHP, `rcm_tess_tessere()` e
+`rcm_tess_pagamenti()`, entrambi con un filtro se un giorno servisse
+cambiarli da fuori:
+
+```php
+add_filter( 'rcm_tesseramento_tessere', function ( $t ) { … } );
+add_filter( 'rcm_tesseramento_pagamenti', function ( $p ) { … } );
+```
+
+**Le quote vanno tenute allineate al modulo JotForm** che sta in fondo alla
+stessa pagina: se cambiano lì e non qui, la pagina promette un prezzo e il
+modulo ne chiede un altro. Il modulo carica i campi via JavaScript, quindi non
+si leggono scaricando l'HTML: vanno guardate aprendo
+`https://form.jotform.com/251772457622360` in un browser.
+
+Una tessera senza descrizione si mostra col solo nome e prezzo. È voluto:
+meglio una riga in meno che una frase inventata.
+
+L'elenco dei vantaggi è lo stesso del post *Iscriversi al Roma Club Matera*
+(ID 210). Se si tocca uno, va toccato l'altro, o le due pagine si
+contraddicono.
 
 ## 10. Manutenzione e tag utili
 

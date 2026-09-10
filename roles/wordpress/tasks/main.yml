@@ -114,13 +114,33 @@
   when: enable_redis | bool
 
 # ---------- Anti-spam (Cloudflare Turnstile) ----------
-- name: Installa e attiva il plugin simple-cloudflare-turnstile
-  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install simple-cloudflare-turnstile --activate --path={{ wp_root }}"
-  register: wordpress_turnstile_plugin
-  changed_when: "'Plugin already installed' not in wordpress_turnstile_plugin.stdout"
-  failed_when:
-    - wordpress_turnstile_plugin.rc != 0
-    - "'already installed' not in wordpress_turnstile_plugin.stdout"
+# Il plugin si installa solo se non c'e'. "wp plugin install" su un plugin gia'
+# presente ma di versione piu' vecchia di quella in repository non si ferma:
+# scarica, scompatta, trova la cartella occupata e fallisce. Il controllo prima
+# lo evita, e soprattutto evita che questo task blocchi tutto il ruolo - gli
+# aggiornamenti dei plugin li fa WordPress per conto suo.
+- name: Verifica se simple-cloudflare-turnstile e' gia' installato
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin is-installed simple-cloudflare-turnstile --path={{ wp_root }}"
+  register: wordpress_turnstile_presente
+  failed_when: false
+  changed_when: false
+  become: true
+  become_user: www-data
+  when: enable_turnstile | bool
+
+- name: Installa il plugin simple-cloudflare-turnstile
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install simple-cloudflare-turnstile --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+  when:
+    - enable_turnstile | bool
+    - wordpress_turnstile_presente.rc | default(1) != 0
+
+- name: Attiva il plugin simple-cloudflare-turnstile
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin activate simple-cloudflare-turnstile --path={{ wp_root }}"
+  register: wordpress_turnstile_attivo
+  changed_when: "'already active' not in wordpress_turnstile_attivo.stdout"
   become: true
   become_user: www-data
   when: enable_turnstile | bool
@@ -354,6 +374,17 @@
   ansible.builtin.copy:
     src: rcm-biglietti.php
     dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-biglietti.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
+# Quote, vantaggi e modalita' di pagamento in cima alla pagina del
+# tesseramento, che prima era il solo modulo JotForm: chi ci arrivava doveva
+# compilare per sapere quanto costa.
+- name: Installa il mu-plugin del tesseramento
+  ansible.builtin.copy:
+    src: rcm-tesseramento.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-tesseramento.php"
     owner: www-data
     group: www-data
     mode: "0644"
