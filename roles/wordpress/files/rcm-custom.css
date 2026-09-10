@@ -771,6 +771,12 @@ h1, h2, h3, h4, h5, h6 {
   color: #9a9a9a;
 }
 
+/* La nota che segue l'elenco dei vantaggi appartiene all'elenco, non alla
+   sezione dopo: si tira su, o sembra un paragrafo a se' sospeso in mezzo. */
+.rcm-tess-vantaggi + .rcm-tess-nota {
+  margin-top: -20px;
+}
+
 .rcm-tess-nota {
   margin: 0 0 30px;
   font-size: 13px;

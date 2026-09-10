@@ -34,9 +34,13 @@ const RCM_TESS_PAGINA = 'tesseramento-2026-27';
  *
  * Le quote sono quelle del modulo JotForm in fondo a questa stessa pagina: se
  * cambiano li', vanno cambiate qui, o la pagina promette un prezzo e il modulo
- * ne chiede un altro. La descrizione puo' mancare - una tessera senza una riga
+ * ne chiede un altro. La descrizione puo' mancare: una tessera senza una riga
  * di spiegazione si mostra col solo nome e prezzo, che e' meglio di una frase
  * inventata.
+ *
+ * La "Tessera Roma" non e' una tessera annuale ridotta: e' il biglietto della
+ * singola serata per chi viene da fuori. Per questo sotto l'elenco dei
+ * vantaggi c'e' la nota che quell'elenco non la riguarda.
  *
  * @return array[]
  */
@@ -63,7 +67,7 @@ function rcm_tess_tessere() {
 		array(
 			'nome'      => 'Tessera Roma',
 			'quota'     => '5 &euro;',
-			'descrizione' => '',
+			'descrizione' => 'Per l&rsquo;ospite occasionale che viene da fuori: vale per una singola partita vista in sede.',
 			'evidenza'  => false,
 		),
 	);
@@ -110,8 +114,8 @@ function rcm_tess_blocco( $contenuto ) {
 
 		<p class="rcm-tess-apertura">
 			Tesserarsi vuol dire vedere le partite in sede insieme agli altri romanisti, partire con noi
-			in trasferta e passare dal club per i biglietti dell&rsquo;Olimpico. La tessera vale per
-			tutta la stagione <strong>2026/27</strong>.
+			in trasferta e passare dal club per i biglietti dell&rsquo;Olimpico. Le tessere annuali
+			valgono per tutta la stagione <strong>2026/27</strong>.
 		</p>
 
 		<h2 class="rcm-tess-titolo">Le tessere</h2>
@@ -159,6 +163,10 @@ function rcm_tess_blocco( $contenuto ) {
 				&mdash; appuntamenti, trasferte e iniziative, per email.
 			</li>
 		</ul>
+		<p class="rcm-tess-nota">
+			L&rsquo;elenco vale per le tessere annuali. La <strong>Tessera Roma</strong> &egrave; un&rsquo;altra
+			cosa: copre la singola serata in sede di chi viene da fuori.
+		</p>
 
 		<h2 class="rcm-tess-titolo">Come si paga</h2>
 		<ul class="rcm-tess-pagamenti">
