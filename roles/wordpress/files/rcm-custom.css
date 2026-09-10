@@ -302,10 +302,21 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
+/* Il riquadro ha proporzioni fisse e la locandina ci sta dentro intera
+   (object-fit: contain). La prima pagina cambia ogni giorno e non arriva mai
+   con le stesse identiche proporzioni: con height:auto il footer si alzava e
+   si abbassava di una ventina di pixel da un giorno all'altro, su tutte le
+   pagine del sito. Oltre a essere brutto, faceva suonare l'allarme di
+   visual-check.py ogni mattina su tutte e diciassette le pagine, e un allarme
+   che suona sempre e' un allarme che non si guarda piu'.
+   1/1.42 e' il rapporto del formato in cui esce il giornale: l'eventuale
+   striscia che avanza e' nera come la card, quindi non si vede. */
 .rcm-romanista-locandina {
   display: block;
   width: 100%;
+  aspect-ratio: 1 / 1.42;
   height: auto;
+  object-fit: contain;
   margin: 0 0 12px;
   border-radius: 4px;
 }
