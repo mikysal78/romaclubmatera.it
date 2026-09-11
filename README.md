@@ -424,7 +424,7 @@ repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
 | `rcm-eventi-seo.php` | `wordpress` | titolo con la data, descrizione e `SportsEvent` sulle pagine delle partite |
 | `rcm-biglietti.php` | `wordpress` | colonna "Biglietteria" nel calendario e modulo di richiesta per partita |
 | `rcm-tesseramento.php` | `wordpress` | quote, vantaggi e modalità di pagamento sopra il modulo di tesseramento |
-| `rcm-cori.php` | `wordpress` | raccolta dei cori divisi per occasione, con la regola sui diritti applicata dal codice |
+| `rcm-cori.php` | `wordpress` | i cori della Curva Sud divisi per occasione, con la regola sui diritti applicata dal codice |
 | `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
 
 `rcm-enqueue-custom-css.php`, che sta nella stessa cartella, **non** è un mu-plugin: è lo
@@ -572,11 +572,16 @@ L'elenco dei vantaggi è lo stesso del post *Iscriversi al Roma Club Matera*
 (ID 210). Se si tocca uno, va toccato l'altro, o le due pagine si
 contraddicono.
 
-### 9.4 I cori del Club (`rcm-cori`)
+### 9.4 I cori della Curva Sud (`rcm-cori`)
 
 Tipo di contenuto **Cori** in dashboard, e la pagina `/cori/` che li mostra
 raggruppati per occasione — nell'ordine della partita, non alfabetico: si
 entra, si canta, si segna.
+
+Sono i cori che **la Curva Sud** canta all'Olimpico, non cori del Club: il
+Club li canta in sede e in pullman, e li racconta. La pagina lo dice in
+apertura, perché è anche quello che la gente cerca — «cori curva sud roma», non
+«cori del roma club».
 
 Ogni coro ha: **quando si canta**, **da quando** (facoltativo), **da dove
 viene**, **la musica di riferimento** e **il testo**. La storia — chi l'ha

@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: RCM - I cori del Club
- * Description: Raccolta dei cori cantati dal Roma Club Matera, divisi per occasione. Ogni coro dice quando si canta, da quando e la sua storia. Lo stile sta in bestfoot-child/assets/css/rcm-custom.css, sezione "Cori".
+ * Plugin Name: RCM - I cori della Curva Sud
+ * Description: I cori che la Curva Sud canta all'Olimpico, divisi per occasione: quando si canta ognuno, su che musica va e da dove arriva. Non sono cori del Club - il Club li canta e li racconta. Lo stile sta in bestfoot-child/assets/css/rcm-custom.css, sezione "Cori".
  * Version: 1.0.0
  * Author: Roma Club Matera
  *
@@ -23,9 +23,9 @@
  * dipende dal ricordarsela e' una regola che prima o poi salta.
  *
  * La versione ridotta e' anche la migliore. "Questo si canta all'ingresso
- * delle squadre, dal 2014, e lo abbiamo portato noi a Lecce" vale dieci volte
- * un elenco di testi copiati da un altro sito, ed e' l'unica cosa che nessun
- * altro club puo' rifare.
+ * delle squadre, sta sulle note di Rivers of Babylon e in curva all'inizio se
+ * ne suonava solo la musica" vale dieci volte un elenco di testi copiati da un
+ * altro sito, e nessun altro sito di Roma Club ce l'ha.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -183,8 +183,8 @@ function rcm_cori_metabox_testo( $post ) {
 		placeholder="Una riga per verso."><?php echo esc_textarea( $testo ); ?></textarea>
 	<p class="description">
 		Va a capo dove si va a capo cantando. Nel riquadro grande qui sopra, invece, ci sta
-		<strong>la storia del coro</strong>: chi l&rsquo;ha inventato, cosa &egrave; successo la prima volta.
-		&Egrave; la parte che nessun altro club pu&ograve; copiare.
+		<strong>la storia del coro</strong>: da dove arriva, chi l&rsquo;ha portato in curva, cosa &egrave;
+		successo la prima volta. &Egrave; la parte per cui uno la pagina la legge.
 	</p>
 	<?php
 }
