@@ -588,16 +588,23 @@ viene**, **la musica di riferimento** e **il testo**. La storia — chi l'ha
 inventato, cosa è successo la prima volta — si scrive nell'editor grande, ed è
 la parte che nessun altro club può copiare.
 
-**La regola sui diritti la fa rispettare il codice.** Molti cori stanno sopra
-canzoni protette, che hanno un autore e un editore. Quindi due binari:
+**La regola sui diritti la fa rispettare il codice.** Attenzione a come è
+formulata, perché la prima versione era sbagliata: non è *"sta sopra una
+canzone nota → niente testo"*. Nella quasi totalità dei cori da stadio **le
+parole non sono quelle della canzone** — la curva prende la musica e ci scrive
+sopra parole sue, e la musica qui non si riproduce, si nomina soltanto. Il
+discrimine vero è un altro:
 
-- coro **nato sugli spalti** → il testo si pubblica per intero;
-- coro **su base di una canzone nota** → solo titolo, occasione e melodia di
-  riferimento; il testo **no**.
+- il coro **è la canzone**, cantata parola per parola (l'inno e *Grazie Roma*
+  sono Venditti) → il testo è suo, niente testo;
+- il coro ha **parole nate sugli spalti** su una musica altrui → le parole sono
+  di chi le canta, il testo si pubblica.
+
+Su undici cori caricati, due ricadono nel primo caso e nove nel secondo.
 
 La scelta non è lasciata a chi scrive: `rcm_cori_testo_pubblicabile()` è
-l'unico punto in cui si decide, e se il coro è marcato "su base di canzone
-nota" il testo **non esce dalla pagina anche se qualcuno l'ha incollato nel
+l'unico punto in cui si decide, e se il coro è marcato come la canzone stessa
+il testo **non esce dalla pagina anche se qualcuno l'ha incollato nel
 campo**. In dashboard compare un avviso che lo dice prima, così quello che il
 club legge e quello che il sito fa sono per forza la stessa cosa. Il testo
 resta comunque salvato: se un giorno arriva l'autorizzazione dell'editore

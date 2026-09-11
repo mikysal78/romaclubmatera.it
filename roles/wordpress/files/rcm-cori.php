@@ -7,15 +7,20 @@
  *
  * LA REGOLA SUI DIRITTI, E PERCHE' LA FA RISPETTARE IL CODICE
  *
- * Molti cori da stadio stanno sopra canzoni protette, che hanno un autore e un
- * editore. Per la locandina de Il Romanista l'autorizzazione e' arrivata; qui
- * l'editore spesso non si sa nemmeno chi sia, e per la SIAE non e' una zona
- * grigia. Quindi due binari:
+ * La prima versione di questo commento diceva: coro su base di una canzone
+ * nota, niente testo. Sbagliato, e appiattiva il problema. Nella quasi
+ * totalita' dei cori da stadio LE PAROLE NON SONO QUELLE DELLA CANZONE: la
+ * curva prende la musica e ci scrive sopra parole sue. Di Rod Stewart o dei
+ * Boney M. si prende in prestito la melodia, e la melodia qui non si riproduce
+ * - si nomina soltanto, che e' lecito. Quindi il discrimine vero e' un altro:
  *
- * - coro NATO SUGLI SPALTI, senza una canzone d'autore sotto: si pubblica per
- *   intero, con la sua storia;
- * - coro SU BASE DI CANZONE NOTA: solo titolo, quando si canta e la melodia di
- *   riferimento. Il testo no.
+ * - il coro E' LA CANZONE, cantata parola per parola (l'inno e "Grazie Roma"
+ *   sono Venditti): il testo e' suo, e non si pubblica;
+ * - il coro ha PAROLE NATE SUGLI SPALTI su una musica altrui: le parole sono
+ *   di chi le canta, e si pubblicano.
+ *
+ * Resta un margine grigio - un adattamento su musica protetta e' in teoria
+ * un'opera derivata - ma sta tutto sul primo caso, non sul secondo.
  *
  * La scelta non e' lasciata a chi scrive: se il coro e' marcato "su base di
  * canzone nota", rcm_cori_testo_pubblicabile() dice no e il testo NON esce
@@ -53,8 +58,8 @@ function rcm_cori_occasioni() {
 /** I due tipi, che decidono se il testo si pubblica. */
 function rcm_cori_tipi() {
 	return array(
-		'spalti' => 'Nato sugli spalti &mdash; il testo si pubblica',
-		'base'   => 'Su base di una canzone nota &mdash; niente testo',
+		'spalti' => 'Parole nate sugli spalti &mdash; il testo si pubblica',
+		'base'   => '&Egrave; la canzone stessa, parola per parola &mdash; niente testo',
 	);
 }
 
@@ -172,10 +177,12 @@ function rcm_cori_metabox_testo( $post ) {
 	<?php if ( ! $ok ) : ?>
 		<div class="notice notice-warning inline" style="margin:0 0 12px;">
 			<p>
-				Questo coro &egrave; segnato come <strong>su base di una canzone nota</strong>, quindi
-				<strong>il testo non viene pubblicato</strong> nemmeno se lo scrivi qui sotto: la pagina mostrer&agrave;
-				solo il titolo, quando si canta e la musica di riferimento.
-				Il testo di una canzone d&rsquo;autore ha un editore, e riprodurlo senza permesso non &egrave; una zona grigia.
+				Questo coro &egrave; segnato come <strong>la canzone stessa, cantata parola per parola</strong>,
+				quindi <strong>il testo non viene pubblicato</strong> nemmeno se lo scrivi qui sotto: la pagina
+				mostrer&agrave; solo il titolo, quando si canta e la musica di riferimento.
+				Quelle parole sono dell&rsquo;autore della canzone, e riprodurle senza permesso non &egrave; una zona grigia.
+				Se invece le parole sono nate sugli spalti, cambia la voce &ldquo;Da dove viene&rdquo;: sono di chi le canta,
+				e si possono pubblicare.
 			</p>
 		</div>
 	<?php endif; ?>
