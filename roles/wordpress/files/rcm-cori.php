@@ -159,7 +159,8 @@ function rcm_cori_metabox_html( $post ) {
 		<label for="rcm_coro_melodia"><strong>Sulla musica di</strong></label><br>
 		<input type="text" class="widefat" name="rcm_coro_melodia" id="rcm_coro_melodia"
 			value="<?php echo esc_attr( $melodia ); ?>" placeholder="titolo della canzone">
-		<span class="description">Solo per i cori su base di una canzone nota. Il titolo si pu&ograve; dire, il testo no.</span>
+		<span class="description">Si pu&ograve; indicare sempre, anche per i cori con il testo pubblicabile: sapere
+			su che musica va &egrave; met&agrave; dell&rsquo;informazione.</span>
 	</p>
 	<?php
 }
@@ -326,17 +327,33 @@ function rcm_cori_scheda( $c ) {
 			<?php endif; ?>
 		</header>
 
+		<?php
+		/*
+		 * La melodia e il testo sono due informazioni distinte, e prima stavano
+		 * nello stesso ramo. Sbagliato: "si canta sulla musica di X" serve anche
+		 * quando il testo si puo' pubblicare - anzi, e' meta' di quello che uno
+		 * viene a sapere - e ci sono melodie senza un editore a cui chiedere
+		 * niente, come La Marsigliese o Glory Glory Hallelujah. Tenerle nello
+		 * stesso ramo obbligava a marcare "niente testo" un coro solo per poter
+		 * dire su che musica va.
+		 */
+		?>
+		<?php if ( $melodia ) : ?>
+			<p class="rcm-coro-musica">Si canta sulla musica di <strong><?php echo esc_html( $melodia ); ?></strong>.</p>
+		<?php endif; ?>
+
+		<?php
+		/*
+		 * Quando il testo non si pubblica, la scheda non lo dice. Lo dice una
+		 * volta l'introduzione della pagina: ripetuto su dieci schede su undici
+		 * - tanti sono i cori della Roma che stanno sopra una canzone d'autore -
+		 * quel capoverso smetteva di essere un principio e diventava una lagna,
+		 * e rubava l'occhio alla storia del coro, che e' la roba per cui uno la
+		 * pagina la legge.
+		 */
+		?>
 		<?php if ( $ok && $testo ) : ?>
 			<p class="rcm-coro-testo"><?php echo nl2br( esc_html( $testo ) ); ?></p>
-		<?php elseif ( ! $ok ) : ?>
-			<p class="rcm-coro-musica">
-				<?php if ( $melodia ) : ?>
-					Si canta sulla musica di <strong><?php echo esc_html( $melodia ); ?></strong>.
-				<?php else : ?>
-					Si canta sulla musica di una canzone nota.
-				<?php endif; ?>
-				<span>Il testo non lo riportiamo: &egrave; di chi l&rsquo;ha scritta.</span>
-			</p>
 		<?php endif; ?>
 
 		<?php if ( $storia ) : ?>

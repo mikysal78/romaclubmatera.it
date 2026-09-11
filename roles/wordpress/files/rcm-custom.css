@@ -901,12 +901,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .rcm-coro-musica strong { color: #e6af14; }
 
-.rcm-coro-musica span {
-  display: block;
-  margin-top: 6px;
+/* La riga che spiega perche' il testo non c'e'. Piu' piccola della melodia:
+   e' una nota, non il contenuto della scheda. */
+.rcm-coro-niente-testo {
+  margin: 0 0 16px;
   font-size: 13px;
+  line-height: 1.6;
   color: #8a8a8a;
 }
+
+.rcm-coro-niente-testo:last-child { margin-bottom: 0; }
 
 .rcm-coro-storia {
   font-size: 14px;
