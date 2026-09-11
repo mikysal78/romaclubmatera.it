@@ -378,6 +378,17 @@
     group: www-data
     mode: "0644"
 
+# Raccolta dei cori, divisi per occasione. Il testo si pubblica solo per i
+# cori nati sugli spalti: quelli su base di una canzone nota hanno un editore,
+# e la regola la fa rispettare il codice, non la memoria di chi scrive.
+- name: Installa il mu-plugin dei cori
+  ansible.builtin.copy:
+    src: rcm-cori.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-cori.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Quote, vantaggi e modalita' di pagamento in cima alla pagina del
 # tesseramento, che prima era il solo modulo JotForm: chi ci arrivava doveva
 # compilare per sapere quanto costa.

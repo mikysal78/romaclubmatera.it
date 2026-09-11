@@ -424,6 +424,7 @@ repo e copiati dal playbook. Il codice sta in `roles/<ruolo>/files/`.
 | `rcm-eventi-seo.php` | `wordpress` | titolo con la data, descrizione e `SportsEvent` sulle pagine delle partite |
 | `rcm-biglietti.php` | `wordpress` | colonna "Biglietteria" nel calendario e modulo di richiesta per partita |
 | `rcm-tesseramento.php` | `wordpress` | quote, vantaggi e modalità di pagamento sopra il modulo di tesseramento |
+| `rcm-cori.php` | `wordpress` | raccolta dei cori divisi per occasione, con la regola sui diritti applicata dal codice |
 | `rcm-next-match.php` | `sportspress_fixtures` | evidenzia la prossima partita e mostra "da definire" sugli orari non ancora ufficiali |
 
 `rcm-enqueue-custom-css.php`, che sta nella stessa cartella, **non** è un mu-plugin: è lo
@@ -570,6 +571,37 @@ meglio una riga in meno che una frase inventata.
 L'elenco dei vantaggi è lo stesso del post *Iscriversi al Roma Club Matera*
 (ID 210). Se si tocca uno, va toccato l'altro, o le due pagine si
 contraddicono.
+
+### 9.4 I cori del Club (`rcm-cori`)
+
+Tipo di contenuto **Cori** in dashboard, e la pagina `/cori/` che li mostra
+raggruppati per occasione — nell'ordine della partita, non alfabetico: si
+entra, si canta, si segna.
+
+Ogni coro ha: **quando si canta**, **da quando** (facoltativo), **da dove
+viene**, **la musica di riferimento** e **il testo**. La storia — chi l'ha
+inventato, cosa è successo la prima volta — si scrive nell'editor grande, ed è
+la parte che nessun altro club può copiare.
+
+**La regola sui diritti la fa rispettare il codice.** Molti cori stanno sopra
+canzoni protette, che hanno un autore e un editore. Quindi due binari:
+
+- coro **nato sugli spalti** → il testo si pubblica per intero;
+- coro **su base di una canzone nota** → solo titolo, occasione e melodia di
+  riferimento; il testo **no**.
+
+La scelta non è lasciata a chi scrive: `rcm_cori_testo_pubblicabile()` è
+l'unico punto in cui si decide, e se il coro è marcato "su base di canzone
+nota" il testo **non esce dalla pagina anche se qualcuno l'ha incollato nel
+campo**. In dashboard compare un avviso che lo dice prima, così quello che il
+club legge e quello che il sito fa sono per forza la stessa cosa. Il testo
+resta comunque salvato: se un giorno arriva l'autorizzazione dell'editore
+basta cambiare il tipo e ricompare.
+
+Il tipo di contenuto è `public => false`: i cori non hanno un indirizzo
+proprio, esistono per finire nell'elenco. Se un giorno diventano tanti e
+conviene dare a ognuno la sua pagina — chi cerca un coro lo cerca dal
+telefono, col nome — basta aprirlo con `rewrite => array('slug' => 'cori')`.
 
 ## 10. Manutenzione e tag utili
 

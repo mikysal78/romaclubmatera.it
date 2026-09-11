@@ -800,3 +800,130 @@ h1, h2, h3, h4, h5, h6 {
   .rcm-tess-nome { font-size: 16px; }
   .rcm-tess-prezzo { font-size: 18px; }
 }
+
+
+/* === I cori del Club === */
+/* markup nel mu-plugin rcm-cori.php */
+/* Fondo nero e testo chiaro, come /biglietti/ e /tesseramento-2026-27/. */
+.rcm-cori {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.rcm-cori-gruppo + .rcm-cori-gruppo {
+  margin-top: 46px;
+}
+
+.rcm-cori-occasione {
+  margin: 0 0 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(230, 175, 20, 0.28);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e6af14;
+}
+
+/* Due colonne fisse, non auto-fit: con auto-fit un gruppo che ha un coro solo
+   se lo prendeva tutto largo, e le schede cambiavano misura da un gruppo
+   all'altro. Una scheda mezza riga vuota accanto sta meglio di una scheda
+   larga il doppio di quelle sopra. */
+.rcm-cori-schede {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .rcm-cori-schede { grid-template-columns: 1fr; }
+}
+
+.rcm-coro {
+  padding: 22px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 3px solid #e6af14;
+  border-radius: 8px;
+  background: rgba(230, 175, 20, 0.04);
+}
+
+.rcm-coro-testa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 14px;
+  margin-bottom: 14px;
+}
+
+.rcm-coro-nome {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.rcm-coro-dal {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+  white-space: nowrap;
+}
+
+/* Il testo del coro si legge come si canta: righe corte, una per verso, e
+   l'interlinea larga perche' l'occhio deve trovare la riga dopo mentre la
+   bocca sta ancora finendo quella prima. */
+.rcm-coro-testo {
+  margin: 0 0 16px;
+  padding-left: 14px;
+  border-left: 2px solid rgba(230, 175, 20, 0.35);
+  font-size: 17px;
+  line-height: 1.9;
+  color: #ffffff;
+}
+
+/* Il riquadro dei cori su base di canzone nota: dice cosa si canta sopra e
+   perche' il testo non c'e'. Non e' un errore della pagina, e' una scelta. */
+.rcm-coro-musica {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #c9c9c9;
+}
+
+/* Senza storia sotto, il testo e' l'ultima cosa della scheda: il suo margine
+   diventerebbe un vuoto in fondo al riquadro. */
+.rcm-coro-testo:last-child,
+.rcm-coro-musica:last-child { margin-bottom: 0; }
+
+.rcm-coro-musica strong { color: #e6af14; }
+
+.rcm-coro-musica span {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #8a8a8a;
+}
+
+.rcm-coro-storia {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #9a9a9a;
+}
+
+.rcm-coro-storia p { margin: 0 0 10px; }
+.rcm-coro-storia p:last-child { margin-bottom: 0; }
+
+.rcm-cori-vuoto {
+  color: #9a9a9a;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .rcm-coro { padding: 18px 18px; }
+  .rcm-coro-nome { font-size: 17px; }
+  .rcm-coro-testo { font-size: 16px; }
+}
