@@ -165,8 +165,21 @@ function rcm_romanista_card( $index, $ha_widget = true ) {
 					alt="La prima pagina de Il Romanista di oggi" loading="lazy" decoding="async">
 				<span class="rcm-romanista-credito">&copy; Il Romanista</span>
 			<?php else : ?>
-				<span class="rcm-romanista-occhiello">In edicola oggi</span>
-				<span class="rcm-romanista-testata">Il Romanista</span>
+				<?php
+				/*
+				 * Il ripiego sta dentro un riquadro delle stesse proporzioni della
+				 * locandina, cosi' la card e' alta uguale in tutti e due i casi.
+				 * Senza, fra mezzanotte e le 06:30 - la finestra in cui quella di
+				 * ieri e' scaduta e quella di oggi non e' ancora arrivata - il
+				 * footer si accorciava di 277px su OGNI pagina del sito, e
+				 * visual-check.py segnalava diciassette pagine cambiate a ogni
+				 * esecuzione notturna.
+				 */
+				?>
+				<span class="rcm-romanista-ripiego">
+					<span class="rcm-romanista-occhiello">In edicola oggi</span>
+					<span class="rcm-romanista-testata">Il Romanista</span>
+				</span>
 			<?php endif; ?>
 			<span class="rcm-romanista-invito">Leggi la prima pagina</span>
 		</a>

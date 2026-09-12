@@ -266,6 +266,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .rcm-romanista-card {
+  /* Vedi .rcm-romanista-ripiego: e' l'ingombro della riga del credito, che la
+     card senza locandina deve recuperare per restare alta uguale. */
+  --rcm-romanista-credito-spazio: 23.5px;
   display: block;
   max-width: 260px;
   margin-left: auto; /* la colonna e' allineata a destra */
@@ -282,6 +285,29 @@ h1, h2, h3, h4, h5, h6 {
 .rcm-romanista-card:focus-visible {
   border-color: #e6af14;
   background: rgba(230, 175, 20, 0.12);
+}
+
+/* Stesse proporzioni della locandina: la card non cambia altezza fra il caso
+   con la prima pagina e quello senza. Il perche' sta nel mu-plugin. */
+.rcm-romanista-ripiego {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* width:100% non e' decorativo: e' uno span, e senza si stringe sul testo.
+     L'aspect-ratio partirebbe da quella larghezza li' e il riquadro verrebbe
+     alto la meta' di quello della locandina, cioe' il contrario di quello che
+     serve. */
+  width: 100%;
+  aspect-ratio: 1 / 1.42;
+  /* La versione con la locandina ha sotto anche la riga "© Il Romanista", che
+     qui non c'e' perche' non c'e' niente da accreditare. Quello spazio se lo
+     riprende il ripiego, o le due card restano alte diverse di 23,5px e
+     visual-check.py segnala lo stesso tutte le pagine, solo con un numero piu'
+     piccolo. 12px e' il margine della locandina; il resto e' la riga del
+     credito (13,5px di testo + 10px di margine): se un giorno si cambia il
+     corpo o il margine di .rcm-romanista-credito, va rimisurato qui. */
+  margin-bottom: calc(12px + var(--rcm-romanista-credito-spazio));
 }
 
 .rcm-romanista-occhiello {
