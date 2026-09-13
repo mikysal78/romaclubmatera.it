@@ -16,6 +16,21 @@ LOG_PREFIX="[$(date '+%F %T')]"
 log() { echo "${LOG_PREFIX} $*"; }
 fail() { echo "${LOG_PREFIX} ERRORE: $*" >&2; exit 1; }
 
+ARCHIVE="${BACKUP_DIR}/${DOMAIN}-${TS}.tar"
+COMPLETATO=0
+
+# Se lo script si ferma a meta', non deve lasciare dietro di se' ne' la
+# cartella di lavoro ne' un .tar troncato. L'11/09/2026 una cartella da 347 MB
+# e' rimasta orfana: la pulizia qui sotto cercava solo i .tar, quindi non
+# l'avrebbe cancellata mai, e ogni nuovo errore ne avrebbe aggiunta un'altra.
+pulisci() {
+  if [ "${COMPLETATO}" -ne 1 ]; then
+    rm -rf "${DEST}"
+    rm -f "${ARCHIVE}"
+  fi
+}
+trap pulisci EXIT
+
 mkdir -p "${DEST}"
 log "Avvio backup di ${DOMAIN}"
 
@@ -26,23 +41,39 @@ mysqldump --defaults-extra-file=/root/.wp-backup.cnf \
   "${DB_NAME}" | gzip > "${DEST}/db.sql.gz" || fail "mysqldump fallito"
 
 # 2) Archivio dei file (escludo cache e backup locali)
+#
+# GNU tar esce con 1 quando un file cambia mentre lo sta leggendo: l'archivio
+# e' scritto e valido, al piu' quel singolo file e' fotografato a meta'. Con
+# "|| fail" quel caso fermava tutto il backup - e alle 03:30 in punto gira
+# anche il cron di WordPress, che scrive in uploads. Si fallisce solo da 2 in
+# su, che per tar vuol dire errore vero.
 log "Archivio file..."
+rc=0
 tar -czf "${DEST}/files.tar.gz" \
   --exclude='wp-content/cache' \
-  -C "$(dirname "${WP_ROOT}")" "$(basename "${WP_ROOT}")" || fail "tar fallito"
+  -C "$(dirname "${WP_ROOT}")" "$(basename "${WP_ROOT}")" || rc=$?
+if [ "${rc}" -eq 1 ]; then
+  log "AVVISO: alcuni file sono cambiati durante la lettura, archivio comunque completo"
+elif [ "${rc}" -ne 0 ]; then
+  fail "tar fallito (codice ${rc})"
+fi
 
 # 3) Checksum per verifica integrità
 ( cd "${DEST}" && sha256sum db.sql.gz files.tar.gz > SHA256SUMS )
 
 # 4) Pacchetto unico
-ARCHIVE="${BACKUP_DIR}/${DOMAIN}-${TS}.tar"
 tar -cf "${ARCHIVE}" -C "${BACKUP_DIR}" "${DOMAIN}-${TS}"
 rm -rf "${DEST}"
+COMPLETATO=1
 SIZE="$(du -h "${ARCHIVE}" | cut -f1)"
 log "Backup completato: ${ARCHIVE} (${SIZE})"
 
-# 5) Retention: elimina i backup più vecchi di N giorni
+# 5) Retention: elimina i backup più vecchi di N giorni.
+# Anche le cartelle, non solo i .tar: sono quelle lasciate da un'esecuzione
+# interrotta prima di questa correzione.
 log "Pulizia backup più vecchi di ${RETENTION_DAYS} giorni..."
-find "${BACKUP_DIR}" -maxdepth 1 -name "${DOMAIN}-*.tar" -type f -mtime +${RETENTION_DAYS} -print -delete
+find "${BACKUP_DIR}" -maxdepth 1 -name "${DOMAIN}-*" \
+  \( -type f -name '*.tar' -o -type d \) \
+  -mtime +${RETENTION_DAYS} -print -exec rm -rf {} +
 
 log "Fine."

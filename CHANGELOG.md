@@ -315,6 +315,25 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Il backup notturno non lascia piu' cartelle orfane**
+  (`roles/backup/templates/wp-backup.sh.j2`). GNU tar esce con 1 quando un
+  file cambia mentre lo legge - l'archivio e' comunque scritto - e lo
+  script lo trattava come errore fatale. Alle 03:30 in punto gira anche il
+  cron di WordPress, che scrive in `uploads`, quindi ogni tanto collidevano:
+  il backup si fermava **prima della pulizia**, e la pulizia cercava solo i
+  `.tar`. Risultato: una cartella da 200-350 MB lasciata li' per sempre a
+  ogni collisione. Nessuno se n'era accorto, ed era gia' successo quattro
+  volte (12/07, 25/08, 01/09, 11/09).
+  Ora l'uscita 1 di tar e' un avviso e si fallisce solo da 2 in su; un
+  `trap` toglie cartella di lavoro e `.tar` troncato se lo script si ferma;
+  la pulizia a 7 giorni cancella anche le cartelle. Il backup e' spostato
+  alle 03:37 (`backup_cron_minute`), fuori dal minuto del cron di WordPress:
+  il valore e' cambiato in `group_vars/all/vars.yml.example`, e va cambiato
+  a mano anche nel `vars.yml` locale, che non e' versionato.
+  Verificato con un'esecuzione reale: uscita 0, archivio da 345 MB, e la
+  prima pulizia ha rimosso le tre cartelle orfane piu' vecchie. Quella
+  dell'11/09 se ne va da sola il 19.
+
 - **Documentato perche' l'SSH al CT rifiuta la connessione ogni tanto.**
   Non e' un guasto: e' UFW che tiene la porta SSH in `LIMIT`, cioe' respinge
   oltre 6 connessioni nuove in 30 secondi dallo stesso IP. Il REJECT e'
@@ -527,6 +546,30 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   che hanno l'identificativo sono ora esclusi dalla ricerca per giornata e
   da quella per data: se non sono stati trovati per identificativo, quel
   match non e' il loro.
+
+### Sicurezza
+
+- **Aggiornamenti del 13/09/2026.** Plugin: Otter Blocks 3.2.3 -> 3.2.5,
+  Simple Cloudflare Turnstile 1.42.3 -> 1.43.1; tema inattivo Hello
+  Elementor 3.4.9 -> 3.5.1. Core gia' all'ultima versione (7.1).
+  Sistema: 54 pacchetti Debian, fra cui nginx (stable-security), glibc,
+  curl, libssh2, pcre2 e ImageMagick. Aggiornare i pacchetti non basta: i
+  servizi gia' avviati tengono in memoria le librerie vecchie finche' non
+  ripartono, quindi sono stati riavviati php-fpm, MariaDB, Redis, postfix,
+  fail2ban, cron e sshd (dopo `sshd -t`). Sito verificato a 200 prima e
+  dopo. Prima di tutto: dump del database e copia dei plugin in
+  `/var/backups/romaclubmatera/` - con nomi che la pulizia automatica non
+  tocca, quindi vanno tolti a mano.
+
+- **Slider Revolution e Unlimited Elements non si aggiornano da qui.** Sono
+  inclusi nel tema `thewebs`, che li dichiara con TGM Plugin Activation da
+  `install-plugin/plugins/*.zip` - ma i due zip nel tema non ci sono. La
+  licenza di Slider Revolution e' quella del tema: il loro server annuncia
+  la 6.7.58 ma non fornisce il pacchetto (installata 6.7.40, tentativo
+  annullato pulito). Unlimited Elements non ha nessuna licenza Freemius
+  collegata (installata 1.5.151, la gratuita e' alla 2.0.18). Entrambe le
+  versioni installate hanno vulnerabilita' note corrette in quelle nuove:
+  serve il pacchetto aggiornato del tema, o licenze proprie.
 
 ## [1.2.0] - 2026-08-27
 

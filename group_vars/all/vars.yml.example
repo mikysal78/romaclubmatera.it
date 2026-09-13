@@ -101,7 +101,7 @@ firewall_extra_tcp_ports: []
 backup_dir: "/var/backups/wordpress"
 backup_retention_days: 7
 backup_cron_hour: "3"
-backup_cron_minute: "30"
+backup_cron_minute: "37"
 
 # ---------- Mapping segreti (NON modificare: i valori reali stanno in vault.yml) ----------
 mysql_root_password: "{{ vault_mysql_root_password | default('') }}"
