@@ -570,6 +570,24 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   collegata (installata 1.5.151, la gratuita e' alla 2.0.18). Entrambe le
   versioni installate hanno vulnerabilita' note corrette in quelle nuove:
   serve il pacchetto aggiornato del tema, o licenze proprie.
+  Quanto sono gravi, verificato CVE per CVE e sul codice (senza mandare
+  richieste al sito): **oggi nessuna e' sfruttabile**, ma per motivi che
+  dipendono da come e' fatto il sito, non dalle versioni.
+  Slider Revolution: CVE-2026-6728 e' senza autenticazione ma legge solo
+  contenuti protetti da password, e sul sito non ce ne sono;
+  CVE-2026-9050 richiede un account da Collaboratore, e ci sono solo tre
+  amministratori con la registrazione chiusa. CVE-2025-10249 e
+  CVE-2025-9217 non riguardano la 6.7.40.
+  Unlimited Elements: CVE-2026-2724 e CVE-2025-13692 sono senza
+  autenticazione e l'endpoint **e' raggiungibile** -
+  `?ucfrontajaxaction=submitform` su qualunque pagina, senza nonce - ma
+  campi, upload e azioni (salvataggio, email, webhook) si leggono dal widget
+  modulo trovato nella pagina, e sul sito non ce n'e' nessuno; le tabelle
+  delle voci non esistono nemmeno.
+  **Questa valutazione cade** se si aggiunge un modulo di Unlimited
+  Elements, se si aprono account da Collaboratore o la registrazione, o se
+  si pubblicano contenuti con password: in quel caso l'aggiornamento
+  diventa urgente.
 
 ## [1.2.0] - 2026-08-27
 
