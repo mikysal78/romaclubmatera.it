@@ -589,6 +589,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   si pubblicano contenuti con password: in quel caso l'aggiornamento
   diventa urgente.
 
+### Rimosso
+
+- **Temi inutilizzati eliminati.** Hello Elementor e Twenty Twenty-Two,
+  -Three e -Four: nessuno era genitore di un altro tema, nessun contenuto li
+  usava, e il repo non li installa. Elementor nomina Hello Elementor solo in
+  un banner promozionale e nella procedura guidata iniziale. Tolte anche le
+  due opzioni orfane di Hello Elementor (`theme_mods_hello-elementor`,
+  `_hello-elementor_notifications`). Resta **Twenty Twenty-Five**, come tema
+  di riserva se quello attivo si rompe.
+  Subito dopo la cancellazione WordPress prova ancora a caricare le
+  traduzioni dei temi rimossi, perche' ne tiene l'elenco in cache: avvisi
+  `l10n.php` in wp-cli, spariti svuotando la cache. Verificato che non
+  restino file di traduzione orfani e che i log di nginx e PHP siano puliti.
+  Copia dei quattro temi in `/var/backups/romaclubmatera/temi-rimossi-*`.
+
 ## [1.2.0] - 2026-08-27
 
 ### Sicurezza
