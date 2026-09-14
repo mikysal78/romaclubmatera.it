@@ -418,6 +418,36 @@ Note importanti:
 - viene sempre creato un **backup pre-import** in `/var/backups/` sul CT: se qualcosa non torna, puoi ripristinare;
 - dopo l'import, controlla home, menu, media e i plugin pesanti (Elementor, Slider Revolution).
 
+## 8.2 Posta di sistema del CT (postfix)
+
+Il ruolo `postfix_relay` (attivo con `enable_smtp`) fa inoltrare a postfix
+**tutta la posta generata sul CT** — cron, root, `mail()` di PHP — al server di
+posta del dominio, autenticandosi come la posta di WordPress (`smtp_host`,
+`smtp_user`, password `vault_smtp_password`). Senza, postfix non aveva un relay:
+la posta partiva dall'IP del CT, senza PTR né SPF, e veniva rifiutata.
+
+- `mydestination` vuoto: il CT non recapita niente in locale;
+- `myorigin` = dominio: `root` diventa `root@dominio` e non
+  `root@<nome>.localdomain` — il nome postfix del CT, che fuori da lì non esiste;
+- `root`, `www-data` e `postmaster` vanno a `postfix_relay_destinatario`
+  (default `info@` del dominio), perché sul server di posta non esistono;
+- tutto esce con mittente `postfix_relay_mittente` (default `smtp_user`): il
+  server accetta solo la casella con cui ci si autentica;
+- TLS obbligatorio verso il relay; credenziali in `/etc/postfix/sasl_passwd` e
+  nel `.db` compilato, entrambi `0600` (postmap creerebbe il `.db` leggibile
+  da tutti).
+
+Se nel vault manca `vault_smtp_password`, il ruolo usa la password già presente
+in `wp-config.php` (`WPMS_SMTP_PASS`). Va comunque messa nel vault: un sito
+ricostruito da zero non l'avrebbe.
+
+**Prova:**
+
+```bash
+printf 'To: root\nSubject: prova\n\nprova\n' | /usr/sbin/sendmail -t
+journalctl -t postfix/smtp --since '-5 min'   # atteso: status=sent, relay=mail.<dominio>
+```
+
 ## 9. Personalizzazioni del sito (mu-plugin)
 
 Le funzioni su misura non sono plugin da installare dalla bacheca: sono **mu-plugin**

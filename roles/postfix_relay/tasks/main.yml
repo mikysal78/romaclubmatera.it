@@ -1,0 +1,133 @@
+---
+# Postfix su questo CT: inoltra tutta la posta al server di posta del dominio.
+#
+# Fino a settembre 2026 il postfix del CT non aveva un relay: la posta
+# generata qui (cron, root, mail() di PHP) partiva direttamente dall'IP del CT,
+# senza PTR ne' SPF, e il server di destinazione la rifiutava. In
+# /var/mail/www-data c'erano ancora cinque notifiche di WordPress di luglio
+# tornate indietro, da prima di WP Mail SMTP. La posta per root sarebbe rimasta
+# in una casella locale del CT che nessuno apre.
+
+- name: Installa postfix e il supporto per l'autenticazione SASL
+  ansible.builtin.apt:
+    name:
+      - postfix
+      - libsasl2-modules
+    state: present
+
+# Come nel ruolo backup: la password dovrebbe stare nel vault
+# (vault_smtp_password), ma se manca si usa quella gia' in wp-config.php, letta
+# sul server e mai stampata. Il vault, se c'e', vince.
+- name: Legge la password SMTP da wp-config.php se non e' nel vault
+  ansible.builtin.command: >-
+    {{ wordpress_cli_path | default('/usr/local/bin/wp') }} config get WPMS_SMTP_PASS
+    --path={{ wp_root }} --allow-root
+  register: postfix_relay_wpconfig
+  changed_when: false
+  failed_when: false
+  no_log: true
+  when: smtp_password | default('') | length == 0
+
+- name: Sceglie la password per il server di posta
+  ansible.builtin.set_fact:
+    postfix_relay_password: >-
+      {{ smtp_password if (smtp_password | default('') | length > 0)
+         else (postfix_relay_wpconfig.stdout | default('') | trim) }}
+  no_log: true
+
+- name: Controlla che una password ci sia
+  ansible.builtin.assert:
+    that: postfix_relay_password | length > 0
+    fail_msg: >-
+      Nessuna password SMTP: ne' vault_smtp_password nel vault ne'
+      WPMS_SMTP_PASS in wp-config.php. Senza, postfix non puo' autenticarsi
+      e tutta la posta del CT resterebbe in coda.
+    quiet: true
+
+- name: Credenziali per il server di posta (solo root)
+  ansible.builtin.copy:
+    dest: /etc/postfix/sasl_passwd
+    owner: root
+    group: root
+    mode: "0600"
+    content: "[{{ postfix_relay_host }}]:{{ postfix_relay_port }} {{ smtp_user }}:{{ postfix_relay_password }}\n"
+  no_log: true
+  notify:
+    - Compila le credenziali di postfix
+    - Ricarica postfix
+
+- name: Destinazione della posta di sistema del CT
+  ansible.builtin.copy:
+    dest: /etc/postfix/virtual
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Gestito da Ansible (ruolo postfix_relay): non modificare a mano.
+      # root, www-data e postmaster del CT non esistono sul server di posta:
+      # senza questa mappa la loro posta tornerebbe indietro.
+      root@{{ wp_domain }}        {{ postfix_relay_destinatario }}
+      www-data@{{ wp_domain }}    {{ postfix_relay_destinatario }}
+      postmaster@{{ wp_domain }}  {{ postfix_relay_destinatario }}
+      root@localhost              {{ postfix_relay_destinatario }}
+  notify:
+    - Compila la mappa dei destinatari
+    - Ricarica postfix
+
+- name: Un solo mittente per tutta la posta in uscita
+  ansible.builtin.copy:
+    dest: /etc/postfix/sender_canonical
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Gestito da Ansible (ruolo postfix_relay): non modificare a mano.
+      # Il server di posta accetta chi si autentica come {{ smtp_user }}: root@,
+      # www-data@ o wordpress@ come mittente verrebbero rifiutati. ".+" lascia
+      # vuoto il mittente vuoto, quello dei messaggi di mancata consegna.
+      /.+/    {{ postfix_relay_mittente }}
+  notify: Ricarica postfix
+
+# Una chiave per volta, confrontando col valore attuale: postconf -e riscrive
+# main.cf anche quando il valore e' identico, e il ruolo risulterebbe sempre
+# "changed". I valori stanno fra apici singoli perche' $default_database_type
+# deve arrivare a postfix cosi' com'e', non espanso dalla shell.
+- name: Configura postfix come inoltro verso il server di posta
+  ansible.builtin.shell: |
+    set -e
+    nuovo='{{ item.v }}'
+    if [ "$(postconf -h {{ item.k }})" != "$nuovo" ]; then
+      postconf -e "{{ item.k }}=$nuovo"
+      echo CAMBIATO
+    fi
+  args:
+    executable: /bin/bash
+  loop:
+    # Il CT non e' destinazione finale di niente: tutto va al server di posta.
+    - { k: mydestination, v: "" }
+    # Gli indirizzi senza dominio (root, www-data) prendono @dominio vero invece
+    # di romaclubmatera.localdomain, il nome postfix del CT, che fuori da qui
+    # non esiste: e' su @dominio che lavora la mappa dei destinatari.
+    - { k: myorigin, v: "{{ wp_domain }}" }
+    - { k: inet_interfaces, v: "loopback-only" }
+    - { k: relayhost, v: "[{{ postfix_relay_host }}]:{{ postfix_relay_port }}" }
+    - { k: smtp_sasl_auth_enable, v: "yes" }
+    - { k: smtp_sasl_password_maps, v: "$default_database_type:/etc/postfix/sasl_passwd" }
+    - { k: smtp_sasl_security_options, v: "noanonymous" }
+    - { k: smtp_sasl_tls_security_options, v: "noanonymous" }
+    # Le credenziali non devono mai viaggiare in chiaro.
+    - { k: smtp_tls_security_level, v: "encrypt" }
+    - { k: smtp_tls_CAfile, v: "/etc/ssl/certs/ca-certificates.crt" }
+    - { k: virtual_alias_maps, v: "$default_database_type:/etc/postfix/virtual" }
+    - { k: sender_canonical_maps, v: "regexp:/etc/postfix/sender_canonical" }
+  loop_control:
+    label: "{{ item.k }}"
+  register: postfix_relay_conf
+  changed_when: "'CAMBIATO' in postfix_relay_conf.stdout"
+  notify: Ricarica postfix
+
+- name: Postfix abilitato e avviato
+  ansible.builtin.service:
+    name: postfix
+    enabled: true
+    state: started

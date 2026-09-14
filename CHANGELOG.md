@@ -8,6 +8,32 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **La posta di sistema del CT arriva davvero** (ruolo `postfix_relay`).
+  Il postfix del CT web non aveva un relay: la posta generata li' - cron,
+  root, `mail()` di PHP - partiva dall'IP del CT, senza PTR ne' SPF, e
+  veniva rifiutata. In `/var/mail/www-data` c'erano ancora cinque notifiche
+  di WordPress di luglio tornate indietro, da prima di WP Mail SMTP.
+  Ora postfix inoltra tutto a `mail.romaclubmatera.it:587` autenticandosi
+  come `noreply@`, con TLS obbligatorio; `mydestination` e' vuoto; root,
+  www-data e postmaster vanno a info@ (`postfix_relay_destinatario`); ogni
+  messaggio esce col mittente `noreply@`, l'unico che il server accetta per
+  quel login. Installato `libsasl2-modules`, senza il quale postfix non sa
+  autenticarsi. Il `.db` delle credenziali e' messo a `0600`: postmap lo
+  crea leggibile da tutti.
+  Una trappola trovata strada facendo: il nome postfix del CT e'
+  `romaclubmatera.localdomain`, mentre `hostname -f` risponde
+  `romaclubmatera.it`. Senza `myorigin` sul dominio vero, `root` sarebbe
+  diventato `root@romaclubmatera.localdomain`, la mappa dei destinatari non
+  l'avrebbe riconosciuto e la posta sarebbe tornata indietro. La prima
+  diagnosi, fatta leggendo `hostname -f`, sosteneva che il CT si tenesse la
+  posta @romaclubmatera.it: era sbagliata.
+  Verificato: `sendmail` a `root` -> `to=<info@romaclubmatera.it>,
+  orig_to=<root>`, relay via IPv6, login `noreply@` sul server di posta e
+  consegna in `INBOX` (`msgid=<prova-postfix-20260914-182429@romaclubmatera.it>`).
+  Nessun rumore in arrivo: gli unici cron senza redirezione su systemd non
+  scrivono niente, fail2ban non ha azioni di posta e gli aggiornamenti
+  automatici non inviano.
+
 - **Un'email se il backup notturno fallisce**
   (`roles/backup/templates/wp-backup.sh.j2`). Fra luglio e settembre 2026 il
   backup era fallito quattro volte senza che nessuno lo sapesse. Ora, se lo

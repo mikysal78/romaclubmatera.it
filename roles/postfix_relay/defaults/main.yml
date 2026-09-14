@@ -1,0 +1,14 @@
+---
+# Server a cui postfix inoltra tutta la posta generata sul CT (cron, root,
+# www-data, mail() di PHP). Di default e' lo stesso di WordPress.
+postfix_relay_host: "{{ smtp_host }}"
+postfix_relay_port: "{{ smtp_port }}"
+
+# Dove finisce la posta per root, www-data e postmaster del CT: sul server di
+# posta quegli indirizzi non esistono, e senza una destinazione esplicita la
+# loro posta tornerebbe indietro.
+postfix_relay_destinatario: "info@{{ wp_domain }}"
+
+# Mittente con cui esce tutta la posta: deve essere la casella con cui postfix
+# si autentica, o il server di posta puo' rifiutarla.
+postfix_relay_mittente: "{{ smtp_user }}"

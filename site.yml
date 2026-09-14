@@ -81,6 +81,12 @@
     - role: backup
       tags: [backup]
 
+    # 9b) Posta di sistema: postfix inoltra tutto al server di posta del
+    #     dominio (senza relay partiva dall'IP del CT e veniva rifiutata)
+    - role: postfix_relay
+      tags: [postfix, mail]
+      when: enable_smtp | bool
+
     # 10) Aggiornamento giornaliero orari partite SportsPress (football-data.org)
     - role: sportspress_fixtures
       tags: [sportspress, fixtures]

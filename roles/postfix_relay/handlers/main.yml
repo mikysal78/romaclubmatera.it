@@ -1,0 +1,22 @@
+---
+# L'ordine conta: gli handler girano nell'ordine in cui sono scritti qui, e
+# postfix va ricaricato dopo che le mappe sono state ricompilate.
+
+- name: Compila le credenziali di postfix
+  ansible.builtin.shell: |
+    set -e
+    postmap /etc/postfix/sasl_passwd
+    # postmap crea il file compilato coi permessi predefiniti, cioe' leggibile
+    # da tutti: dentro c'e' la password. L'estensione dipende dal tipo di
+    # mappa (.db, .lmdb, .cdb), da qui il glob.
+    chmod 0600 /etc/postfix/sasl_passwd.*
+  args:
+    executable: /bin/bash
+
+- name: Compila la mappa dei destinatari
+  ansible.builtin.command: postmap /etc/postfix/virtual
+
+- name: Ricarica postfix
+  ansible.builtin.service:
+    name: postfix
+    state: reloaded
