@@ -8,6 +8,30 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Un'email se il backup notturno fallisce**
+  (`roles/backup/templates/wp-backup.sh.j2`). Fra luglio e settembre 2026 il
+  backup era fallito quattro volte senza che nessuno lo sapesse. Ora, se lo
+  script non arriva in fondo, scrive a `backup_notify_email` (default
+  `info@` del dominio) con codice di uscita, errore, spazio libero, ultimo
+  backup riuscito e le sole righe di log di quell'esecuzione.
+  La manda lo script con `curl` sul server di posta del dominio, autenticato
+  come `noreply@` - la stessa casella di WordPress - e **non** da WordPress:
+  tra i fallimenti c'e' anche il database giu', e allora WordPress non parte.
+  Nemmeno dal postfix del CT, che non ha un relay (vedi sotto). La password
+  sta in `/root/.wp-backup.netrc` (`0600`), non nella riga di comando di curl
+  dove `ps` la mostrerebbe a chiunque. L'email ha un `Message-ID` suo:
+  curl non lo aggiunge, e senza l'antispam la penalizza.
+  **Il vault non ha `vault_smtp_password`** (ne' le chiavi di Turnstile, che
+  pure l'esempio prevede): la password esisteva solo in `wp-config.php`,
+  scritta a mano, e il ruolo wordpress saltava il suo task a ogni
+  esecuzione. Il ruolo backup quindi usa il vault se c'e', altrimenti legge
+  la password gia' presente in `wp-config.php` sul server, senza stamparla.
+  Resta una trappola per chi ricostruisce il sito dal repo: senza quella
+  voce nel vault il sito nuovo non manderebbe email.
+  Verificato con una copia dello script e un errore voluto: login di
+  `noreply@` sul server di posta e consegna in `INBOX` di info@
+  (`msgid=<backup-20260914-181754-35168@romaclubmatera.it>`).
+
 - **«Dove vederla»: ogni partita da giocare ora risponde**
   (`roles/wordpress/files/rcm-eventi-seo.php`). In fondo alla pagina di
   ogni gara futura c'e' un riquadro con l'ora di apertura della sede,

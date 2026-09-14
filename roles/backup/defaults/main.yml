@@ -1,2 +1,8 @@
 ---
 backup_script_path: /usr/local/sbin/wp-backup.sh
+backup_log_file: /var/log/wp-backup.log
+
+# A chi scrivere quando il backup notturno fallisce. Vuoto = nessuna email.
+# Usa la casella con cui scrive WordPress (smtp_host, smtp_user, smtp_from e la
+# password vault_smtp_password): senza password l'avviso resta spento.
+backup_notify_email: "info@{{ wp_domain }}"

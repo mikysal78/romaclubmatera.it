@@ -102,6 +102,8 @@ backup_dir: "/var/backups/wordpress"
 backup_retention_days: 7
 backup_cron_hour: "3"
 backup_cron_minute: "37"
+# Avviso per email se il backup fallisce (default: info@<dominio>; "" per spegnerlo).
+# backup_notify_email: "info@romaclubmatera.it"
 
 # ---------- Mapping segreti (NON modificare: i valori reali stanno in vault.yml) ----------
 mysql_root_password: "{{ vault_mysql_root_password | default('') }}"

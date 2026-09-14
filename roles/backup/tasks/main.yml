@@ -27,10 +27,47 @@
       password={{ mysql_root_password }}
   no_log: true
 
+# La password SMTP dovrebbe stare nel vault (vault_smtp_password), ma a
+# settembre 2026 nel vault non c'era: esisteva solo in wp-config.php, scritta a
+# mano una volta, e il ruolo wordpress saltava il suo task a ogni esecuzione.
+# Se manca nel vault si usa quella che WordPress ha gia', letta sul server e
+# mai stampata. Il vault, se c'e', vince.
+- name: Legge la password SMTP da wp-config.php se non e' nel vault
+  ansible.builtin.command: >-
+    {{ wordpress_cli_path | default('/usr/local/bin/wp') }} config get WPMS_SMTP_PASS
+    --path={{ wp_root }} --allow-root
+  register: backup_smtp_wpconfig
+  changed_when: false
+  failed_when: false
+  no_log: true
+  when:
+    - backup_notify_email | length > 0
+    - smtp_password | default('') | length == 0
+
+# Credenziali per l'email di avviso quando il backup fallisce: la stessa casella
+# con cui scrive WordPress, ma in un file leggibile solo da root. Non vanno
+# nella riga di comando di curl, dove chiunque sul CT le vedrebbe con ps.
+- name: Credenziali SMTP per l'avviso di backup fallito (solo root)
+  ansible.builtin.copy:
+    dest: /root/.wp-backup.netrc
+    owner: root
+    group: root
+    mode: "0600"
+    content: |
+      machine {{ smtp_host }} login {{ smtp_user }} password {{ backup_smtp_password }}
+  vars:
+    backup_smtp_password: >-
+      {{ smtp_password if (smtp_password | default('') | length > 0)
+         else (backup_smtp_wpconfig.stdout | default('') | trim) }}
+  no_log: true
+  when:
+    - backup_notify_email | length > 0
+    - backup_smtp_password | length > 0
+
 - name: Pianifica il backup giornaliero (cron)
   ansible.builtin.cron:
     name: "wordpress-backup"
     user: root
     minute: "{{ backup_cron_minute }}"
     hour: "{{ backup_cron_hour }}"
-    job: "{{ backup_script_path }} >> /var/log/wp-backup.log 2>&1"
+    job: "{{ backup_script_path }} >> {{ backup_log_file }} 2>&1"

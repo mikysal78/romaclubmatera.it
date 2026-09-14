@@ -342,7 +342,7 @@ Il ruolo `backup` crea:
 
 - la directory **`/var/backups/wordpress`** (modo `0750`, solo root);
 - lo script **`/usr/local/sbin/wp-backup.sh`**;
-- un **cron giornaliero** (default 03:30) con log in `/var/log/wp-backup.log`.
+- un **cron giornaliero** (03:37, fuori dal minuto del cron di WordPress) con log in `/var/log/wp-backup.log`.
 
 Ogni backup è un archivio `dominio-AAAAMMGG-HHMMSS.tar` contenente:
 
@@ -351,6 +351,19 @@ Ogni backup è un archivio `dominio-AAAAMMGG-HHMMSS.tar` contenente:
 - `SHA256SUMS` — checksum per verifica integrità.
 
 La **retention** elimina gli archivi più vecchi di `backup_retention_days` giorni.
+
+**Se il backup fallisce, arriva un'email** a `backup_notify_email` (default
+`info@` del dominio) con codice di uscita, errore, spazio libero, ultimo backup
+riuscito e le righe di log di quell'esecuzione. La manda lo script con `curl`
+sul server di posta del dominio, autenticato come la posta di WordPress, e non
+da WordPress né dal postfix locale: tra i fallimenti c'è anche il database giù,
+e il postfix del CT non ha un relay. La password sta in `/root/.wp-backup.netrc`
+(`0600`), creato dal ruolo solo se `smtp_password` è impostata.
+
+Il backup **non si ferma più** se `tar` trova un file modificato mentre lo legge
+(uscita 1: l'archivio è comunque completo), e se si interrompe per un errore
+vero cancella la cartella di lavoro e il `.tar` a metà. Prima di settembre 2026
+entrambe le cose lasciavano cartelle orfane che la retention non toglieva.
 
 **Backup manuale:**
 

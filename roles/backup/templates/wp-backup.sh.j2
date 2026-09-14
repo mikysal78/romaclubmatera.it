@@ -13,23 +13,93 @@ TS="$(date +%Y%m%d-%H%M%S)"
 DEST="${BACKUP_DIR}/${DOMAIN}-${TS}"
 LOG_PREFIX="[$(date '+%F %T')]"
 
+LOG_FILE="{{ backup_log_file }}"
+NOTIFICA_A="{{ backup_notify_email }}"
+NETRC="/root/.wp-backup.netrc"
+# Dove comincia, nel log, questa esecuzione: se fallisce, l'email riporta solo
+# le sue righe e non tutto lo storico.
+LOG_INIZIO="$(stat -c %s "${LOG_FILE}" 2>/dev/null || echo 0)"
+ULTIMO_ERRORE=""
+
 log() { echo "${LOG_PREFIX} $*"; }
-fail() { echo "${LOG_PREFIX} ERRORE: $*" >&2; exit 1; }
+fail() { ULTIMO_ERRORE="$*"; echo "${LOG_PREFIX} ERRORE: $*" >&2; exit 1; }
 
 ARCHIVE="${BACKUP_DIR}/${DOMAIN}-${TS}.tar"
 COMPLETATO=0
+
+# Avvisa per email che il backup di stanotte non c'e'.
+#
+# Fra luglio e settembre 2026 il backup e' fallito quattro volte senza che
+# nessuno lo sapesse: e' esattamente il caso che questa funzione deve coprire.
+#
+# Passa da curl sul server di posta del dominio, autenticato come la posta di
+# WordPress, e NON da WordPress: tra i fallimenti possibili c'e' anche il
+# database giu', e allora WordPress non parte e l'email non partirebbe proprio
+# quando serve. Non passa nemmeno dal postfix locale, che non ha un relay e
+# spedirebbe dall'IP del CT, senza PTR ne' SPF: col DMARC in quarantine
+# finirebbe nello spam. La password sta in ${NETRC}, leggibile solo da root, e
+# non nella riga di comando di curl, dove chiunque sul CT la vedrebbe con ps.
+notifica() {
+  local rc="$1" msg
+  [ -n "${NOTIFICA_A}" ] || return 0
+  if [ ! -r "${NETRC}" ]; then
+    log "AVVISO: ${NETRC} assente, nessuna email di avviso"
+    return 0
+  fi
+  msg="$(mktemp)"
+  {
+    echo "From: {{ smtp_from_name }} <{{ smtp_from }}>"
+    echo "To: ${NOTIFICA_A}"
+    echo "Subject: [backup] FALLITO su ${DOMAIN}"
+    echo "Date: $(date -R)"
+    # curl non lo aggiunge, e il server di posta nemmeno per la posta
+    # autenticata: senza, l'antispam alza il punteggio (MISSING_MID) e
+    # l'avviso rischia di finire nella Posta indesiderata.
+    echo "Message-ID: <backup-${TS}-$$@${DOMAIN}>"
+    echo "MIME-Version: 1.0"
+    echo "Content-Type: text/plain; charset=UTF-8"
+    echo "Content-Transfer-Encoding: 8bit"
+    echo
+    echo "Il backup notturno di ${DOMAIN} non e' stato completato."
+    echo
+    echo "Ora:      $(date '+%F %T')"
+    echo "Server:   $(hostname -f 2>/dev/null || hostname)"
+    echo "Codice:   ${rc}"
+    echo "Errore:   ${ULTIMO_ERRORE:-interrotto senza messaggio, vedi il log sotto}"
+    echo "Spazio:   $(df -h "${BACKUP_DIR}" 2>/dev/null | awk 'NR==2 {print $4 " liberi su " $2}')"
+    echo
+    echo "Ultimo backup riuscito:"
+    ( ls -1t "${BACKUP_DIR}/${DOMAIN}"-*.tar 2>/dev/null | head -1 | sed 's/^/  /' ) || true
+    echo
+    echo "--- log di questa esecuzione (${LOG_FILE}) ---"
+    ( tail -c +"$((LOG_INIZIO + 1))" "${LOG_FILE}" 2>/dev/null | tail -n 40 ) || true
+  } > "${msg}"
+  if curl --silent --show-error --max-time 60 \
+       --url "smtp://{{ smtp_host }}:{{ smtp_port }}" --ssl-reqd \
+       --netrc-file "${NETRC}" \
+       --mail-from "{{ smtp_from }}" --mail-rcpt "${NOTIFICA_A}" \
+       --upload-file "${msg}"; then
+    log "Email di avviso inviata a ${NOTIFICA_A}"
+  else
+    log "ERRORE: email di avviso NON inviata a ${NOTIFICA_A}"
+  fi
+  rm -f "${msg}"
+}
 
 # Se lo script si ferma a meta', non deve lasciare dietro di se' ne' la
 # cartella di lavoro ne' un .tar troncato. L'11/09/2026 una cartella da 347 MB
 # e' rimasta orfana: la pulizia qui sotto cercava solo i .tar, quindi non
 # l'avrebbe cancellata mai, e ogni nuovo errore ne avrebbe aggiunta un'altra.
+# E si avvisa: un backup che manca e nessuno lo sa e' peggio di uno che manca.
 pulisci() {
+  local rc="$1"
   if [ "${COMPLETATO}" -ne 1 ]; then
     rm -rf "${DEST}"
     rm -f "${ARCHIVE}"
+    notifica "${rc}"
   fi
 }
-trap pulisci EXIT
+trap 'pulisci $?' EXIT
 
 mkdir -p "${DEST}"
 log "Avvio backup di ${DOMAIN}"
