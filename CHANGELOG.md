@@ -52,8 +52,8 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   scritta a mano, e il ruolo wordpress saltava il suo task a ogni
   esecuzione. Il ruolo backup quindi usa il vault se c'e', altrimenti legge
   la password gia' presente in `wp-config.php` sul server, senza stamparla.
-  Resta una trappola per chi ricostruisce il sito dal repo: senza quella
-  voce nel vault il sito nuovo non manderebbe email.
+  La trappola per chi ricostruisce il sito dal repo e' stata chiusa lo
+  stesso giorno: vedi *Segreti nel vault* sotto *Sicurezza*.
   Verificato con una copia dello script e un errore voluto: login di
   `noreply@` sul server di posta e consegna in `INBOX` di info@
   (`msgid=<backup-20260914-181754-35168@romaclubmatera.it>`).
@@ -598,6 +598,26 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   match non e' il loro.
 
 ### Sicurezza
+
+- **Segreti nel vault, dove il repo li cercava.** `vault_smtp_password`,
+  `vault_turnstile_site_key` e `vault_turnstile_secret_key` erano previsti
+  dall'esempio ma assenti dal vault: esistevano solo in `wp-config.php` e
+  nelle opzioni del plugin Turnstile, e un sito ricostruito dal repo non
+  avrebbe mandato email ne' protetto i moduli.
+  Copiati dal server senza mai mostrarli. Il vault nuovo e' stato scritto
+  accanto al vecchio e sostituito solo dopo aver verificato che ogni valore
+  avesse la stessa impronta SHA-256 di quello in uso sul sito e che le sei
+  chiavi preesistenti fossero invariate; il testo in chiaro e' passato per
+  un file `0600` cancellato con `shred`. Rieseguiti backup e postfix:
+  `changed=0`, e le letture di ripiego da `wp-config.php` ora vengono
+  saltate. La copia cifrata del vault precedente sta fuori dal repo: il
+  `.gitignore` esclude solo `vault.yml`, e un `vault.yml.bak-*` dentro
+  `group_vars/all/` sarebbe finito in un `git add -A`.
+  Per chi usa `ansible-vault encrypt` su questo controller:
+  `ANSIBLE_VAULT_PASSWORD_FILE` e' impostata nell'ambiente, quindi con
+  `--vault-password-file` in piu' ci sono due vault-id `default` e il
+  comando fallisce (codice 5) finche' non si aggiunge
+  `--encrypt-vault-id default`.
 
 - **Aggiornamenti del 13/09/2026.** Plugin: Otter Blocks 3.2.3 -> 3.2.5,
   Simple Cloudflare Turnstile 1.42.3 -> 1.43.1; tema inattivo Hello
