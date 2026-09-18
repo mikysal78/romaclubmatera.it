@@ -63,16 +63,27 @@
 	margin-bottom: 14px;
 }
 .rcm-as-modulo label { font-weight: 600; font-size: 14px; }
-.rcm-as-modulo input[type="email"],
-.rcm-as-modulo input[type="tel"],
-.rcm-as-modulo input[name="codice"] {
+.rcm-as .rcm-as-modulo input[type="email"],
+.rcm-as .rcm-as-modulo input[type="tel"],
+.rcm-as .rcm-as-modulo input[name="codice"] {
 	width: 100%;
 	padding: 12px;
 	font-size: 17px; /* 16px o piu': iPhone non ingrandisce la pagina al tocco */
 	border: 1px solid #c9b58a;
 	border-radius: 6px;
 	background: #fff;
+	/* il tema e' scuro e da' ai campi il testo chiaro: su fondo bianco
+	   non si vedeva cosa si scriveva. -webkit-text-fill-color per Safari e
+	   per i campi riempiti in automatico */
+	color: #222;
+	-webkit-text-fill-color: #222;
+	caret-color: var(--rcm-as-rosso);
 	box-sizing: border-box;
+}
+.rcm-as .rcm-as-modulo input::placeholder {
+	color: #8a8a8a;
+	-webkit-text-fill-color: #8a8a8a;
+	opacity: 1;
 }
 .rcm-as-modulo .rcm-as-codice {
 	font-size: 26px;

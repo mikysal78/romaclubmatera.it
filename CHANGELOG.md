@@ -396,6 +396,11 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Area soci: nei campi non si vedeva cosa si scriveva.** Il tema scuro da'
+  ai campi il testo chiaro, e sul fondo bianco del modulo codice ed email
+  restavano invisibili. Colore del testo fissato nei campi dell'area soci
+  (anche `-webkit-text-fill-color`, per Safari e per l'autocompletamento).
+
 - **Date di nascita con l'anno a due cifre** (`rcm_compleanni_data`). PHP
   legge `65` come 2065; la data, nel futuro, veniva scartata: chi era nato
   fra il 1930 e il 1969 veniva importato senza data e non riceveva gli
