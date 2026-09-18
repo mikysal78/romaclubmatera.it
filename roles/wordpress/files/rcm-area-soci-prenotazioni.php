@@ -429,7 +429,7 @@ function rcm_pr_sezione( $socio ) {
 			rcm_pr_scheda_partita( $coppia[0], $coppia[1], '' );
 		}
 	}
-	printf( '<p class="rcm-as-nota">Prenota almeno %d giorni prima della partita: poi il Club chiude le prenotazioni. Il pagamento si fa al Club: quando arriva, la prenotazione diventa <strong>Confermata</strong>.</p>', (int) RCM_PR_GIORNI );
+	printf( '<p class="rcm-as-nota">Le prenotazioni restano aperte finché il Club non le chiude, di solito una decina di giorni prima della partita: meglio non aspettare l\'ultimo momento. Finché non paghi la prenotazione resta <strong>Prenotato</strong>; appena il pagamento arriva al Club diventa <strong>Confermato</strong>: il biglietto c\'è e il posto in pullman è tuo.</p>' );
 	echo '</section>';
 }
 
