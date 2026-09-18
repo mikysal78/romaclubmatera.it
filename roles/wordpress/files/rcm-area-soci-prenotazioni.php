@@ -701,7 +701,7 @@ function rcm_pr_modulo( $partita, $p ) {
 add_action(
 	'admin_menu',
 	function () {
-		add_submenu_page( 'rcm-soci', 'Prenotazioni', 'Prenotazioni', RCM_COMPLEANNI_CAP, 'rcm-soci-prenotazioni', 'rcm_pr_pagina_admin' );
+		add_submenu_page( 'rcm-soci', 'Prenotazioni', 'Prenotazioni', RCM_SOCI_CAP_VEDI, 'rcm-soci-prenotazioni', 'rcm_pr_pagina_admin' );
 	},
 	15
 );
@@ -710,6 +710,10 @@ function rcm_pr_pagina_admin() {
 	global $wpdb;
 	$t     = rcm_pr_tabella();
 	$stati = rcm_pr_stati();
+	$puo   = rcm_soci_puo_modificare(); // il direttivo vede e basta
+	if ( ! $puo ) {
+		unset( $_POST['rcm_pr_salva'], $_POST['rcm_pr_chiusura'], $_POST['rcm_pr_salva_settori'] );
+	}
 
 	if ( isset( $_POST['rcm_pr_salva_settori'] ) && check_admin_referer( 'rcm_pr_settori' ) ) {
 		$settori = array();
@@ -823,6 +827,7 @@ function rcm_pr_pagina_admin() {
 	?>
 	<div class="wrap">
 		<h1>Prenotazioni</h1>
+		<?php rcm_soci_avviso_sola_lettura(); ?>
 		<form method="get" style="margin:12px 0">
 			<input type="hidden" name="page" value="rcm-soci-prenotazioni">
 			<select name="evento" onchange="this.form.submit()">
@@ -845,7 +850,7 @@ function rcm_pr_pagina_admin() {
 					partita giocata
 				<?php endif; ?>
 			</p>
-			<?php if ( $partita->futura ) : ?>
+			<?php if ( $partita->futura && $puo ) : ?>
 				<form method="post" style="margin:-4px 0 14px">
 					<?php wp_nonce_field( 'rcm_pr_chiusura' ); ?>
 					<input type="hidden" name="evento" value="<?php echo esc_attr( $partita->id ); ?>">
@@ -885,6 +890,10 @@ function rcm_pr_pagina_admin() {
 						</td>
 						<td><?php echo nl2br( esc_html( $r->note ) ); ?></td>
 						<td>
+							<?php if ( ! $puo ) : ?>
+								<strong><?php echo esc_html( 'confermato' === $r->stato ? 'Confermato (pagato)' : $stati[ $r->stato ] ); ?></strong>
+								<?php echo '' !== $r->nota_club ? '<br>' . nl2br( esc_html( $r->nota_club ) ) : ''; ?>
+							<?php else : ?>
 							<form method="post">
 								<?php wp_nonce_field( 'rcm_pr_admin' ); ?>
 								<input type="hidden" name="id" value="<?php echo esc_attr( $r->id ); ?>">
@@ -898,6 +907,7 @@ function rcm_pr_pagina_admin() {
 								<?php submit_button( 'Salva', 'small', 'rcm_pr_salva', false ); ?>
 								<?php echo 'confermato' === $r->stato && $r->confermato_il ? '<span class="description"> confermato il ' . esc_html( mysql2date( 'd/m/Y', $r->confermato_il ) ) . '</span>' : ''; ?>
 							</form>
+							<?php endif; ?>
 						</td>
 					</tr>
 				<?php endforeach; ?>
@@ -906,6 +916,9 @@ function rcm_pr_pagina_admin() {
 		<?php endif; ?>
 
 		<h2 style="margin-top:2em">Settori per le partite in casa</h2>
+		<?php if ( ! $puo ) : ?>
+			<p><?php echo esc_html( implode( ' · ', rcm_pr_settori() ) ); ?></p>
+		<?php else : ?>
 		<form method="post">
 			<?php wp_nonce_field( 'rcm_pr_settori' ); ?>
 			<p>Quelli fra cui il socio sceglie quando prenota il biglietto per una partita all'Olimpico: solo i settori di cui il Club dispone. Uno per riga, nell'ordine in cui devono comparire. Per le partite fuori casa il settore è sempre quello ospiti.</p>
@@ -913,6 +926,7 @@ function rcm_pr_pagina_admin() {
 			<p class="description">Chi ha già prenotato tiene il settore che ha scelto, anche se lo togliete dall'elenco.</p>
 			<?php submit_button( 'Salva i settori', 'secondary', 'rcm_pr_salva_settori', false ); ?>
 		</form>
+		<?php endif; ?>
 	</div>
 	<?php
 }

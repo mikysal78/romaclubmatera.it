@@ -8,6 +8,11 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Ruolo "Direttivo (sola lettura)"**: vede elenco soci, prenotazioni e la
+  pagina dell'app, e usa l'app Verifica; non modifica, non esporta il CSV e
+  non scarica i QR dei soci. Le azioni di modifica ricontrollano il permesso
+  lato server. Il Gestore soci resta il ruolo che modifica.
+
 - **App Verifica: il lato sito** (`rcm-verifica.php`). API per l'app dei
   gestori (repository privato `romaclubmatera-app`): accesso con utente e
   password in cambio di un token che vale solo per l'API, regole per ingresso,

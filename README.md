@@ -706,13 +706,21 @@ solo, senza disattivarlo a mano, e rientra quando il Club gli aggiorna la
 stagione. Chi rinnova a giugno per la stagione nuova entra subito. La casella
 *riceve gli auguri* non c'entra.
 
-**Chi lo gestisce.** Il menu *Soci* si apre con il permesso
-`rcm_gestisci_soci`, che hanno gli amministratori e il ruolo **Gestore soci**
-(creato da `rcm-compleanni`): in bacheca vede solo *Soci* (elenco, import ed
-esportazione, auguri, prenotazioni) e il suo profilo. Non scrive contenuti,
-non tocca plugin, temi e utenti, e non ha `edit_posts`. L'interruttore
-dell'area soci resta agli amministratori. Gli utenti si creano da
-*Utenti › Aggiungi nuovo* con il ruolo "Gestore soci".
+**Chi lo gestisce.** Due ruoli, creati da `rcm-compleanni`, che in bacheca
+vedono solo il menu *Soci* e il proprio profilo, senza `edit_posts`:
+
+| | Gestore soci (`rcm_gestisci_soci`) | Direttivo, sola lettura (`rcm_vedi_soci`) |
+|---|---|---|
+| Elenco soci, prenotazioni e totali | vede e modifica | vede |
+| Import ed esportazione CSV, QR dei soci | sì | no: sono copie dei dati personali e chiavi delle tessere |
+| Conferma dei pagamenti, chiusura delle partite, settori | sì | no |
+| Auguri | sì | no |
+| App Verifica | sì | sì |
+
+Gli amministratori hanno entrambi i permessi; l'interruttore dell'area soci
+resta a loro. Ogni azione di modifica ricontrolla il permesso lato server, non
+solo nascondendo i pulsanti. Gli utenti si creano da *Utenti › Aggiungi
+nuovo* con uno dei due ruoli.
 
 **Come entra.** Niente password: scrive l'email e riceve **un link e un codice
 di 6 cifre**, validi 15 minuti e una volta sola.

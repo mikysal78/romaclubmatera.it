@@ -10,11 +10,14 @@ defined( 'ABSPATH' ) || exit;
 define( 'RCM_COMPLEANNI_DB_VERSION', '1.3' );
 define( 'RCM_COMPLEANNI_OPZIONI', 'rcm_compleanni_opzioni' );
 define( 'RCM_COMPLEANNI_HOOK', 'rcm_compleanni_invio_giornaliero' );
-// Il permesso che apre il menu Soci. Ce l'hanno gli amministratori e il ruolo
-// "Gestore soci" qui sotto: chi nel Club tiene i soci senza toccare il sito.
+// Due permessi. rcm_gestisci_soci per modificare (Gestore soci e
+// amministratori); rcm_vedi_soci per guardare (in piu' il Direttivo, in sola
+// lettura). Chi modifica ha sempre anche il permesso di guardare.
 define( 'RCM_COMPLEANNI_CAP', 'rcm_gestisci_soci' );
+define( 'RCM_SOCI_CAP_VEDI', 'rcm_vedi_soci' );
 define( 'RCM_SOCI_RUOLO', 'rcm_gestore_soci' );
-define( 'RCM_SOCI_RUOLO_VER', '1' );
+define( 'RCM_SOCI_RUOLO_LETTURA', 'rcm_direttivo' );
+define( 'RCM_SOCI_RUOLO_VER', '2' );
 
 /* -------------------------------------------------------------------------
  * Il ruolo "Gestore soci"
@@ -24,7 +27,14 @@ define( 'RCM_SOCI_RUOLO_VER', '1' );
  * tocca plugin, temi o utenti, e non accende l'area soci: l'interruttore
  * resta agli amministratori. Senza edit_posts, le vulnerabilita' "Contributor+"
  * dei plugin del tema restano non sfruttabili anche con questi utenti.
- * Gli utenti si creano da Utenti > Aggiungi nuovo, con ruolo "Gestore soci".
+ *
+ * Il ruolo "Direttivo (sola lettura)" (Michele, 18/09/2026: "uno libero per
+ * modifica ed uno solo per la visualizzazione per il resto del direttivo")
+ * vede l'elenco soci, le prenotazioni e la pagina dell'app, e usa l'app
+ * Verifica. Non modifica niente, e non esporta il CSV ne' scarica i QR dei
+ * soci: sono copie dei dati personali e chiavi delle tessere.
+ *
+ * Gli utenti si creano da Utenti > Aggiungi nuovo, con uno dei due ruoli.
  * ---------------------------------------------------------------------- */
 
 // Ruoli e permessi stanno nel database: si scrivono una volta per versione.
@@ -42,19 +52,42 @@ function rcm_soci_installa_ruolo() {
 		array(
 			'read'             => true,
 			RCM_COMPLEANNI_CAP => true,
+			RCM_SOCI_CAP_VEDI  => true,
+		)
+	);
+	remove_role( RCM_SOCI_RUOLO_LETTURA );
+	add_role(
+		RCM_SOCI_RUOLO_LETTURA,
+		'Direttivo (sola lettura)',
+		array(
+			'read'            => true,
+			RCM_SOCI_CAP_VEDI => true,
 		)
 	);
 	$admin = get_role( 'administrator' );
 	if ( $admin ) {
 		$admin->add_cap( RCM_COMPLEANNI_CAP );
+		$admin->add_cap( RCM_SOCI_CAP_VEDI );
 	}
 	update_option( 'rcm_soci_ruolo_ver', RCM_SOCI_RUOLO_VER, false );
 }
 
-/** Vero per chi gestisce i soci ma non e' amministratore del sito. */
+/** Vero per chi ha il menu Soci (gestore o direttivo) ma non e' amministratore del sito. */
 function rcm_soci_solo_gestore( $user = null ) {
 	$user = $user ? $user : wp_get_current_user();
-	return $user && $user->exists() && user_can( $user, RCM_COMPLEANNI_CAP ) && ! user_can( $user, 'manage_options' );
+	return $user && $user->exists() && user_can( $user, RCM_SOCI_CAP_VEDI ) && ! user_can( $user, 'manage_options' );
+}
+
+/** Vero se l'utente corrente puo' modificare i soci, e non solo guardarli. */
+function rcm_soci_puo_modificare() {
+	return current_user_can( RCM_COMPLEANNI_CAP );
+}
+
+/** Per le pagine che il direttivo vede ma non modifica. */
+function rcm_soci_avviso_sola_lettura() {
+	if ( ! rcm_soci_puo_modificare() ) {
+		echo '<div class="notice notice-info"><p><strong>Sola lettura.</strong> Per modificare serve il ruolo di Gestore soci.</p></div>';
+	}
 }
 
 // Dopo il login il gestore arriva dritto all'elenco soci...
@@ -1056,8 +1089,8 @@ function rcm_compleanni_importa( $percorso, $opzioni_import = array() ) {
 add_action(
 	'admin_menu',
 	function () {
-		add_menu_page( 'Soci', 'Soci', RCM_COMPLEANNI_CAP, 'rcm-soci', 'rcm_compleanni_pagina_elenco', 'dashicons-groups', 26 );
-		add_submenu_page( 'rcm-soci', 'Elenco soci', 'Elenco soci', RCM_COMPLEANNI_CAP, 'rcm-soci', 'rcm_compleanni_pagina_elenco' );
+		add_menu_page( 'Soci', 'Soci', RCM_SOCI_CAP_VEDI, 'rcm-soci', 'rcm_compleanni_pagina_elenco', 'dashicons-groups', 26 );
+		add_submenu_page( 'rcm-soci', 'Elenco soci', 'Elenco soci', RCM_SOCI_CAP_VEDI, 'rcm-soci', 'rcm_compleanni_pagina_elenco' );
 		add_submenu_page( 'rcm-soci', 'Importa CSV', 'Importa CSV', RCM_COMPLEANNI_CAP, 'rcm-soci-import', 'rcm_compleanni_pagina_import' );
 		add_submenu_page( 'rcm-soci', 'Auguri di compleanno', 'Auguri', RCM_COMPLEANNI_CAP, 'rcm-soci-auguri', 'rcm_compleanni_pagina_auguri' );
 	}
@@ -1080,6 +1113,10 @@ function rcm_compleanni_avviso( $testo, $tipo = 'success' ) {
 function rcm_compleanni_pagina_elenco() {
 	global $wpdb;
 	$tabella = rcm_compleanni_tabella();
+	$puo     = rcm_soci_puo_modificare(); // il direttivo vede e basta
+	if ( ! $puo ) {
+		unset( $_POST['rcm_azione'], $_GET['elimina'], $_GET['modifica'] );
+	}
 
 	if ( isset( $_POST['rcm_azione'] ) && 'aggiungi' === $_POST['rcm_azione'] && check_admin_referer( 'rcm_socio' ) ) {
 		$email = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
@@ -1212,6 +1249,7 @@ function rcm_compleanni_pagina_elenco() {
 	?>
 	<div class="wrap">
 		<h1>Soci</h1>
+		<?php rcm_soci_avviso_sola_lettura(); ?>
 		<p>
 			<strong><?php echo esc_html( $totale ); ?></strong> soci in archivio<?php
 			if ( $senza_data ) {
@@ -1221,9 +1259,11 @@ function rcm_compleanni_pagina_elenco() {
 				printf( ' e <strong>%d</strong> senza cellulare (niente pulsante WhatsApp)', (int) $senza_tel );
 			}
 			?>.
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci-import' ) ); ?>">Importa da CSV</a>
-			· <a href="<?php echo esc_url( rcm_soci_url_esporta() ); ?>">Esporta in CSV</a>
-			<?php do_action( 'rcm_soci_link_elenco' ); // es. lo ZIP dei QR (rcm-soci-qr) ?>
+			<?php if ( $puo ) : ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci-import' ) ); ?>">Importa da CSV</a>
+				· <a href="<?php echo esc_url( rcm_soci_url_esporta() ); ?>">Esporta in CSV</a>
+				<?php do_action( 'rcm_soci_link_elenco' ); // es. lo ZIP dei QR (rcm-soci-qr) ?>
+			<?php endif; ?>
 		</p>
 
 		<form method="get" style="margin-bottom:1em">
@@ -1255,11 +1295,13 @@ function rcm_compleanni_pagina_elenco() {
 					<td><?php echo wp_kses_post( rcm_soci_riassunto_tessera( $socio ) ); ?></td>
 					<td><?php echo $socio->ultimo_invio_anno ? esc_html( $socio->ultimo_invio_anno ) : '—'; ?></td>
 					<td>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci&modifica=' . $socio->id ) . '#rcm-modulo-socio' ); ?>">Modifica</a>
-						|
-						<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=rcm-soci&elimina=' . $socio->id ), 'rcm_elimina_' . $socio->id ) ); ?>"
-						   onclick="return confirm('Eliminare <?php echo esc_js( $socio->email ); ?>?')">Elimina</a>
-						<?php do_action( 'rcm_soci_azioni_riga', $socio ); ?>
+						<?php if ( $puo ) : ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci&modifica=' . $socio->id ) . '#rcm-modulo-socio' ); ?>">Modifica</a>
+							|
+							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=rcm-soci&elimina=' . $socio->id ), 'rcm_elimina_' . $socio->id ) ); ?>"
+							   onclick="return confirm('Eliminare <?php echo esc_js( $socio->email ); ?>?')">Elimina</a>
+							<?php do_action( 'rcm_soci_azioni_riga', $socio ); ?>
+						<?php endif; ?>
 					</td>
 				</tr>
 			<?php endforeach; ?>
@@ -1284,6 +1326,7 @@ function rcm_compleanni_pagina_elenco() {
 		}
 		?>
 
+		<?php if ( $puo ) : ?>
 		<?php
 		$modifica = (bool) $in_modifica;
 		$val      = static function ( $campo, $default = '' ) use ( $in_modifica ) {
@@ -1340,6 +1383,7 @@ function rcm_compleanni_pagina_elenco() {
 			?>
 			<p></p>
 		</form>
+		<?php endif; ?>
 	</div>
 	<?php
 }

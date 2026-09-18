@@ -254,7 +254,7 @@ function rcm_qr_verifica() {
 	header( 'X-Robots-Tag: noindex, nofollow', true );
 	header( 'Referrer-Policy: no-referrer', true );
 
-	if ( ! current_user_can( RCM_COMPLEANNI_CAP ) ) {
+	if ( ! current_user_can( RCM_SOCI_CAP_VEDI ) ) {
 		$qui = add_query_arg( RCM_QR_PARAM, rawurlencode( $token ), home_url( '/' ) );
 		rcm_qr_pagina(
 			'club',

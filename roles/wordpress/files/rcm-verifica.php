@@ -235,7 +235,7 @@ function rcm_ver_dispositivo_corrente( WP_REST_Request $req ) {
 		return null;
 	}
 	$utente = get_user_by( 'id', $d->utente_id );
-	if ( ! $utente || ! user_can( $utente, RCM_COMPLEANNI_CAP ) ) {
+	if ( ! $utente || ! user_can( $utente, RCM_SOCI_CAP_VEDI ) ) {
 		return null;
 	}
 	if ( strtotime( $d->ultimo_uso ) < time() - 300 ) {
@@ -347,8 +347,8 @@ function rcm_ver_api_accesso( WP_REST_Request $req ) {
 	if ( is_wp_error( $u ) ) {
 		return new WP_Error( 'rcm_ver_credenziali', 'Utente o password non corretti.', array( 'status' => 401 ) );
 	}
-	if ( ! user_can( $u, RCM_COMPLEANNI_CAP ) ) {
-		return new WP_Error( 'rcm_ver_permesso', 'Questo utente non gestisce i soci: l\'app Verifica non è per lui.', array( 'status' => 403 ) );
+	if ( ! user_can( $u, RCM_SOCI_CAP_VEDI ) ) {
+		return new WP_Error( 'rcm_ver_permesso', 'Questo utente non fa parte del direttivo nel sito: l\'app Verifica non è per lui.', array( 'status' => 403 ) );
 	}
 	$token = rtrim( strtr( base64_encode( random_bytes( 32 ) ), '+/', '-_' ), '=' );
 	global $wpdb;
@@ -490,7 +490,7 @@ function rcm_ver_api_esci( WP_REST_Request $req ) {
 add_action(
 	'admin_menu',
 	function () {
-		add_submenu_page( 'rcm-soci', 'App Verifica', 'App Verifica', RCM_COMPLEANNI_CAP, 'rcm-app-verifica', 'rcm_ver_pagina_admin' );
+		add_submenu_page( 'rcm-soci', 'App Verifica', 'App Verifica', RCM_SOCI_CAP_VEDI, 'rcm-app-verifica', 'rcm_ver_pagina_admin' );
 	},
 	16
 );
@@ -514,7 +514,7 @@ function rcm_ver_apk_info() {
 
 add_action( 'admin_post_rcm_ver_scarica', 'rcm_ver_scarica' );
 function rcm_ver_scarica() {
-	if ( ! current_user_can( RCM_COMPLEANNI_CAP ) ) {
+	if ( ! current_user_can( RCM_SOCI_CAP_VEDI ) ) {
 		wp_die( 'Non hai i permessi per scaricare l\'app.', '', array( 'response' => 403 ) );
 	}
 	check_admin_referer( 'rcm_ver_scarica' );
@@ -531,7 +531,7 @@ function rcm_ver_scarica() {
 
 add_action( 'admin_post_rcm_ver_revoca', 'rcm_ver_revoca' );
 function rcm_ver_revoca() {
-	if ( ! current_user_can( RCM_COMPLEANNI_CAP ) ) {
+	if ( ! current_user_can( RCM_SOCI_CAP_VEDI ) ) {
 		wp_die( 'Non hai i permessi.', '', array( 'response' => 403 ) );
 	}
 	check_admin_referer( 'rcm_ver_revoca' );

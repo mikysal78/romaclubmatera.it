@@ -388,7 +388,7 @@ function rcm_as_cancello() {
 
 	$o = rcm_as_opzioni();
 	// chi gestisce i soci vede la pagina anche spenta o in prova, per controllarla
-	if ( current_user_can( RCM_COMPLEANNI_CAP ) || 'attiva' === $o['stato'] ) {
+	if ( current_user_can( RCM_SOCI_CAP_VEDI ) || 'attiva' === $o['stato'] ) {
 		return;
 	}
 	if ( 'prova' === $o['stato'] && '' !== $o['chiave'] ) {
@@ -752,7 +752,7 @@ function rcm_as_shortcode() {
 	ob_start();
 	echo '<div class="rcm-as">';
 
-	if ( current_user_can( RCM_COMPLEANNI_CAP ) && 'attiva' !== $o['stato'] ) {
+	if ( current_user_can( RCM_SOCI_CAP_VEDI ) && 'attiva' !== $o['stato'] ) {
 		printf(
 			'<p class="rcm-as-banner">Area soci <strong>%s</strong>: la vedi perché gestisci i soci.</p>',
 			'prova' === $o['stato'] ? 'in prova' : 'spenta'
