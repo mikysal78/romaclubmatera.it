@@ -14,8 +14,9 @@
  * - La verifica e' la pagina stessa: il gestore inquadra il QR con la
  *   fotocamera del telefono, su cui e' collegato al sito (amministratore o
  *   ruolo "Gestore soci"), e vede VALIDA / SCADUTA con nome, tessera e
- *   prenotazioni delle prossime partite. Chi non e' del Club vede solo
- *   "verifica riservata al Club": il QR si puo' fotografare, i dati no.
+ *   prenotazioni delle prossime partite. Chi non e' del Club vede solo "Non
+ *   sei autorizzato": il QR si puo' fotografare, i dati no. Il modo normale
+ *   di verificare e' l'app Verifica RCM (rcm-verifica.php).
  * - Correzione d'errore H (30%): lo scudo al centro copre moduli che il
  *   lettore ricostruisce. Le misure (spazio 11x13 moduli, scudo largo 8) sono
  *   quelle provate con zbarimg su 10 codici diversi, da 250 a 1200 px, con
@@ -254,12 +255,13 @@ function rcm_qr_verifica() {
 	header( 'X-Robots-Tag: noindex, nofollow', true );
 	header( 'Referrer-Policy: no-referrer', true );
 
+	// Senza l'app autenticata (o una sessione del direttivo nel browser) il QR
+	// non dice niente: ne' di chi e', ne' se e' valido (Michele, 18/09/2026).
 	if ( ! current_user_can( RCM_SOCI_CAP_VEDI ) ) {
-		$qui = add_query_arg( RCM_QR_PARAM, rawurlencode( $token ), home_url( '/' ) );
 		rcm_qr_pagina(
-			'club',
-			'Tessera del Roma Club Matera',
-			'<p>La verifica delle tessere è riservata al Club.</p><p><a class="rcm-qr-bottone" href="' . esc_url( wp_login_url( $qui ) ) . '">Accedi per verificare</a></p>'
+			'no',
+			'Non sei autorizzato',
+			'<p>Questo QR code si verifica solo con l\'app <strong>Verifica RCM</strong> del Roma Club Matera.</p>'
 		);
 	}
 

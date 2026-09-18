@@ -57,6 +57,7 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   "Rigenera" per tessere o telefoni persi. Inquadrato da un gestore collegato
   mostra se la tessera e' valida e le prenotazioni; agli altri nessun dato.
   Lettura provata con zbarimg: 60 su 60, anche sfocato e ruotato.
+  Senza l'app autenticata il QR mostra solo "Non sei autorizzato".
 - **nginx nega i file PHP, JSON e lock sotto `/wp-content/mu-plugins/`**:
   nessuno va chiamato dall'esterno, e le librerie di Composer non hanno la
   guardia su ABSPATH. Le pagine di verifica dei QR non vanno in cache.
