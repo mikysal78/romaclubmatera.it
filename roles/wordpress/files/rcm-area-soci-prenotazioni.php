@@ -141,7 +141,7 @@ function rcm_pr_partita( $id ) {
 }
 
 /** Le prossime partite del calendario, dalla piu' vicina. */
-function rcm_pr_prossime( $quante = 12 ) {
+function rcm_pr_prossime( $quante = 40 ) {
 	$ids = get_posts(
 		array(
 			'post_type'      => 'sp_event',
@@ -473,24 +473,35 @@ function rcm_pr_sezione( $socio ) {
 		return;
 	}
 
-	$mostrate  = array();
-	$prossima  = $prossime[0];
+	$mostrate   = array();
+	$prossima   = $prossime[0];
 	$mostrate[] = $prossima->id;
 	rcm_pr_scheda_partita( $prossima, $mie[ $prossima->id ] ?? null, 'Prossima partita' );
 
-	// Se la prossima e' gia' chiusa (si gioca ogni settimana, e il Club chiude
-	// una decina di giorni prima) si mostra anche la prima ancora aperta.
-	if ( ! $prossima->aperta ) {
-		foreach ( $prossime as $partita ) {
-			if ( $partita->aperta ) {
-				$mostrate[] = $partita->id;
-				rcm_pr_scheda_partita( $partita, $mie[ $partita->id ] ?? null, isset( $mie[ $partita->id ] ) && 'annullato' !== $mie[ $partita->id ]->stato ? 'La tua prossima prenotazione' : 'Prima partita prenotabile' );
-				break;
-			}
+	// Tutte le altre partite aperte (Michele, 18/09/2026). Le prenotazioni le
+	// chiude il Club a mano, quindi le aperte possono essere molte: una riga
+	// ciascuna, che si apre al tocco, invece di un modulo per partita.
+	$aperte = array();
+	foreach ( $prossime as $partita ) {
+		if ( $partita->aperta && $partita->id !== $prossima->id ) {
+			$aperte[]   = $partita;
+			$mostrate[] = $partita->id;
 		}
 	}
+	if ( $aperte ) {
+		// Le prime 6 subito; le altre dietro "Mostra tutte" (area-soci.js). Senza
+		// JavaScript si vedono tutte.
+		echo '<h3 class="rcm-pr-sottotitolo">Partite prenotabili</h3><div class="rcm-pr-elenco" data-visibili="6">';
+		foreach ( $aperte as $partita ) {
+			rcm_pr_riga_partita( $partita, $mie[ $partita->id ] ?? null );
+		}
+		if ( count( $aperte ) > 6 ) {
+			printf( '<button type="button" class="rcm-as-secondario rcm-pr-tutte" hidden>Mostra tutte le %d partite</button>', count( $aperte ) );
+		}
+		echo '</div>';
+	}
 
-	// Le altre prenotazioni del socio per partite future, attive
+	// Le prenotazioni del socio per partite future gia' chiuse
 	$altre = array();
 	foreach ( $mie as $evento_id => $p ) {
 		if ( in_array( $evento_id, $mostrate, true ) || 'annullato' === $p->stato ) {
@@ -502,7 +513,7 @@ function rcm_pr_sezione( $socio ) {
 		}
 	}
 	if ( $altre ) {
-		echo '<h3 class="rcm-pr-sottotitolo">Le tue altre prenotazioni</h3>';
+		echo '<h3 class="rcm-pr-sottotitolo">Le tue prenotazioni per le partite chiuse</h3>';
 		foreach ( $altre as $coppia ) {
 			rcm_pr_scheda_partita( $coppia[0], $coppia[1], '' );
 		}
@@ -511,14 +522,40 @@ function rcm_pr_sezione( $socio ) {
 	echo '</section>';
 }
 
-function rcm_pr_scheda_partita( $partita, $p, $etichetta ) {
+/** Una partita nell'elenco delle prenotabili: una riga, che si apre al tocco. */
+function rcm_pr_riga_partita( $partita, $p ) {
+	$stati  = rcm_pr_stati();
+	$attiva = $p && 'annullato' !== $p->stato;
+	?>
+	<details class="rcm-pr-riga<?php echo $attiva ? ' rcm-pr-riga--' . esc_attr( $p->stato ) : ''; ?>" id="partita-<?php echo (int) $partita->id; ?>">
+		<summary>
+			<span class="rcm-pr-riga-testo">
+				<strong><?php echo esc_html( $partita->titolo ); ?></strong>
+				<span class="rcm-pr-riga-data"><?php echo esc_html( wp_date( 'D j M', $partita->quando->getTimestamp() ) ); ?><?php echo $partita->ora ? ' &middot; ' . esc_html( $partita->ora ) : ''; ?></span>
+			</span>
+			<?php if ( $attiva ) : ?>
+				<span class="rcm-pr-stato rcm-pr-stato--<?php echo esc_attr( $p->stato ); ?>"><?php echo esc_html( $stati[ $p->stato ] ); ?></span>
+			<?php elseif ( $partita->giorni >= 0 ) : ?>
+				<span class="rcm-pr-riga-giorni"><?php echo 0 === $partita->giorni ? 'ultimo giorno' : esc_html( $partita->giorni . ( 1 === $partita->giorni ? ' giorno' : ' giorni' ) ); ?></span>
+			<?php else : ?>
+				<span class="rcm-pr-riga-giorni">chiude a breve</span>
+			<?php endif; ?>
+		</summary>
+		<?php rcm_pr_scheda_partita( $partita, $p, '', false ); ?>
+	</details>
+	<?php
+}
+
+function rcm_pr_scheda_partita( $partita, $p, $etichetta, $intestazione = true ) {
 	$stati = rcm_pr_stati();
 	?>
-	<article class="rcm-pr-partita<?php echo $p ? ' rcm-pr-partita--' . esc_attr( $p->stato ) : ''; ?>">
+	<article class="rcm-pr-partita<?php echo $p ? ' rcm-pr-partita--' . esc_attr( $p->stato ) : ''; ?><?php echo $intestazione ? '' : ' rcm-pr-partita--dentro'; ?>">
 		<?php if ( $etichetta ) : ?>
 			<p class="rcm-pr-etichetta"><?php echo esc_html( $etichetta ); ?></p>
 		<?php endif; ?>
-		<h3 class="rcm-pr-titolo"><?php echo esc_html( $partita->titolo ); ?></h3>
+		<?php if ( $intestazione ) : ?>
+			<h3 class="rcm-pr-titolo"><?php echo esc_html( $partita->titolo ); ?></h3>
+		<?php endif; ?>
 		<p class="rcm-pr-quando"><?php echo esc_html( rcm_pr_data( $partita ) ); ?><?php echo $partita->luogo ? ' &middot; ' . esc_html( $partita->luogo ) : ''; ?></p>
 
 		<?php if ( $p && 'annullato' !== $p->stato ) : ?>
@@ -715,7 +752,7 @@ function rcm_pr_pagina_admin() {
 
 	// Le partite: quelle in arrivo, piu' quelle passate che hanno prenotazioni
 	$partite = array();
-	foreach ( rcm_pr_prossime( 20 ) as $x ) {
+	foreach ( rcm_pr_prossime( 40 ) as $x ) {
 		$partite[ $x->id ] = $x;
 	}
 	foreach ( $wpdb->get_col( "SELECT DISTINCT evento_id FROM $t" ) as $eid ) { // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery

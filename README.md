@@ -753,8 +753,10 @@ quelli ogni deploy farebbe uscire tutti i soci.
 #### Biglietti e pullman (`rcm-area-soci-prenotazioni`)
 
 Nell'area soci, sotto la tessera: la **prossima partita** del calendario di
-SportsPress e, se questa è già chiusa, la **prima ancora prenotabile**, con il
-conto alla rovescia dei giorni che restano.
+SportsPress e poi **tutte le partite aperte**, una riga ciascuna (data, giorni
+per prenotare o stato della prenotazione) che si apre al tocco sul modulo. Le
+prime 6 si vedono subito, le altre con *Mostra tutte*; quelle già prenotate
+restano sempre visibili.
 
 - **Le prenotazioni le chiude il Club, a mano**, partita per partita, con il
   pulsante *Chiudi le prenotazioni* in *Soci › Prenotazioni* (si possono
