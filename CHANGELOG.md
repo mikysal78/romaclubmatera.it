@@ -8,6 +8,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Biglietteria allineata ai settori del Club.** Il modulo pubblico propone
+  gli stessi settori dell'area soci (Distinti Nord Est, Tribuna Tevere Top
+  Nord, Tribuna Monte Mario Laterale Nord), presi dall'elenco in
+  *Soci > Prenotazioni*: in casa quelli, in trasferta solo il settore ospiti;
+  all'invio un settore fuori elenco viene respinto. Didascalia riscritta. La
+  mappa ora e' lo schema disegnato da `scripts/olimpico-svg.py`, con Tevere e
+  Monte Mario divise nelle loro parti e i tre settori del Club in evidenza: la
+  veduta prospettica non segnava le parti di settore e portava i marchi della
+  societa'. Resta in libreria, non cancellata.
+
 - **Prenotazioni: i settori delle partite in casa si scelgono in bacheca.**
   Solo quelli di cui il Club dispone, uno per riga in *Soci > Prenotazioni*;
   tolto "Indifferente".

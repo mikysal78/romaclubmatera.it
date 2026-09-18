@@ -126,6 +126,38 @@ function rcm_big_compila_partita( $tag ) {
 	return $tag;
 }
 
+/**
+ * I settori fra cui scegliere: gli stessi dell'area soci, che il Club scrive
+ * in Soci > Prenotazioni (rcm_pr_settori), cosi' l'elenco sta in un posto
+ * solo. Sono solo quelli di cui il Club dispone, non tutti quelli dello stadio.
+ *
+ * Arrivando dal calendario la partita e' nota: in casa i settori del Club, in
+ * trasferta solo il settore ospiti. Senza partita, e quando Contact Form 7
+ * valida l'invio (una richiesta POST in cui la partita non c'e'), valgono
+ * tutti: altrimenti una scelta giusta verrebbe respinta come non valida.
+ */
+add_filter( 'wpcf7_form_tag', 'rcm_big_settori', 10, 1 );
+function rcm_big_settori( $tag ) {
+	if ( ! is_array( $tag ) || 'settore' !== ( $tag['name'] ?? '' ) || ! function_exists( 'rcm_pr_settori' ) ) {
+		return $tag;
+	}
+	$casa   = rcm_pr_settori();
+	$ospiti = 'Settore ospiti';
+	$scelte = array_merge( $casa, array( $ospiti ) );
+
+	$p = rcm_big_partita();
+	if ( $p && 'GET' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) && function_exists( 'rcm_pr_partita' ) ) {
+		$partita = rcm_pr_partita( $p['id'] );
+		if ( $partita ) {
+			$scelte = $partita->casa ? $casa : array( $ospiti );
+		}
+	}
+	$tag['raw_values'] = $scelte;
+	$tag['values']     = $scelte;
+	$tag['labels']     = $scelte;
+	return $tag;
+}
+
 /* -------------------------------------------------------------------------
  * Il numero di telefono
  * ---------------------------------------------------------------------- */
@@ -277,14 +309,23 @@ function rcm_big_pagina( $atts ) {
 		<div class="rcm-big-settori">
 			<?php echo rcm_big_mappa(); // phpcs:ignore WordPress.Security.EscapeOutput -- markup montato qui dentro. ?>
 			<p class="rcm-big-didascalia">
-				I settori dello Stadio Olimpico. La <strong>Curva Sud</strong> &egrave; riservata agli abbonati
-				e non compare fra le scelte. Dentro ogni settore ci sono altre suddivisioni (centrale,
-				laterale, parterre): se hai una preferenza precisa, scrivila nelle note.
+				I settori dello Stadio Olimpico. Per le partite in casa il Club dispone di posti in
+				<?php echo esc_html( rcm_big_elenco_settori() ); ?>. Per le partite in trasferta, il settore ospiti.
 			</p>
 		</div>
 	</div>
 	<?php
 	return ob_get_clean();
+}
+
+/** "A, B e C": i settori del Club, per la didascalia. */
+function rcm_big_elenco_settori() {
+	$s = function_exists( 'rcm_pr_settori' ) ? rcm_pr_settori() : array();
+	if ( count( $s ) < 2 ) {
+		return implode( '', $s );
+	}
+	$ultimo = array_pop( $s );
+	return implode( ', ', $s ) . ' e ' . $ultimo;
 }
 
 /**
@@ -307,41 +348,22 @@ function rcm_big_riservato() {
 }
 
 /**
- * La mappa dei settori: la figura caricata in libreria, se c'e'.
+ * La mappa dei settori: lo schema disegnato qui, con i settori del Club in
+ * evidenza.
  *
- * Si cerca per slug e non per identificativo fisso: un id scritto nel codice
- * si rompe al primo ripristino da backup su un sito diverso, uno slug no.
- * Se manca si ripiega sul disegno qui sotto, che non dipende da niente.
+ * Fino a settembre 2026 si mostrava la veduta prospettica caricata in libreria
+ * (slug olimpico-settori), che resta li'. E' stata sostituita perche' i
+ * settori del Club sono parti di settore - l'anello alto della Tevere lato
+ * nord, la Monte Mario laterale nord - che su quella veduta non sono segnati,
+ * e perche' porta i marchi della societa' sulla pista. Per tornare alla
+ * veduta basta rimettere qui la ricerca dell'allegato.
  */
 function rcm_big_mappa() {
-	$trovati = get_posts(
-		array(
-			'post_type'      => 'attachment',
-			'name'           => 'olimpico-settori',
-			'posts_per_page' => 1,
-			'post_status'    => 'inherit',
-			'fields'         => 'ids',
-		)
-	);
-
-	if ( ! $trovati ) {
-		return rcm_big_schema();
-	}
-
-	return wp_get_attachment_image(
-		$trovati[0],
-		'full',
-		false,
-		array(
-			'class'    => 'rcm-big-mappa',
-			'loading'  => 'lazy',
-			'decoding' => 'async',
-		)
-	);
+	return rcm_big_schema();
 }
 
 /**
- * Lo schema dei settori, di riserva.
+ * Lo schema dei settori.
  *
  * E' un disegno originale, non la piantina della societa' o della biglietteria:
  * quelle sono opere protette e non si possono copiare. I nomi e la posizione
@@ -352,29 +374,43 @@ function rcm_big_mappa() {
  */
 function rcm_big_schema() {
 	return <<<'SVG'
-<svg class="rcm-big-svg" xmlns="http://www.w3.org/2000/svg" viewBox="14 58 472 314" role="img" aria-labelledby="rcm-olimpico-t rcm-olimpico-d">
-  <title id="rcm-olimpico-t">Stadio Olimpico: i settori</title>
-  <desc id="rcm-olimpico-d">Lo Stadio Olimpico di Roma visto dall&#8217;alto in prospettiva, con l&#8217;anello delle tribune diviso nei suoi settori: Curva Nord e Curva Sud dietro le porte, Tribuna Monte Mario e Tribuna Tevere sui lati lunghi, e ai quattro angoli i Distinti. La Curva Sud &#232; riservata agli abbonati.</desc>
+<svg class="rcm-big-svg" xmlns="http://www.w3.org/2000/svg" viewBox="14 44 472 386" role="img" aria-labelledby="rcm-olimpico-t rcm-olimpico-d">
+  <title id="rcm-olimpico-t">Stadio Olimpico: i settori del Club</title>
+  <desc id="rcm-olimpico-d">Lo Stadio Olimpico di Roma visto dall&#8217;alto in prospettiva. In evidenza i settori di cui il Club dispone per le partite in casa: Distinti Nord Est, l&#8217;anello alto della Tribuna Tevere lato nord (Top Nord) e la Tribuna Monte Mario laterale nord. Gli altri settori sono in grigio; la Curva Sud &#232; riservata agli abbonati.</desc>
   <!-- La facciata esterna: e' quella che fa sembrare lo stadio visto -->
   <!-- da un angolo invece che schiacciato sulla carta. -->
   <path d="M24.0 200.0 A226.0 128.0 0 0 0 476.0 200.0 L476.0 230.0 A226.0 128.0 0 0 1 24.0 230.0 Z" fill="#2a2a2a"/>
   <ellipse cx="250" cy="200" rx="226" ry="128" fill="#1c1c1c"/>
-  <!-- I settori dell'anello -->
-  <path d="M445.7 264.0 A226.0 128.0 0 0 0 445.7 136.0 L366.0 163.0 A134.0 74.0 0 0 1 366.0 237.0 Z" fill="#4a4a4a"/>
-  <path d="M445.7 136.0 A226.0 128.0 0 0 0 349.1 85.0 L308.7 133.5 A134.0 74.0 0 0 1 366.0 163.0 Z" fill="#c9a227"/>
-  <path d="M349.1 85.0 A226.0 128.0 0 0 0 150.9 85.0 L191.3 133.5 A134.0 74.0 0 0 1 308.7 133.5 Z" fill="#e6af14"/>
-  <path d="M150.9 85.0 A226.0 128.0 0 0 0 54.3 136.0 L134.0 163.0 A134.0 74.0 0 0 1 191.3 133.5 Z" fill="#c9a227"/>
-  <path d="M54.3 136.0 A226.0 128.0 0 0 0 54.3 264.0 L134.0 237.0 A134.0 74.0 0 0 1 134.0 163.0 Z" fill="#8e1f2f"/>
-  <path d="M54.3 264.0 A226.0 128.0 0 0 0 150.9 315.0 L191.3 266.5 A134.0 74.0 0 0 1 134.0 237.0 Z" fill="#c9a227"/>
-  <path d="M150.9 315.0 A226.0 128.0 0 0 0 445.7 264.0 L366.0 237.0 A134.0 74.0 0 0 1 191.3 266.5 Z" fill="#e6af14"/>
+  <!-- I settori dell'anello: quelli del Club pieni, gli altri spenti -->
+  <path data-settore="curva-sud" d="M445.7 264.0 A226.0 128.0 0 0 0 445.7 136.0 L366.0 163.0 A134.0 74.0 0 0 1 366.0 237.0 Z" fill="#333333"/>
+  <path data-settore="distinti-sud" d="M445.7 136.0 A226.0 128.0 0 0 0 349.1 85.0 L308.7 133.5 A134.0 74.0 0 0 1 366.0 163.0 Z" fill="#565656"/>
+  <path data-settore="tevere-basso" d="M329.7 108.3 A181.8 102.1 0 0 0 170.3 108.3 L191.3 133.5 A134.0 74.0 0 0 1 308.7 133.5 Z" fill="#4b4b4b"/>
+  <path data-settore="tevere-top-sud" d="M349.1 85.0 A226.0 128.0 0 0 0 250.0 72.0 L250.0 97.9 A181.8 102.1 0 0 1 329.7 108.3 Z" fill="#565656"/>
+  <path data-settore="tevere-top-nord" d="M250.0 72.0 A226.0 128.0 0 0 0 150.9 85.0 L170.3 108.3 A181.8 102.1 0 0 1 250.0 97.9 Z" fill="#8e1f2f"/>
+  <path data-settore="distinti-nord-est" d="M150.9 85.0 A226.0 128.0 0 0 0 54.3 136.0 L134.0 163.0 A134.0 74.0 0 0 1 191.3 133.5 Z" fill="#8e1f2f"/>
+  <path data-settore="curva-nord" d="M54.3 136.0 A226.0 128.0 0 0 0 54.3 264.0 L134.0 237.0 A134.0 74.0 0 0 1 134.0 163.0 Z" fill="#4b4b4b"/>
+  <path data-settore="distinti-nord-ovest" d="M54.3 264.0 A226.0 128.0 0 0 0 150.9 315.0 L191.3 266.5 A134.0 74.0 0 0 1 134.0 237.0 Z" fill="#565656"/>
+  <path data-settore="monte-mario-laterale-nord" d="M150.9 315.0 A226.0 128.0 0 0 0 242.1 327.9 L245.3 274.0 A134.0 74.0 0 0 1 191.3 266.5 Z" fill="#8e1f2f"/>
+  <path data-settore="monte-mario-centrale" d="M242.1 327.9 A226.0 128.0 0 0 0 382.8 303.6 L328.8 259.9 A134.0 74.0 0 0 1 245.3 274.0 Z" fill="#565656"/>
+  <path data-settore="monte-mario-laterale-sud" d="M382.8 303.6 A226.0 128.0 0 0 0 445.7 264.0 L366.0 237.0 A134.0 74.0 0 0 1 328.8 259.9 Z" fill="#4b4b4b"/>
   <g fill="none" stroke="#141414" stroke-width="1.5">
     <line x1="445.7" y1="264.0" x2="366.0" y2="237.0"/>
     <line x1="445.7" y1="136.0" x2="366.0" y2="163.0"/>
-    <line x1="349.1" y1="85.0" x2="308.7" y2="133.5"/>
+    <line x1="329.7" y1="108.3" x2="308.7" y2="133.5"/>
+    <line x1="349.1" y1="85.0" x2="329.7" y2="108.3"/>
+    <line x1="250.0" y1="72.0" x2="250.0" y2="97.9"/>
     <line x1="150.9" y1="85.0" x2="191.3" y2="133.5"/>
     <line x1="54.3" y1="136.0" x2="134.0" y2="163.0"/>
     <line x1="54.3" y1="264.0" x2="134.0" y2="237.0"/>
     <line x1="150.9" y1="315.0" x2="191.3" y2="266.5"/>
+    <line x1="242.1" y1="327.9" x2="245.3" y2="274.0"/>
+    <line x1="382.8" y1="303.6" x2="328.8" y2="259.9"/>
+    <path d="M329.7 108.3 A181.8 102.1 0 0 0 170.3 108.3"/>
+  </g>
+  <g fill="none" stroke="#f0bc42" stroke-width="1.6" stroke-linejoin="round">
+    <path d="M250.0 72.0 A226.0 128.0 0 0 0 150.9 85.0 L170.3 108.3 A181.8 102.1 0 0 1 250.0 97.9 Z"/>
+    <path d="M150.9 85.0 A226.0 128.0 0 0 0 54.3 136.0 L134.0 163.0 A134.0 74.0 0 0 1 191.3 133.5 Z"/>
+    <path d="M150.9 315.0 A226.0 128.0 0 0 0 242.1 327.9 L245.3 274.0 A134.0 74.0 0 0 1 191.3 266.5 Z"/>
   </g>
   <ellipse cx="250" cy="200" rx="134" ry="74" fill="#151515"/>
   <!-- La pista d'atletica: e' lei che tiene le tribune lontane dal campo -->
@@ -388,14 +424,26 @@ function rcm_big_schema() {
   <rect x="158" y="178" width="22" height="44" fill="none" stroke="#4a9c63" stroke-width="1.2"/>
   <rect x="320" y="178" width="22" height="44" fill="none" stroke="#4a9c63" stroke-width="1.2"/>
   <g font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
-    <text x="430.0" y="200.0" font-size="12" fill="#d0d0d0" dominant-baseline="middle" transform="rotate(-90.0 430.0 200.0)">CURVA SUD</text>
-    <text x="372.8" y="126.1" font-size="9" fill="#3a2c05" dominant-baseline="middle" transform="rotate(27.6 372.8 126.1)">DISTINTI SUD</text>
-    <text x="250.0" y="99.0" font-size="12" fill="#3a2c05" dominant-baseline="middle" transform="rotate(0.0 250.0 99.0)">TRIBUNA TEVERE</text>
-    <text x="127.2" y="126.1" font-size="9" fill="#3a2c05" dominant-baseline="middle" transform="rotate(-27.6 127.2 126.1)">DISTINTI NORD EST</text>
-    <text x="70.0" y="200.0" font-size="12" fill="#f7ecd5" dominant-baseline="middle" transform="rotate(-90.0 70.0 200.0)">CURVA NORD</text>
-    <text x="127.2" y="273.9" font-size="9" fill="#3a2c05" dominant-baseline="middle" transform="rotate(27.6 127.2 273.9)">DISTINTI NORD OVEST</text>
-    <text x="302.6" y="296.6" font-size="12" fill="#3a2c05" dominant-baseline="middle" transform="rotate(-9.7 302.6 296.6)">TRIBUNA MONTE MARIO</text>
-    <text x="404.2" y="200.0" font-size="9" font-weight="400" fill="#9a9a9a" dominant-baseline="middle" transform="rotate(90 404.2 200.0)">solo abbonati</text>
+    <text font-size="12" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(-90.0 430.0 200.0)"><tspan x="430.0" y="200.0">CURVA SUD</tspan></text>
+    <text font-size="9" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(27.6 372.8 126.1)"><tspan x="372.8" y="121.0">DISTINTI</tspan><tspan x="372.8" y="131.3">SUD</tspan></text>
+    <text font-size="9" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(0.0 250.0 112.0)"><tspan x="250.0" y="112.0">ANELLO BASSO</tspan></text>
+    <text font-size="9" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(7.4 295.9 87.9)"><tspan x="295.9" y="87.9">TOP SUD</tspan></text>
+    <text font-size="9" fill="#f7ecd5" dominant-baseline="middle" transform="rotate(-7.4 204.1 87.9)"><tspan x="204.1" y="87.9">TOP NORD</tspan></text>
+    <text font-size="9" fill="#f7ecd5" dominant-baseline="middle" transform="rotate(-27.6 127.2 126.1)"><tspan x="127.2" y="121.0">DISTINTI</tspan><tspan x="127.2" y="131.3">NORD EST</tspan></text>
+    <text font-size="12" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(-90.0 70.0 200.0)"><tspan x="70.0" y="200.0">CURVA NORD</tspan></text>
+    <text font-size="9" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(27.6 127.2 273.9)"><tspan x="127.2" y="268.7">DISTINTI</tspan><tspan x="127.2" y="279.0">NORD OVEST</tspan></text>
+    <text font-size="9" fill="#f7ecd5" dominant-baseline="middle" transform="rotate(8.0 206.5 298.0)"><tspan x="206.5" y="292.8">LATERALE</tspan><tspan x="206.5" y="303.2">NORD</tspan></text>
+    <text font-size="9" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(-9.7 302.6 296.6)"><tspan x="302.6" y="296.6">CENTRALE</tspan></text>
+    <text font-size="9" fill="#c4c4c4" font-weight="400" dominant-baseline="middle" transform="rotate(-31.9 383.8 267.6)"><tspan x="383.8" y="262.4">LATERALE</tspan><tspan x="383.8" y="272.8">SUD</tspan></text>
+    <text x="402.4" y="200.0" font-size="8" font-weight="400" fill="#9a9a9a" dominant-baseline="middle" transform="rotate(90 402.4 200.0)">solo abbonati</text>
+    <text x="250.0" y="58.0" font-size="12" letter-spacing=".5" fill="currentColor" dominant-baseline="middle">TRIBUNA TEVERE</text>
+    <text x="316.1" y="368.4" font-size="12" letter-spacing=".5" fill="currentColor" dominant-baseline="middle">TRIBUNA MONTE MARIO</text>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="11" dominant-baseline="middle">
+    <rect x="150" y="408" width="14" height="14" rx="2" fill="#8e1f2f" stroke="#f0bc42" stroke-width="1.4"/>
+    <text x="170" y="415.5" fill="currentColor">Settori del Club</text>
+    <rect x="276" y="408" width="14" height="14" rx="2" fill="#4b4b4b"/>
+    <text x="296" y="415.5" fill="currentColor" opacity=".75">Non disponibili</text>
   </g>
 </svg>
 SVG;

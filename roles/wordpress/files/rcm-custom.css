@@ -509,14 +509,16 @@ h1, h2, h3, h4, h5, h6 {
   display: block;
   width: 100%;
   height: auto;
-  /* lo schema e' orizzontale (472x314): a meno di 380px le etichette dei
-     Distinti diventano illeggibili */
-  max-width: 440px;
+  /* lo schema e' orizzontale (472x386): sotto i 380px le etichette delle
+     parti di settore diventano illeggibili */
+  max-width: 520px;
   margin: 0 auto;
+  /* nomi delle tribune e legenda usano currentColor: chiari sul fondo scuro */
+  color: #e8e8e8;
 }
 
 .rcm-big-didascalia {
-  max-width: 440px;
+  max-width: 520px;
   margin: 14px auto 0;
   font-size: 13px;
   line-height: 1.55;

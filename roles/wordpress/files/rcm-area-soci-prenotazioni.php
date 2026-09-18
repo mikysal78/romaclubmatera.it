@@ -101,7 +101,8 @@ function rcm_pr_settori() {
 	if ( is_array( $salvati ) && $salvati ) {
 		return $salvati;
 	}
-	return array( 'Distinti Nord Est', 'Tribuna Tevere', 'Distinti Sud', 'Distinti Nord Ovest', 'Curva Nord', 'Tribuna Monte Mario' );
+	// quelli assegnati al Club a settembre 2026
+	return array( 'Distinti Nord Est', 'Tribuna Tevere Top Nord', 'Tribuna Monte Mario Laterale Nord' );
 }
 
 /**
