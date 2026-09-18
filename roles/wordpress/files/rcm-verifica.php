@@ -238,8 +238,18 @@ function rcm_ver_dispositivo_corrente( WP_REST_Request $req ) {
 	if ( ! $utente || ! user_can( $utente, RCM_SOCI_CAP_VEDI ) ) {
 		return null;
 	}
+	// La versione dell'app arriva a ogni chiamata (User-Agent "VerificaRCM/1.0.2"):
+	// dopo un aggiornamento la riga del telefono in bacheca la segue.
+	$aggiorna = array();
+	if ( preg_match( '#VerificaRCM/([0-9][0-9A-Za-z.\-+]{0,19})#', (string) $req->get_header( 'user_agent' ), $m ) && $m[1] !== $d->versione ) {
+		$aggiorna['versione'] = $m[1];
+		$d->versione          = $m[1];
+	}
 	if ( strtotime( $d->ultimo_uso ) < time() - 300 ) {
-		$wpdb->update( $t, array( 'ultimo_uso' => current_time( 'mysql' ) ), array( 'id' => $d->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$aggiorna['ultimo_uso'] = current_time( 'mysql' );
+	}
+	if ( $aggiorna ) {
+		$wpdb->update( $t, $aggiorna, array( 'id' => $d->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
 	wp_set_current_user( $utente->ID );
 	$d->utente = $utente;
