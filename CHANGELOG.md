@@ -6,6 +6,8 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-18
+
 ### Aggiunto
 
 - **Area soci: si prenotano le prime 3 partite aperte.** Una riga per
@@ -1424,6 +1426,7 @@ in Proxmox, con HTTPS valido.
 - `vars.yml` e `vault.yml` sono esclusi dal repo: si creano dai rispettivi `.example`.
 - Dipendenze Galaxy installate in `galaxy_roles/` e `collections/` (non versionate).
 
+[1.3.0]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.3.0
 [1.2.0]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.2.0
 [1.1.0]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.1.0
 [1.0.3]: https://github.com/mikysal78/romaclubmatera.it/releases/tag/v1.0.3
