@@ -59,8 +59,19 @@ server {
     set $skip_cache 0;
     if ($wp_skip_method = 1) { set $skip_cache 1; }
     if ($query_string != "") { set $skip_cache 1; }
-    if ($request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml") { set $skip_cache 1; }
-    if ($http_cookie ~* "comment_author|wordpress_logged_in|wp-postpass|woocommerce_items_in_cart") { set $skip_cache 1; }
+    # Queste regole sono l'UNICA protezione contro la cache delle pagine
+    # personali: fastcgi_cache.conf ha fastcgi_ignore_headers Cache-Control
+    # Expires Set-Cookie, quindi nginx non ascolta WordPress quando dice "non
+    # mettere in cache". Senza le voci qui sotto la pagina di un socio, o una
+    # risposta dell'API letta dall'app, verrebbe salvata e servita al visitatore
+    # successivo.
+    #   /wp-json/   - l'API del sito: anche quella pubblica non va in cache,
+    #                 perche' la stessa risposta cambia se chi chiede e' un socio;
+    #   /area-soci/ - l'area riservata;
+    #   rcm_socio   - il cookie di sessione dei soci (mu-plugin rcm-area-soci):
+    #                 chi ce l'ha non riceve mai pagine dalla cache.
+    if ($request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml|/wp-json/|/area-soci/") { set $skip_cache 1; }
+    if ($http_cookie ~* "comment_author|wordpress_logged_in|wp-postpass|woocommerce_items_in_cart|rcm_socio") { set $skip_cache 1; }
 {% endif %}
 
     # Sicurezza: blocca file sensibili

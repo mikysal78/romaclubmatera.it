@@ -599,6 +599,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Sicurezza
 
+- **Le pagine personali non finiscono piu' in cache**
+  (`roles/webserver/templates/wordpress.conf.j2`). La cache di nginx ignora
+  le intestazioni anti-cache di WordPress (`fastcgi_ignore_headers
+  Cache-Control Expires Set-Cookie` in `fastcgi_cache.conf.j2`): l'unica
+  protezione sono le regole `$skip_cache`, che riconoscevano solo i cookie
+  di WordPress. Misurato prima della correzione: `/wp-json/` veniva salvata
+  (`MISS`, poi `HIT`). Oggi quelle risposte sono uguali per tutti; con
+  l'area soci la seconda persona avrebbe ricevuto i dati della prima.
+  Ora sono escluse dalla cache `/wp-json/`, `/area-soci/` e ogni richiesta
+  con il cookie `rcm_socio`, il nome gia' fissato per la sessione dei soci.
+  Verificato dopo: `BYPASS` in tutti e tre i casi, mentre home e calendario
+  senza cookie restano in cache (`HIT`), quindi per i visitatori normali la
+  velocita' non cambia. E' il primo passo dell'area riservata: andava chiuso
+  prima di scriverne una riga.
+
 - **Segreti nel vault, dove il repo li cercava.** `vault_smtp_password`,
   `vault_turnstile_site_key` e `vault_turnstile_secret_key` erano previsti
   dall'esempio ma assenti dal vault: esistevano solo in `wp-config.php` e
