@@ -27,6 +27,7 @@
     --skip-check
   args:
     creates: "{{ wp_root }}/wp-config.php"
+  register: wordpress_config_creato
   become: true
   become_user: www-data
   no_log: true
@@ -51,11 +52,17 @@
   no_log: true
 
 # ---------- Hardening WordPress ----------
-- name: Imposta le chiavi di sicurezza (salts)
+# Solo quando wp-config.php e' appena nato. Prima girava a ogni esecuzione del
+# ruolo: chiavi nuove a ogni deploy vogliono dire tutti gli amministratori
+# buttati fuori e cookie invalidati, senza nessun guadagno di sicurezza. Per
+# cambiarle apposta (per esempio dopo un sospetto di furto) si lancia a mano:
+#   sudo -u www-data wp config shuffle-salts --path=<docroot>
+- name: Imposta le chiavi di sicurezza (salts) alla prima installazione
   ansible.builtin.command: "{{ wordpress_cli_path }} config shuffle-salts --path={{ wp_root }}"
   become: true
   become_user: www-data
   changed_when: true
+  when: wordpress_config_creato is changed
 
 - name: Disabilita l'editor di file dalla dashboard
   ansible.builtin.command: "{{ wordpress_cli_path }} config set DISALLOW_FILE_EDIT true --raw --path={{ wp_root }}"

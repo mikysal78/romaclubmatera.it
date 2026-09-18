@@ -10,7 +10,82 @@ defined( 'ABSPATH' ) || exit;
 define( 'RCM_COMPLEANNI_DB_VERSION', '1.2' );
 define( 'RCM_COMPLEANNI_OPZIONI', 'rcm_compleanni_opzioni' );
 define( 'RCM_COMPLEANNI_HOOK', 'rcm_compleanni_invio_giornaliero' );
-define( 'RCM_COMPLEANNI_CAP', 'manage_options' );
+// Il permesso che apre il menu Soci. Ce l'hanno gli amministratori e il ruolo
+// "Gestore soci" qui sotto: chi nel Club tiene i soci senza toccare il sito.
+define( 'RCM_COMPLEANNI_CAP', 'rcm_gestisci_soci' );
+define( 'RCM_SOCI_RUOLO', 'rcm_gestore_soci' );
+define( 'RCM_SOCI_RUOLO_VER', '1' );
+
+/* -------------------------------------------------------------------------
+ * Il ruolo "Gestore soci"
+ *
+ * Vede in bacheca solo il menu Soci (elenco, import ed esportazione, auguri,
+ * prenotazioni) e il proprio profilo. Non scrive articoli ne' pagine, non
+ * tocca plugin, temi o utenti, e non accende l'area soci: l'interruttore
+ * resta agli amministratori. Senza edit_posts, le vulnerabilita' "Contributor+"
+ * dei plugin del tema restano non sfruttabili anche con questi utenti.
+ * Gli utenti si creano da Utenti > Aggiungi nuovo, con ruolo "Gestore soci".
+ * ---------------------------------------------------------------------- */
+
+// Ruoli e permessi stanno nel database: si scrivono una volta per versione.
+// Priorita' 1, prima di admin_menu: senza il permesso gli amministratori
+// perderebbero il menu Soci.
+add_action( 'init', 'rcm_soci_installa_ruolo', 1 );
+function rcm_soci_installa_ruolo() {
+	if ( get_option( 'rcm_soci_ruolo_ver' ) === RCM_SOCI_RUOLO_VER ) {
+		return;
+	}
+	remove_role( RCM_SOCI_RUOLO );
+	add_role(
+		RCM_SOCI_RUOLO,
+		'Gestore soci',
+		array(
+			'read'             => true,
+			RCM_COMPLEANNI_CAP => true,
+		)
+	);
+	$admin = get_role( 'administrator' );
+	if ( $admin ) {
+		$admin->add_cap( RCM_COMPLEANNI_CAP );
+	}
+	update_option( 'rcm_soci_ruolo_ver', RCM_SOCI_RUOLO_VER, false );
+}
+
+/** Vero per chi gestisce i soci ma non e' amministratore del sito. */
+function rcm_soci_solo_gestore( $user = null ) {
+	$user = $user ? $user : wp_get_current_user();
+	return $user && $user->exists() && user_can( $user, RCM_COMPLEANNI_CAP ) && ! user_can( $user, 'manage_options' );
+}
+
+// Dopo il login il gestore arriva dritto all'elenco soci...
+add_filter(
+	'login_redirect',
+	function ( $destinazione, $richiesta, $user ) {
+		return ( $user instanceof WP_User && rcm_soci_solo_gestore( $user ) ) ? admin_url( 'admin.php?page=rcm-soci' ) : $destinazione;
+	},
+	10,
+	3
+);
+
+// ...e la Bacheca, per lui vuota, non la vede: tornerebbe li' a ogni clic sul logo.
+add_action(
+	'admin_menu',
+	function () {
+		if ( rcm_soci_solo_gestore() ) {
+			remove_menu_page( 'index.php' );
+		}
+	},
+	99
+);
+add_action(
+	'load-index.php',
+	function () {
+		if ( rcm_soci_solo_gestore() ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=rcm-soci' ) );
+			exit;
+		}
+	}
+);
 
 /**
  * Nome della tabella dei soci.
@@ -39,6 +114,9 @@ function rcm_compleanni_opzioni() {
 		// serve a qualcuno.
 		'promemoria'   => 1,
 		'promemoria_a' => 'info@romaclubmatera.it',
+		// Solo a chi ha la tessera valida: chi non rinnova esce dagli auguri
+		// il 1° luglio insieme all'area soci, e rientra quando rinnova.
+		'solo_tesserati' => 1,
 	);
 	return wp_parse_args( get_option( RCM_COMPLEANNI_OPZIONI, array() ), $default );
 }
@@ -145,6 +223,41 @@ function rcm_soci_stagione_corrente() {
 	return apply_filters( 'rcm_soci_stagione_corrente', sprintf( '%d/%02d', $inizio, ( $inizio + 1 ) % 100 ) );
 }
 
+/** La stagione dopo quella in corso: a giugno 2027 e' "2027/28". */
+function rcm_soci_stagione_successiva() {
+	$inizio = (int) substr( rcm_soci_stagione_corrente(), 0, 4 ) + 1;
+	return sprintf( '%d/%02d', $inizio, ( $inizio + 1 ) % 100 );
+}
+
+/**
+ * Le stagioni che fanno valere una tessera: quella in corso e la successiva.
+ * La successiva perche' il tesseramento si apre prima del 1° luglio: chi
+ * rinnova a giugno per il 2027/28 non deve restare fuori fino a luglio. Le
+ * stagioni passate no: dal 1° luglio chi non ha rinnovato e' fuori da solo,
+ * senza che nessuno debba disattivarlo a mano.
+ */
+function rcm_soci_stagioni_valide() {
+	return array( rcm_soci_stagione_corrente(), rcm_soci_stagione_successiva() );
+}
+
+/** Tessera annuale (non la Tessera Roma) di una stagione valida. */
+function rcm_soci_tessera_valida( $socio ) {
+	return $socio
+		&& isset( rcm_soci_tipologie()[ (string) $socio->tipologia ] )
+		&& in_array( (string) $socio->stagione, rcm_soci_stagioni_valide(), true );
+}
+
+/** La stessa regola in SQL, gia' preparata, da mettere in un WHERE. */
+function rcm_soci_sql_tessera_valida() {
+	global $wpdb;
+	$tip = array_keys( rcm_soci_tipologie() );
+	$sta = rcm_soci_stagioni_valide();
+	return $wpdb->prepare(
+		'( tipologia IN (' . implode( ',', array_fill( 0, count( $tip ), '%s' ) ) . ') AND stagione IN (' . implode( ',', array_fill( 0, count( $sta ), '%s' ) ) . ') )', // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		array_merge( $tip, $sta )
+	);
+}
+
 /**
  * "2026/27", "2026/2027", "26/27", "2026-2027" diventano tutti "2026/27".
  * Restituisce '' se non e' una stagione: due anni consecutivi.
@@ -230,6 +343,8 @@ function rcm_soci_riassunto_tessera( $socio ) {
 	);
 	if ( '' === (string) $socio->stagione ) {
 		$parti[] = '<span style="color:#b32d2e">senza stagione</span>';
+	} elseif ( $socio->stagione === rcm_soci_stagione_successiva() ) {
+		$parti[] = esc_html( $socio->stagione ) . ' (rinnovata in anticipo)';
 	} elseif ( $socio->stagione !== rcm_soci_stagione_corrente() ) {
 		$parti[] = '<span style="color:#b32d2e">' . esc_html( $socio->stagione ) . ' (scaduta)</span>';
 	} else {
@@ -400,6 +515,9 @@ function rcm_compleanni_soci_nelle_date( $date, $solo_da_fare = false, $serve_em
 	$valori     = $date;
 
 	$filtro_email = $serve_email ? "AND email <> ''" : '';
+	$opz          = rcm_compleanni_opzioni();
+	// frammento gia' preparato: senza % dentro, si puo' annidare nel prepare
+	$filtro_email .= ! empty( $opz['solo_tesserati'] ) ? ' AND ' . rcm_soci_sql_tessera_valida() : '';
 	$filtro_fatti = '';
 	if ( $solo_da_fare ) {
 		$filtro_fatti = 'AND ( ultimo_invio_anno IS NULL OR ultimo_invio_anno <> %d )';
@@ -1048,16 +1166,36 @@ function rcm_compleanni_pagina_elenco() {
 	$filtro  = '';
 	$valori  = array();
 
+	$condizioni = array();
 	if ( $cerca ) {
-		$like   = '%' . $wpdb->esc_like( $cerca ) . '%';
-		$filtro = 'WHERE nome LIKE %s OR cognome LIKE %s OR email LIKE %s';
-		$valori = array( $like, $like, $like );
+		$like         = '%' . $wpdb->esc_like( $cerca ) . '%';
+		$condizioni[] = '( nome LIKE %s OR cognome LIKE %s OR email LIKE %s )';
+		$valori       = array( $like, $like, $like );
+	}
+	$tessere = array(
+		''        => 'Tutte le tessere',
+		'valide'  => 'Tessera valida',
+		'scadute' => 'Tessera scaduta (stagioni passate)',
+		'nessuna' => 'Senza tessera',
+	);
+	$tessera = isset( $_GET['tessera'] ) ? sanitize_key( wp_unslash( $_GET['tessera'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$tessera = isset( $tessere[ $tessera ] ) ? $tessera : '';
+	// frammenti gia' preparati o fissi, senza segnaposto: si uniscono al prepare
+	if ( 'valide' === $tessera ) {
+		$condizioni[] = rcm_soci_sql_tessera_valida();
+	} elseif ( 'scadute' === $tessera ) {
+		$condizioni[] = "( tipologia <> '' AND NOT " . rcm_soci_sql_tessera_valida() . ' )';
+	} elseif ( 'nessuna' === $tessera ) {
+		$condizioni[] = "tipologia = ''";
+	}
+	if ( $condizioni ) {
+		$filtro = 'WHERE ' . implode( ' AND ', $condizioni );
 	}
 
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 	$totale = $valori
 		? (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tabella $filtro", $valori ) )
-		: (int) $wpdb->get_var( "SELECT COUNT(*) FROM $tabella" );
+		: (int) $wpdb->get_var( "SELECT COUNT(*) FROM $tabella $filtro" );
 
 	$soci = $wpdb->get_results(
 		$wpdb->prepare(
@@ -1088,6 +1226,11 @@ function rcm_compleanni_pagina_elenco() {
 		<form method="get" style="margin-bottom:1em">
 			<input type="hidden" name="page" value="rcm-soci">
 			<p class="search-box">
+				<select name="tessera">
+					<?php foreach ( $tessere as $k => $v ) : ?>
+						<option value="<?php echo esc_attr( $k ); ?>" <?php selected( $tessera, $k ); ?>><?php echo esc_html( $v ); ?></option>
+					<?php endforeach; ?>
+				</select>
 				<input type="search" name="s" value="<?php echo esc_attr( $cerca ); ?>" placeholder="Cerca nome o email">
 				<?php submit_button( 'Cerca', '', '', false ); ?>
 			</p>
@@ -1291,6 +1434,7 @@ function rcm_compleanni_pagina_auguri() {
 				'whatsapp'  => sanitize_textarea_field( wp_unslash( $_POST['whatsapp'] ?? '' ) ),
 				'promemoria'   => empty( $_POST['promemoria'] ) ? 0 : 1,
 				'promemoria_a' => sanitize_email( wp_unslash( $_POST['promemoria_a'] ?? '' ) ),
+				'solo_tesserati' => empty( $_POST['solo_tesserati'] ) ? 0 : 1,
 			);
 			update_option( RCM_COMPLEANNI_OPZIONI, $opzioni );
 			rcm_compleanni_pianifica( $ora_prima !== $opzioni['ora'] );
@@ -1343,6 +1487,7 @@ function rcm_compleanni_pagina_auguri() {
 		            DATEDIFF( $ricorrenza + INTERVAL 1 YEAR, CURDATE() ) ) AS mancano
 		 FROM $tabella
 		 WHERE attivo = 1 AND data_nascita IS NOT NULL
+		 " . ( ! empty( $opzioni['solo_tesserati'] ) ? 'AND ' . rcm_soci_sql_tessera_valida() : '' ) . "
 		 HAVING mancano <= 30
 		 ORDER BY mancano
 		 LIMIT 25"
@@ -1411,6 +1556,13 @@ function rcm_compleanni_pagina_auguri() {
 					<td>
 						<input id="rcm-copia" name="copia_a" type="email" class="regular-text" value="<?php echo esc_attr( $opzioni['copia_a'] ); ?>">
 						<p class="description">Facoltativo: riceve in Ccn una copia di ogni messaggio inviato.</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">A chi</th>
+					<td>
+						<label><input type="checkbox" name="solo_tesserati" value="1" <?php checked( $opzioni['solo_tesserati'], 1 ); ?>> solo ai soci con la tessera valida</label>
+						<p class="description">Tessera Ordinario, Family o Onorario della stagione <?php echo esc_html( rcm_soci_stagione_corrente() ); ?> (o già rinnovata per la <?php echo esc_html( rcm_soci_stagione_successiva() ); ?>). Dal 1° luglio chi non ha rinnovato non li riceve più, finché non rinnova. Tolta la spunta, li ricevono tutti quelli in archivio con "riceve gli auguri".</p>
 					</td>
 				</tr>
 				<tr>

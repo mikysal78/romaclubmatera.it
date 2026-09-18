@@ -698,9 +698,21 @@ motori (`noindex`), e fuori dalla cache di nginx (§ webserver: `/area-soci/`
 e il cookie `rcm_socio`).
 
 **Chi entra.** I soci non sono utenti WordPress e **non c'è registrazione**:
-li inserisce il Club nell'archivio (§9.1). Entra chi ha una tessera annuale
-(Ordinario, Family, Onorario) della **stagione in corso**; la Tessera Roma no.
-La casella *riceve gli auguri* non c'entra.
+li inserisce il Club nell'archivio (§9.1). Entra chi ha una **tessera valida**:
+annuale (Ordinario, Family, Onorario, non la Tessera Roma) della **stagione in
+corso** o già rinnovata per la **successiva** (`rcm_soci_tessera_valida`). La
+stagione cambia il 1° luglio: da quel giorno chi non ha rinnovato è fuori da
+solo, senza disattivarlo a mano, e rientra quando il Club gli aggiorna la
+stagione. Chi rinnova a giugno per la stagione nuova entra subito. La casella
+*riceve gli auguri* non c'entra.
+
+**Chi lo gestisce.** Il menu *Soci* si apre con il permesso
+`rcm_gestisci_soci`, che hanno gli amministratori e il ruolo **Gestore soci**
+(creato da `rcm-compleanni`): in bacheca vede solo *Soci* (elenco, import ed
+esportazione, auguri, prenotazioni) e il suo profilo. Non scrive contenuti,
+non tocca plugin, temi e utenti, e non ha `edit_posts`. L'interruttore
+dell'area soci resta agli amministratori. Gli utenti si creano da
+*Utenti › Aggiungi nuovo* con il ruolo "Gestore soci".
 
 **Come entra.** Niente password: scrive l'email e riceve **un link e un codice
 di 6 cifre**, validi 15 minuti e una volta sola.
@@ -744,9 +756,11 @@ Nell'area soci, sotto la tessera: la **prossima partita** del calendario di
 SportsPress e, se questa è già chiusa, la **prima ancora prenotabile**, con il
 conto alla rovescia dei giorni che restano.
 
-- Si prenota **fino a 10 giorni prima** (data della partita meno 10, fino a
-  mezzanotte; `RCM_PR_GIORNI`). Dopo non si prenota, non si modifica e non si
-  annulla più.
+- **Le prenotazioni le chiude il Club, a mano**, partita per partita, con il
+  pulsante *Chiudi le prenotazioni* in *Soci › Prenotazioni* (si possono
+  riaprire). Chiuse, il socio non prenota, non modifica e non annulla più. Al
+  socio si chiede di prenotare entro 10 giorni prima (`RCM_PR_GIORNI`): il
+  conto alla rovescia segue quell'indicazione, ma non chiude niente da solo.
 - Il socio sceglie **biglietto**, **posto in pullman** o entrambi. Per le
   partite in casa sceglie anche il settore dell'Olimpico; per quelle fuori il
   settore è quello ospiti. Può prenotare anche per altre 5 persone al massimo,

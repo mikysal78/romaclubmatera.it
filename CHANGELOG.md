@@ -8,6 +8,19 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Ruolo "Gestore soci"** (`rcm-compleanni.php`): chi tiene i soci vede in
+  bacheca solo il menu Soci - elenco, import ed esportazione, auguri,
+  prenotazioni - e il proprio profilo. Il menu ora dipende dal permesso
+  `rcm_gestisci_soci`, dato anche agli amministratori; l'interruttore
+  dell'area soci resta solo a loro.
+- **Stagioni: le tessere scadute escono da sole, i rinnovi anticipati valgono
+  subito.** Una tessera vale se e' della stagione in corso o della successiva;
+  dal 1° luglio chi non ha rinnovato perde l'area soci e, con la nuova
+  impostazione "solo ai soci con la tessera valida" (accesa), anche gli auguri.
+  Nell'elenco soci, filtro per tessera valida, scaduta o assente.
+- **Prenotazioni chiuse a mano dal Club**, partita per partita, invece che in
+  automatico 10 giorni prima: i 10 giorni restano l'indicazione per i soci.
+
 - **Area soci: prenotazione di biglietto e pullman**
   (`roles/wordpress/files/rcm-area-soci-prenotazioni.php`). La prossima
   partita del calendario e la prima ancora prenotabile, con il conto alla
@@ -404,6 +417,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Il ruolo `wordpress` rigenerava le chiavi di sicurezza a ogni esecuzione**
+  (`config shuffle-salts`), buttando fuori tutti gli amministratori a ogni
+  deploy. Ora succede solo quando `wp-config.php` viene creato.
 
 - **Il cellulare scritto "39 349..." senza il + prendeva il 39 due volte**
   (`rcm_compleanni_telefono`). Dodici cifre che cominciano con 393 hanno gia'

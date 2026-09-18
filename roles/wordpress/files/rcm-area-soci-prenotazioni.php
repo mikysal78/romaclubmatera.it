@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: RCM - Area soci: prenotazioni
- * Description: Nell'area soci, prenotazione del biglietto e del posto in pullman per le partite del calendario, fino a 10 giorni prima. Il socio vede "Prenotato" finche' il Club non segna il pagamento, poi "Confermato". Il Club le gestisce da Soci > Prenotazioni.
+ * Description: Nell'area soci, prenotazione del biglietto e del posto in pullman per le partite del calendario, finche' il Club non le chiude. Il socio vede "Prenotato" finche' il Club non segna il pagamento, poi "Confermato". Il Club le gestisce da Soci > Prenotazioni.
  * Version: 1.0.0
  * Author: Roma Club Matera
  *
@@ -9,10 +9,12 @@
  *
  * - Le partite sono gli eventi di SportsPress (sp_event) del calendario: niente
  *   da inserire due volte.
- * - Si prenota fino a 10 giorni prima della partita: l'ultimo giorno utile e'
- *   la data della partita meno 10, fino a mezzanotte. Poi la prenotazione si
- *   chiude, anche per modificarla o annullarla (a quel punto il Club ha gia'
- *   comprato i biglietti e fissato il pullman).
+ * - Le prenotazioni di una partita le chiude il Club, a mano, da
+ *   Soci > Prenotazioni (decisione di Michele, 18/09/2026). Chiuse, non si
+ *   prenota, non si modifica e non si annulla piu': il Club sta comprando i
+ *   biglietti e fissando il pullman. I 10 giorni restano come indicazione per
+ *   il socio, nel conto alla rovescia, e non chiudono niente da soli.
+ *   Una partita il cui giorno e' passato non si prenota comunque.
  * - Tre stati, e solo tre, come li vede il socio:
  *     prenotato  - richiesta fatta, pagamento non ancora arrivato;
  *     confermato - il Club ha segnato il pagamento: il biglietto c'e', il
@@ -32,7 +34,8 @@ defined( 'ABSPATH' ) || exit;
 
 const RCM_PR_DB          = 'rcm_pr_db_version';
 const RCM_PR_DB_VER      = '1.0';
-const RCM_PR_GIORNI      = 10;  // quanti giorni prima della partita si chiude
+const RCM_PR_GIORNI      = 10;  // entro quando si chiede di prenotare: solo indicazione
+const RCM_PR_META_CHIUSE = '_rcm_pr_chiuse'; // sulla partita: prenotazioni chiuse dal Club
 const RCM_PR_MAX_PERSONE = 5;   // altre persone oltre al socio
 
 function rcm_pr_tabella() {
@@ -98,10 +101,11 @@ function rcm_pr_partita( $id ) {
 	}
 	$tz       = wp_timezone();
 	$quando   = new DateTimeImmutable( $p->post_date, $tz );
-	$chiusura = $quando->setTime( 23, 59, 59 )->modify( '-' . RCM_PR_GIORNI . ' days' );
+	$entro    = $quando->setTime( 23, 59, 59 )->modify( '-' . RCM_PR_GIORNI . ' days' );
 	$oggi     = new DateTimeImmutable( 'today', $tz );
 	$luogo    = wp_get_post_terms( $p->ID, 'sp_venue', array( 'fields' => 'names' ) );
-	$aperta   = time() <= $chiusura->getTimestamp();
+	$chiusa   = (bool) get_post_meta( $p->ID, RCM_PR_META_CHIUSE, true );
+	$futura   = $quando->setTime( 0, 0 )->getTimestamp() >= $oggi->getTimestamp();
 
 	return (object) array(
 		'id'       => $p->ID,
@@ -112,10 +116,12 @@ function rcm_pr_partita( $id ) {
 		'luogo'    => is_array( $luogo ) && $luogo ? $luogo[0] : '',
 		// in casa se la Roma e' scritta per prima: "Roma vs Como"
 		'casa'     => (bool) preg_match( '/^\s*(as\s+)?roma\b/i', $p->post_title ),
-		'chiusura' => $chiusura,
-		'aperta'   => $aperta,
-		'giorni'   => $aperta ? (int) $oggi->diff( $chiusura->setTime( 0, 0 ) )->days : 0,
-		'futura'   => $quando->getTimestamp() >= ( new DateTimeImmutable( 'today', $tz ) )->getTimestamp(),
+		'entro'    => $entro,
+		'chiusa'   => $chiusa,
+		'aperta'   => ! $chiusa && $futura,
+		// giorni che restano per prenotare entro l'indicazione; -1 se e' passata
+		'giorni'   => time() <= $entro->getTimestamp() ? (int) $oggi->diff( $entro->setTime( 0, 0 ) )->days : -1,
+		'futura'   => $futura,
 	);
 }
 
@@ -184,7 +190,7 @@ add_filter(
 	'rcm_as_avvisi',
 	function ( $avvisi ) {
 		return $avvisi + array(
-			'pr_chiusa'     => 'Le prenotazioni per questa partita sono chiuse: si prenota fino a ' . RCM_PR_GIORNI . ' giorni prima.',
+			'pr_chiusa'     => 'Le prenotazioni per questa partita sono chiuse.',
 			'pr_niente'     => 'Scegli almeno il biglietto o il posto in pullman.',
 			'pr_settore'    => 'Scegli il settore dello stadio.',
 			'pr_persone'    => 'Puoi prenotare al massimo per ' . RCM_PR_MAX_PERSONE . ' persone oltre a te.',
@@ -394,8 +400,8 @@ function rcm_pr_sezione( $socio ) {
 	$mostrate[] = $prossima->id;
 	rcm_pr_scheda_partita( $prossima, $mie[ $prossima->id ] ?? null, 'Prossima partita' );
 
-	// La prossima e' quasi sempre gia' chiusa (si gioca ogni settimana e si
-	// chiude 10 giorni prima): allora si mostra anche la prima ancora aperta.
+	// Se la prossima e' gia' chiusa (si gioca ogni settimana, e il Club chiude
+	// una decina di giorni prima) si mostra anche la prima ancora aperta.
 	if ( ! $prossima->aperta ) {
 		foreach ( $prossime as $partita ) {
 			if ( $partita->aperta ) {
@@ -423,7 +429,7 @@ function rcm_pr_sezione( $socio ) {
 			rcm_pr_scheda_partita( $coppia[0], $coppia[1], '' );
 		}
 	}
-	printf( '<p class="rcm-as-nota">Si prenota fino a %d giorni prima della partita. Il pagamento si fa al Club: quando arriva, la prenotazione diventa <strong>Confermata</strong>.</p>', (int) RCM_PR_GIORNI );
+	printf( '<p class="rcm-as-nota">Prenota almeno %d giorni prima della partita: poi il Club chiude le prenotazioni. Il pagamento si fa al Club: quando arriva, la prenotazione diventa <strong>Confermata</strong>.</p>', (int) RCM_PR_GIORNI );
 	echo '</section>';
 }
 
@@ -481,7 +487,7 @@ function rcm_pr_scheda_partita( $partita, $p, $etichetta ) {
 			<?php if ( $p ) : ?>
 				<p class="rcm-pr-stato rcm-pr-stato--annullato"><?php echo esc_html( $stati['annullato'] ); ?></p>
 			<?php endif; ?>
-			<p class="rcm-pr-chiusa">Prenotazioni chiuse il <?php echo esc_html( wp_date( 'j F', $partita->chiusura->getTimestamp() ) ); ?>.</p>
+			<p class="rcm-pr-chiusa">Prenotazioni chiuse.</p>
 		<?php endif; ?>
 	</article>
 	<?php
@@ -489,12 +495,14 @@ function rcm_pr_scheda_partita( $partita, $p, $etichetta ) {
 
 /** Il conto alla rovescia dei giorni per prenotare. */
 function rcm_pr_conto( $partita ) {
-	$fino = wp_date( 'l j F', $partita->chiusura->getTimestamp() );
-	if ( 0 === $partita->giorni ) {
-		$testo = '<strong>Ultimo giorno</strong> per prenotare: si chiude stanotte a mezzanotte.';
+	$fino = wp_date( 'l j F', $partita->entro->getTimestamp() );
+	if ( $partita->giorni < 0 ) {
+		$testo = 'Prenotazioni ancora aperte, ma per poco: il Club le chiude a breve.';
+	} elseif ( 0 === $partita->giorni ) {
+		$testo = '<strong>Oggi è l\'ultimo giorno</strong> per prenotare.';
 	} else {
 		$testo = sprintf(
-			'<span class="rcm-pr-giorni">%d</span> %s per prenotare, fino a %s',
+			'<span class="rcm-pr-giorni">%d</span> %s per prenotare, entro %s',
 			$partita->giorni,
 			1 === $partita->giorni ? 'giorno' : 'giorni',
 			esc_html( $fino )
@@ -544,7 +552,7 @@ function rcm_pr_modulo( $partita, $p ) {
 add_action(
 	'admin_menu',
 	function () {
-		add_submenu_page( 'rcm-soci', 'Prenotazioni', 'Prenotazioni', 'manage_options', 'rcm-soci-prenotazioni', 'rcm_pr_pagina_admin' );
+		add_submenu_page( 'rcm-soci', 'Prenotazioni', 'Prenotazioni', RCM_COMPLEANNI_CAP, 'rcm-soci-prenotazioni', 'rcm_pr_pagina_admin' );
 	},
 	15
 );
@@ -553,6 +561,20 @@ function rcm_pr_pagina_admin() {
 	global $wpdb;
 	$t     = rcm_pr_tabella();
 	$stati = rcm_pr_stati();
+
+	if ( isset( $_POST['rcm_pr_chiusura'] ) && check_admin_referer( 'rcm_pr_chiusura' ) ) {
+		$x = rcm_pr_partita( absint( $_POST['evento'] ?? 0 ) );
+		if ( $x ) {
+			if ( ! empty( $_POST['chiudi'] ) ) {
+				update_post_meta( $x->id, RCM_PR_META_CHIUSE, 1 );
+				rcm_compleanni_avviso( 'Prenotazioni chiuse per ' . esc_html( $x->titolo ) . '.' );
+			} else {
+				delete_post_meta( $x->id, RCM_PR_META_CHIUSE );
+				rcm_compleanni_avviso( 'Prenotazioni riaperte per ' . esc_html( $x->titolo ) . '.' );
+			}
+			$_GET['evento'] = $x->id;
+		}
+	}
 
 	if ( isset( $_POST['rcm_pr_salva'] ) && check_admin_referer( 'rcm_pr_admin' ) ) {
 		$id    = absint( $_POST['id'] ?? 0 );
@@ -639,7 +661,7 @@ function rcm_pr_pagina_admin() {
 			<select name="evento" onchange="this.form.submit()">
 				<?php foreach ( $partite as $x ) : ?>
 					<option value="<?php echo esc_attr( $x->id ); ?>" <?php selected( $scelta, $x->id ); ?>>
-						<?php echo esc_html( wp_date( 'd/m/Y', $x->quando->getTimestamp() ) . ' — ' . $x->titolo . ( isset( $conteggi[ $x->id ] ) ? ' (' . $conteggi[ $x->id ] . ')' : '' ) . ( $x->aperta ? '' : ' · chiusa' ) ); ?>
+						<?php echo esc_html( wp_date( 'd/m/Y', $x->quando->getTimestamp() ) . ' — ' . $x->titolo . ( isset( $conteggi[ $x->id ] ) ? ' (' . $conteggi[ $x->id ] . ')' : '' ) . ( $x->chiusa ? ' · chiusa' : '' ) ); ?>
 					</option>
 				<?php endforeach; ?>
 			</select>
@@ -648,8 +670,23 @@ function rcm_pr_pagina_admin() {
 		<?php if ( $partita ) : ?>
 			<p>
 				<strong><?php echo esc_html( $partita->titolo ); ?></strong> &middot; <?php echo esc_html( rcm_pr_data( $partita ) ); ?> &middot;
-				<?php echo $partita->aperta ? 'prenotazioni aperte fino a ' . esc_html( wp_date( 'j F', $partita->chiusura->getTimestamp() ) ) : 'prenotazioni chiuse'; ?>
+				<?php if ( $partita->chiusa ) : ?>
+					<strong style="color:#b32d2e">prenotazioni chiuse</strong>
+				<?php elseif ( $partita->futura ) : ?>
+					<strong style="color:#1a7a2e">prenotazioni aperte</strong> (ai soci si chiede di prenotare entro <?php echo esc_html( wp_date( 'j F', $partita->entro->getTimestamp() ) ); ?>)
+				<?php else : ?>
+					partita giocata
+				<?php endif; ?>
 			</p>
+			<?php if ( $partita->futura ) : ?>
+				<form method="post" style="margin:-4px 0 14px">
+					<?php wp_nonce_field( 'rcm_pr_chiusura' ); ?>
+					<input type="hidden" name="evento" value="<?php echo esc_attr( $partita->id ); ?>">
+					<input type="hidden" name="chiudi" value="<?php echo $partita->chiusa ? '0' : '1'; ?>">
+					<?php submit_button( $partita->chiusa ? 'Riapri le prenotazioni' : 'Chiudi le prenotazioni', $partita->chiusa ? 'secondary' : 'primary', 'rcm_pr_chiusura', false ); ?>
+					<span class="description">Chiuse, i soci non possono più prenotare, modificare o annullare per questa partita.</span>
+				</form>
+			<?php endif; ?>
 			<p>
 				Biglietti: <strong><?php echo (int) ( $tot['biglietti'][0] + $tot['biglietti'][1] ); ?></strong> persone (<?php echo (int) $tot['biglietti'][1]; ?> confermate) &middot;
 				Pullman: <strong><?php echo (int) ( $tot['pullman'][0] + $tot['pullman'][1] ); ?></strong> posti (<?php echo (int) $tot['pullman'][1]; ?> confermati)

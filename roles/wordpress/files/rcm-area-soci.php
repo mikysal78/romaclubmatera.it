@@ -12,8 +12,8 @@
  *   Sul sito restano solo gli amministratori, quindi vale ancora la
  *   valutazione per cui le vulnerabilita' "Contributor+" dei plugin del tema
  *   non sono sfruttabili.
- * - Entra chi ha una tessera annuale della stagione in corso
- *   (rcm_soci_tipologie, rcm_soci_stagione_corrente). La casella "attivo"
+ * - Entra chi ha una tessera annuale valida: della stagione in corso, o gia'
+ *   rinnovata per la successiva (rcm_soci_tessera_valida). La casella "attivo"
  *   della tabella vuol dire "riceve gli auguri" e con l'accesso non c'entra.
  * - Niente password. Il socio scrive la sua email e riceve un link e un codice
  *   di 6 cifre, validi 15 minuti e una volta sola. Il codice serve quando
@@ -136,13 +136,13 @@ function rcm_as_socio_per_email( $email ) {
 	return $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . rcm_compleanni_tabella() . ' WHERE email = %s', $email ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 }
 
-/** Tessera annuale della stagione in corso: e' questo, e solo questo, che fa entrare. */
+/** Tessera annuale valida: e' questo, e solo questo, che fa entrare. */
 function rcm_as_socio_valido( $socio ) {
 	if ( ! $socio || ! function_exists( 'rcm_soci_tipologie' ) ) {
 		return false;
 	}
-	$tipologie = rcm_soci_tipologie();
-	return isset( $tipologie[ $socio->tipologia ] ) && $socio->stagione === rcm_soci_stagione_corrente();
+	// stagione in corso o gia' rinnovata per la successiva (rcm-compleanni)
+	return rcm_soci_tessera_valida( $socio );
 }
 
 /** L'interruttore: in prova passano solo gli indirizzi di prova. */
@@ -387,7 +387,8 @@ function rcm_as_cancello() {
 	header( 'X-Robots-Tag: noindex, nofollow', true );
 
 	$o = rcm_as_opzioni();
-	if ( current_user_can( 'manage_options' ) || 'attiva' === $o['stato'] ) {
+	// chi gestisce i soci vede la pagina anche spenta o in prova, per controllarla
+	if ( current_user_can( RCM_COMPLEANNI_CAP ) || 'attiva' === $o['stato'] ) {
 		return;
 	}
 	if ( 'prova' === $o['stato'] && '' !== $o['chiave'] ) {
@@ -681,13 +682,12 @@ function rcm_as_pagina_impostazioni() {
 	}
 
 	global $wpdb;
-	$tip    = function_exists( 'rcm_soci_tipologie' ) ? array_keys( rcm_soci_tipologie() ) : array();
-	$validi = $tip ? (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . rcm_compleanni_tabella() . ' WHERE stagione = %s AND tipologia IN (' . implode( ',', array_fill( 0, count( $tip ), '%s' ) ) . ')', array_merge( array( rcm_soci_stagione_corrente() ), $tip ) ) ) : 0; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery
+	$validi = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . rcm_compleanni_tabella() . ' WHERE ' . rcm_soci_sql_tessera_valida() ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 	$link   = '' !== $o['chiave'] ? rcm_as_url_pagina( array( 'chiave' => $o['chiave'] ) ) : '';
 	?>
 	<div class="wrap">
 		<h1>Area soci</h1>
-		<p><strong><?php echo esc_html( $validi ); ?></strong> soci hanno una tessera della stagione <?php echo esc_html( function_exists( 'rcm_soci_stagione_corrente' ) ? rcm_soci_stagione_corrente() : '' ); ?> e, ad area attiva, potrebbero entrare.</p>
+		<p><strong><?php echo esc_html( $validi ); ?></strong> soci hanno una tessera valida (stagione <?php echo esc_html( rcm_soci_stagione_corrente() ); ?>, o già rinnovata per la <?php echo esc_html( rcm_soci_stagione_successiva() ); ?>) e, ad area attiva, potrebbero entrare.</p>
 		<form method="post">
 			<?php wp_nonce_field( 'rcm_as_impostazioni' ); ?>
 			<table class="form-table">
@@ -752,9 +752,9 @@ function rcm_as_shortcode() {
 	ob_start();
 	echo '<div class="rcm-as">';
 
-	if ( current_user_can( 'manage_options' ) && 'attiva' !== $o['stato'] ) {
+	if ( current_user_can( RCM_COMPLEANNI_CAP ) && 'attiva' !== $o['stato'] ) {
 		printf(
-			'<p class="rcm-as-banner">Area soci <strong>%s</strong>: la vedi perché sei amministratore.</p>',
+			'<p class="rcm-as-banner">Area soci <strong>%s</strong>: la vedi perché gestisci i soci.</p>',
 			'prova' === $o['stato'] ? 'in prova' : 'spenta'
 		);
 	}
