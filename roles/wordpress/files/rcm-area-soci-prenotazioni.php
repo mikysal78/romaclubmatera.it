@@ -40,6 +40,7 @@ const RCM_PR_DB          = 'rcm_pr_db_version';
 const RCM_PR_DB_VER      = '1.0';
 const RCM_PR_GIORNI      = 10;  // entro quando si chiede di prenotare: solo indicazione
 const RCM_PR_META_CHIUSE = '_rcm_pr_chiuse'; // sulla partita: prenotazioni chiuse dal Club
+const RCM_PR_PRENOTABILI = 3;   // quante partite aperte si prenotano insieme (Michele, 18/09/2026)
 const RCM_PR_MAX_PERSONE = 3;   // altre persone oltre al socio (Michele, 18/09/2026)
 
 function rcm_pr_tabella() {
@@ -155,6 +156,29 @@ function rcm_pr_prossime( $quante = 40 ) {
 		)
 	);
 	return array_values( array_filter( array_map( 'rcm_pr_partita', $ids ) ) );
+}
+
+/**
+ * Le partite che si possono prenotare adesso: le prime RCM_PR_PRENOTABILI
+ * aperte del calendario. Le altre aperte aspettano il loro turno, cosi' non si
+ * prenota una partita di maggio a settembre. Vale per la pagina e per
+ * l'invio: chi costruisce a mano la richiesta per una partita piu' lontana
+ * viene respinto come per una chiusa.
+ */
+function rcm_pr_prenotabili() {
+	static $cache = null;
+	if ( null === $cache ) {
+		$cache = array();
+		foreach ( rcm_pr_prossime() as $partita ) {
+			if ( $partita->aperta ) {
+				$cache[ $partita->id ] = $partita;
+				if ( count( $cache ) >= RCM_PR_PRENOTABILI ) {
+					break;
+				}
+			}
+		}
+	}
+	return $cache;
 }
 
 function rcm_pr_data( $partita ) {
@@ -289,7 +313,7 @@ function rcm_pr_prenota() {
 	}
 	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificato sopra
 	$partita = rcm_pr_partita( absint( $_POST['evento'] ?? 0 ) );
-	if ( ! $partita || ! $partita->aperta ) {
+	if ( ! $partita || ! isset( rcm_pr_prenotabili()[ $partita->id ] ) ) {
 		rcm_as_torna( array( 'avviso' => 'pr_chiusa' ) );
 	}
 	$biglietto = ! empty( $_POST['biglietto'] ) ? 1 : 0;
@@ -478,30 +502,24 @@ function rcm_pr_sezione( $socio ) {
 	$mostrate[] = $prossima->id;
 	rcm_pr_scheda_partita( $prossima, $mie[ $prossima->id ] ?? null, 'Prossima partita' );
 
-	// Tutte le altre partite aperte (Michele, 18/09/2026). Le prenotazioni le
-	// chiude il Club a mano, quindi le aperte possono essere molte: una riga
-	// ciascuna, che si apre al tocco, invece di un modulo per partita.
+	// Le altre prenotabili: le prime RCM_PR_PRENOTABILI aperte, contando anche
+	// la prossima se e' aperta. Una riga ciascuna, che si apre al tocco.
 	$aperte = array();
-	foreach ( $prossime as $partita ) {
-		if ( $partita->aperta && $partita->id !== $prossima->id ) {
+	foreach ( rcm_pr_prenotabili() as $partita ) {
+		if ( $partita->id !== $prossima->id ) {
 			$aperte[]   = $partita;
 			$mostrate[] = $partita->id;
 		}
 	}
 	if ( $aperte ) {
-		// Le prime 6 subito; le altre dietro "Mostra tutte" (area-soci.js). Senza
-		// JavaScript si vedono tutte.
-		echo '<h3 class="rcm-pr-sottotitolo">Partite prenotabili</h3><div class="rcm-pr-elenco" data-visibili="6">';
+		echo '<h3 class="rcm-pr-sottotitolo">Partite prenotabili</h3><div class="rcm-pr-elenco">';
 		foreach ( $aperte as $partita ) {
 			rcm_pr_riga_partita( $partita, $mie[ $partita->id ] ?? null );
-		}
-		if ( count( $aperte ) > 6 ) {
-			printf( '<button type="button" class="rcm-as-secondario rcm-pr-tutte" hidden>Mostra tutte le %d partite</button>', count( $aperte ) );
 		}
 		echo '</div>';
 	}
 
-	// Le prenotazioni del socio per partite future gia' chiuse
+	// Le prenotazioni del socio per partite future che qui sopra non ci sono
 	$altre = array();
 	foreach ( $mie as $evento_id => $p ) {
 		if ( in_array( $evento_id, $mostrate, true ) || 'annullato' === $p->stato ) {
@@ -513,7 +531,7 @@ function rcm_pr_sezione( $socio ) {
 		}
 	}
 	if ( $altre ) {
-		echo '<h3 class="rcm-pr-sottotitolo">Le tue prenotazioni per le partite chiuse</h3>';
+		echo '<h3 class="rcm-pr-sottotitolo">Le tue altre prenotazioni</h3>';
 		foreach ( $altre as $coppia ) {
 			rcm_pr_scheda_partita( $coppia[0], $coppia[1], '' );
 		}
@@ -547,7 +565,8 @@ function rcm_pr_riga_partita( $partita, $p ) {
 }
 
 function rcm_pr_scheda_partita( $partita, $p, $etichetta, $intestazione = true ) {
-	$stati = rcm_pr_stati();
+	$stati       = rcm_pr_stati();
+	$prenotabile = isset( rcm_pr_prenotabili()[ $partita->id ] );
 	?>
 	<article class="rcm-pr-partita<?php echo $p ? ' rcm-pr-partita--' . esc_attr( $p->stato ) : ''; ?><?php echo $intestazione ? '' : ' rcm-pr-partita--dentro'; ?>">
 		<?php if ( $etichetta ) : ?>
@@ -579,7 +598,7 @@ function rcm_pr_scheda_partita( $partita, $p, $etichetta, $intestazione = true )
 			<?php if ( '' !== $p->nota_club ) : ?>
 				<p class="rcm-pr-nota-club"><?php echo nl2br( esc_html( $p->nota_club ) ); ?></p>
 			<?php endif; ?>
-			<?php if ( 'prenotato' === $p->stato && $partita->aperta ) : ?>
+			<?php if ( 'prenotato' === $p->stato && $prenotabile ) : ?>
 				<?php rcm_pr_conto( $partita ); ?>
 				<details class="rcm-pr-modifica">
 					<summary>Modifica o annulla</summary>
@@ -592,7 +611,7 @@ function rcm_pr_scheda_partita( $partita, $p, $etichetta, $intestazione = true )
 					</form>
 				</details>
 			<?php endif; ?>
-		<?php elseif ( $partita->aperta ) : ?>
+		<?php elseif ( $prenotabile ) : ?>
 			<?php if ( $p ) : ?>
 				<p class="rcm-pr-stato rcm-pr-stato--annullato"><?php echo esc_html( $stati['annullato'] ); ?></p>
 			<?php endif; ?>

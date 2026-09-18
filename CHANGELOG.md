@@ -8,9 +8,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
-- **Area soci: tutte le partite aperte, non solo la prima.** Con la chiusura
-  manuale le aperte possono essere molte: una riga per partita che si apre al
-  tocco, le prime 6 subito e le altre con "Mostra tutte".
+- **Area soci: si prenotano le prime 3 partite aperte.** Una riga per
+  partita che si apre al tocco sul modulo. Con la chiusura manuale le aperte
+  sarebbero tutta la stagione: le piu' lontane aspettano il loro turno, e il
+  limite vale anche all'invio.
 
 - **Biglietteria allineata ai settori del Club.** Il modulo pubblico propone
   gli stessi settori dell'area soci (Distinti Nord Est, Tribuna Tevere Top

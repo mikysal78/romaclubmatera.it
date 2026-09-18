@@ -46,28 +46,3 @@
 		} );
 	} );
 }() );
-
-/* Partite prenotabili: le prime righe subito, le altre con "Mostra tutte". */
-( function () {
-	document.querySelectorAll( '.rcm-pr-elenco[data-visibili]' ).forEach( function ( elenco ) {
-		var quante  = parseInt( elenco.getAttribute( 'data-visibili' ), 10 ) || 6;
-		var righe   = elenco.querySelectorAll( '.rcm-pr-riga' );
-		var bottone = elenco.querySelector( '.rcm-pr-tutte' );
-		if ( ! bottone || righe.length <= quante ) {
-			return;
-		}
-		Array.prototype.slice.call( righe, quante ).forEach( function ( riga ) {
-			// chi ha gia' una prenotazione su una partita lontana la vede comunque
-			if ( ! /rcm-pr-riga--(prenotato|confermato)/.test( riga.className ) ) {
-				riga.hidden = true;
-			}
-		} );
-		bottone.hidden = false;
-		bottone.addEventListener( 'click', function () {
-			righe.forEach( function ( riga ) {
-				riga.hidden = false;
-			} );
-			bottone.remove();
-		} );
-	} );
-}() );

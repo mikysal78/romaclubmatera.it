@@ -355,6 +355,3 @@
 .rcm-pr-riga .rcm-pr-stato { flex: none; font-size: 12px; padding: 3px 10px; }
 .rcm-pr-partita--dentro { border: 0; border-top: 1px solid var(--rcm-as-bordo); border-radius: 0 0 8px 8px; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .rcm-pr-riga > summary::after { transition: none; } }
-
-.rcm-as .rcm-pr-tutte { justify-self: start; }
-.rcm-pr-riga[hidden] { display: none; }
