@@ -8,6 +8,21 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Area soci, spenta finche' il Club non la verifica**
+  (`roles/wordpress/files/rcm-area-soci.php` e `rcm-area-soci/`). Pagina
+  `/area-soci/` con la tessera digitale - il retro della tessera stampata, con
+  i dati del socio, VIRTUAL al posto del numero finche' il Club non lo assegna,
+  e una fascia con l'ora che scorre contro gli screenshot - e i propri dati.
+  Accesso senza password con link e codice di 6 cifre via email, nessuna
+  registrazione: entra chi ha una tessera annuale della stagione in corso.
+  Interruttore spenta/prova/attiva in *Soci > Area soci*, predefinito spenta:
+  in prova la pagina la vedono solo gli amministratori e chi ha il link di
+  prova, e le email partono solo verso gli indirizzi di prova, che stanno nel
+  database e non nel repo. Casella per l'email di benvenuto nel modulo del
+  socio. Provati con curl il 404 da spenta e senza link, il link che non entra
+  da solo e non si riusa, il codice, il blocco al quinto errore, l'uscita, e
+  la pagina fuori dalla cache (`BYPASS`).
+
 - **Dati della tessera nell'archivio soci, ed esportazione in CSV**
   (`roles/wordpress/files/rcm-compleanni.php`, schema 1.2). Primo passo
   dell'area soci: la tabella ha ora tipologia (Ordinario, Family, Onorario),

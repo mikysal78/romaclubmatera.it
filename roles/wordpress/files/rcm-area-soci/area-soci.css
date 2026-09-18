@@ -1,0 +1,183 @@
+/*
+ * Area soci (mu-plugin rcm-area-soci). Caricato solo sulla pagina /area-soci/.
+ *
+ * La tessera e' l'immagine del retro (1075x720) con i dati sovrapposti. Le
+ * posizioni dei campi sono in percentuale dei riquadri disegnati sul retro, e
+ * i caratteri in unita' del contenitore (cqw): la tessera resta identica a
+ * qualunque larghezza, dal telefono al computer.
+ */
+
+.rcm-as {
+	--rcm-as-rosso: #8e1f2f;
+	--rcm-as-oro: #f0bc42;
+	--rcm-as-inchiostro: #3a1a12;
+	--rcm-as-carta: #fbf3e1;
+	--rcm-as-bordo: #e2cfa4;
+	max-width: 640px;
+	margin: 0 auto;
+	display: grid;
+	gap: 22px;
+	color: #222;
+}
+
+.rcm-as-banner {
+	margin: 0;
+	padding: 10px 14px;
+	border-radius: 6px;
+	background: #fff4d6;
+	border: 1px solid var(--rcm-as-oro);
+	font-size: 14px;
+}
+
+.rcm-as-avviso {
+	margin: 0;
+	padding: 12px 14px;
+	border-radius: 6px;
+	background: #edf7ee;
+	border: 1px solid #9fcfa4;
+}
+.rcm-as-avviso--errore {
+	background: #fdeeee;
+	border-color: #e3a3a3;
+}
+
+.rcm-as-scheda {
+	padding: 22px;
+	border-radius: 10px;
+	background: var(--rcm-as-carta);
+	border: 1px solid var(--rcm-as-bordo);
+}
+.rcm-as-titolo {
+	margin: 0 0 10px;
+	font-size: 22px;
+	color: var(--rcm-as-rosso);
+}
+.rcm-as .rcm-as-scheda p { margin: 0 0 12px; }
+.rcm-as .rcm-as-scheda a { color: var(--rcm-as-rosso); text-decoration: underline; }
+.rcm-as-nota { font-size: 14px; color: #666; }
+.rcm-as .rcm-as-nota:last-child { margin-bottom: 0; }
+
+.rcm-as-modulo {
+	display: grid;
+	gap: 8px;
+	margin-bottom: 14px;
+}
+.rcm-as-modulo label { font-weight: 600; font-size: 14px; }
+.rcm-as-modulo input[type="email"],
+.rcm-as-modulo input[type="tel"],
+.rcm-as-modulo input[name="codice"] {
+	width: 100%;
+	padding: 12px;
+	font-size: 17px; /* 16px o piu': iPhone non ingrandisce la pagina al tocco */
+	border: 1px solid #c9b58a;
+	border-radius: 6px;
+	background: #fff;
+	box-sizing: border-box;
+}
+.rcm-as-modulo .rcm-as-codice {
+	font-size: 26px;
+	letter-spacing: 6px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+.rcm-as button {
+	padding: 13px 20px;
+	border: 0;
+	border-radius: 6px;
+	background: var(--rcm-as-rosso);
+	color: #fff;
+	font-size: 16px;
+	font-weight: 700;
+	cursor: pointer;
+}
+.rcm-as button:hover { background: #721726; }
+.rcm-as button:focus-visible { outline: 3px solid var(--rcm-as-oro); outline-offset: 2px; }
+.rcm-as .rcm-as-secondario {
+	background: transparent;
+	color: var(--rcm-as-rosso);
+	border: 1px solid var(--rcm-as-rosso);
+	padding: 9px 16px;
+	font-size: 14px;
+}
+.rcm-as .rcm-as-secondario:hover { background: #f6e3e5; }
+
+.rcm-as-dati { margin: 0 0 16px; display: grid; gap: 6px; }
+.rcm-as-dati div { display: flex; gap: 10px; flex-wrap: wrap; }
+.rcm-as-dati dt { font-weight: 600; min-width: 5em; }
+.rcm-as-dati dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---- La tessera ---- */
+
+.rcm-as-tessera-box { display: grid; gap: 10px; }
+
+.rcm-as-tessera {
+	position: relative;
+	container-type: inline-size;
+	border-radius: 3.5cqw;
+	overflow: hidden;
+	box-shadow: 0 10px 28px rgba(58, 26, 18, .28);
+	line-height: 1;
+}
+.rcm-as-tessera img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+.rcm-as-campo {
+	position: absolute;
+	height: 5.4%;
+	display: flex;
+	align-items: center;
+	padding: 0 1.2cqw;
+	box-sizing: border-box;
+	font-family: "Oswald", "Roboto Condensed", "Arial Narrow", sans-serif;
+	font-weight: 600;
+	font-size: 2.9cqw;
+	color: var(--rcm-as-inchiostro);
+	text-transform: uppercase;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+/* riquadri del retro, in percentuale dell'immagine */
+.rcm-as-campo--nome      { left: 21.1%; top: 40.6%; width: 36.0%; }
+.rcm-as-campo--cognome   { left: 21.1%; top: 47.9%; width: 36.0%; }
+.rcm-as-campo--tipologia { left: 26.9%; top: 55.0%; width: 30.1%; }
+.rcm-as-campo--numero    { left: 21.1%; top: 62.3%; width: 19.2%; }
+.rcm-as-campo--validita  { left: 51.0%; top: 62.3%; width: 6.0%; padding: 0; justify-content: center; font-size: 2.1cqw; }
+.rcm-as-campo--rilascio  { left: 23.7%; top: 69.6%; width: 33.3%; }
+
+.rcm-as .rcm-as-vivo {
+	margin: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 4px 10px;
+	padding: 10px 12px;
+	border-radius: 8px;
+	background: var(--rcm-as-rosso);
+	color: #fff;
+	font-size: 15px;
+	line-height: 1.3;
+	font-weight: 600;
+}
+.rcm-as-ora {
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.rcm-as-punto {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--rcm-as-oro);
+	animation: rcm-as-pulsa 1.4s ease-in-out infinite;
+}
+@keyframes rcm-as-pulsa {
+	50% { opacity: .25; transform: scale(.7); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.rcm-as-punto { animation: none; }
+}
+.rcm-as .rcm-as-tessera-box .rcm-as-nota { margin: 0; text-align: center; }

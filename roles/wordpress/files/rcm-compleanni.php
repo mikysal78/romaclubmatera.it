@@ -1173,6 +1173,7 @@ function rcm_compleanni_pagina_elenco() {
 					<input id="rcm-stagione" name="stagione" style="width:8em" value="<?php echo esc_attr( $val( 'stagione', rcm_soci_stagione_corrente() ) ); ?>" placeholder="<?php echo esc_attr( rcm_soci_stagione_corrente() ); ?>">
 					<p class="description">Nell'area soci entra chi ha una tessera della stagione in corso (<?php echo esc_html( rcm_soci_stagione_corrente() ); ?>): a fine stagione la tessera scade da sola.</p>
 				</td></tr>
+				<?php do_action( 'rcm_soci_modulo_campi', $modifica ? $in_modifica : null ); // es. il benvenuto dell'area soci ?>
 			</table>
 			<?php
 			submit_button( $modifica ? 'Salva modifiche' : 'Aggiungi socio', 'primary', 'submit', false );

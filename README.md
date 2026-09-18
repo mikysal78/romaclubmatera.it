@@ -678,6 +678,62 @@ proprio, esistono per finire nell'elenco. Se un giorno diventano tanti e
 conviene dare a ognuno la sua pagina — chi cerca un coro lo cerca dal
 telefono, col nome — basta aprirlo con `rewrite => array('slug' => 'cori')`.
 
+### 9.5 Area soci (`rcm-area-soci`)
+
+Area riservata ai tesserati, alla pagina `/area-soci/` (shortcode
+`[rcm_area_soci]`). Dentro: la **tessera digitale** e **i propri dati**.
+
+**Nasce spenta.** Un interruttore in *Soci › Area soci* decide chi la vede:
+
+| Stato | Pagina | Email di accesso e di benvenuto |
+|---|---|---|
+| spenta (predefinito) | 404 per tutti tranne gli amministratori | nessuna |
+| prova | amministratori e chi apre il **link di prova** | solo verso gli **indirizzi di prova** |
+| attiva | aperta ai soci | a tutti i soci con tessera valida |
+
+Stato, indirizzi di prova e link di prova stanno **solo nel database**: questo
+repository è pubblico. Il ruolo Ansible installa il plugin e non tocca
+l'interruttore. La pagina è comunque fuori da sitemap, ricerca interna e
+motori (`noindex`), e fuori dalla cache di nginx (§ webserver: `/area-soci/`
+e il cookie `rcm_socio`).
+
+**Chi entra.** I soci non sono utenti WordPress e **non c'è registrazione**:
+li inserisce il Club nell'archivio (§9.1). Entra chi ha una tessera annuale
+(Ordinario, Family, Onorario) della **stagione in corso**; la Tessera Roma no.
+La casella *riceve gli auguri* non c'entra.
+
+**Come entra.** Niente password: scrive l'email e riceve **un link e un codice
+di 6 cifre**, validi 15 minuti e una volta sola.
+
+- Il link apre una pagina con il pulsante *Entra*, non fa entrare da solo:
+  molti programmi di posta aprono i link per controllarli e lo consumerebbero.
+- Il codice serve quando l'email si legge su un altro dispositivo, e su
+  iPhone, dove il sito installato ha cookie separati da Safari.
+- Il modulo risponde **sempre allo stesso modo**, che l'email sia di un socio o
+  no. Turnstile sulla richiesta; al massimo 3 richieste ogni 15 minuti per
+  email e 10 l'ora per IP; al quinto codice sbagliato l'accesso si chiude,
+  link compreso.
+- Nel database vanno solo impronte (HMAC) di link, codici e sessioni.
+- La sessione dura 60 giorni, sta sul server e *Esci* la chiude davvero. Ad
+  ogni pagina si ricontrolla la tessera: a fine stagione si resta fuori anche
+  con una sessione aperta.
+
+**La tessera** è il **retro** della tessera stampata
+(`rcm-area-soci/tessera-retro.*`, dal PDF del Club con l'email corretta in
+`info@romaclubmatera.it`), con i dati sovrapposti nei riquadri: nome, cognome,
+tipologia, numero (**VIRTUAL** se il Club non l'ha ancora assegnato), validità
+corta (`26/27`, il riquadro è stretto) e data di rilascio. Sotto, una fascia con
+**data e ora che scorrono**: chi controlla all'ingresso distingue la pagina
+vera da uno screenshot.
+
+**Il benvenuto.** Nel modulo del socio in bacheca c'è la casella *manda l'email
+di benvenuto*, con il primo link di accesso. `rcm-compleanni` espone per questo
+l'action `rcm_soci_modulo_campi` nel modulo e `rcm_socio_salvato` dopo il
+salvataggio; la data dell'invio finisce in `benvenuto_il`.
+
+Tabelle: `wp_rcm_soci_accessi` e `wp_rcm_soci_sessioni`, create al primo
+caricamento e ripulite ogni notte da `rcm_as_pulizia`.
+
 ## 10. Manutenzione e tag utili
 
 Esegui solo una parte del playbook con i tag:

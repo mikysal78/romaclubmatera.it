@@ -400,6 +400,26 @@
     group: www-data
     mode: "0644"
 
+# Area riservata ai tesserati: accesso via email, tessera digitale, dati. Nasce
+# SPENTA: stato e indirizzi di prova si impostano da Soci > Area soci e stanno
+# solo nel database, mai qui (il repo e' pubblico).
+- name: Installa il mu-plugin dell'area soci
+  ansible.builtin.copy:
+    src: rcm-area-soci.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-area-soci.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
+- name: Installa gli asset dell'area soci
+  ansible.builtin.copy:
+    src: rcm-area-soci/
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-area-soci/"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+    directory_mode: "0755"
+
 # Il CSS su misura del sito stava in "Aspetto > Personalizza > CSS aggiuntivo",
 # cioe' dentro il database: un ripristino da zero se lo perdeva. Ora e' un file
 # del tema figlio, versionato qui. Il tema figlio pero' arriva con
