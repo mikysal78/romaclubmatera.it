@@ -8,6 +8,12 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Prenotazioni: le persone in piu' sono al massimo 3, tesserate o con
+  sovrapprezzo.** Una riga per persona con nome e scelta obbligatoria
+  (tesserata / non tesserata, con sovrapprezzo), senza importi. In bacheca il
+  controllo sull'archivio soci per chi e' dichiarato tesserato e il conteggio
+  dei non tesserati.
+
 - **QR code della tessera per ogni socio** (`rcm-soci-qr.php`, libreria
   chillerlan/php-qrcode via Composer). Con lo scudo del Club al centro, nell'area
   soci e scaricabile dal Club (SVG, PNG, ZIP di tutti i soci validi), con

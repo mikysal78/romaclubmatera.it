@@ -300,7 +300,7 @@ function rcm_qr_verifica() {
 				esc_html( wp_date( 'j/n', $partita->quando->getTimestamp() ) ),
 				esc_html( $stati[ $p->stato ] ),
 				esc_html( implode( ' + ', $cosa ) ),
-				$altri ? '<br>con ' . esc_html( implode( ', ', $altri ) ) : ''
+				$altri ? '<br>con ' . esc_html( rcm_pr_elenco_persone( $p ) ) : ''
 			);
 		}
 		$html .= $voci ? '<h2>Prenotazioni</h2><ul>' . $voci . '</ul>' : '<p class="rcm-qr-nessuna">Nessuna prenotazione per le prossime partite.</p>';

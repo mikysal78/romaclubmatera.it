@@ -763,8 +763,11 @@ conto alla rovescia dei giorni che restano.
   conto alla rovescia segue quell'indicazione, ma non chiude niente da solo.
 - Il socio sceglie **biglietto**, **posto in pullman** o entrambi. Per le
   partite in casa sceglie anche il settore dell'Olimpico; per quelle fuori il
-  settore è quello ospiti. Può prenotare anche per altre 5 persone al massimo,
-  per nome.
+  settore è quello ospiti. Oltre a sé può indicare **al massimo 3 persone**,
+  per nome, dichiarando per ciascuna se è **tesserata** o no: chi non lo è
+  paga un **sovrapprezzo**, di cui il sito non mostra l'importo. In bacheca,
+  accanto a chi è dichiarato tesserato, il sito controlla l'archivio soci
+  ("✓ in archivio" o "⚠ non trovato") e conta i non tesserati della partita.
 - Il socio vede tre stati: **Prenotato** finché non paga, **Confermato** quando
   il Club segna il pagamento ("il biglietto c'è", "posto in pullman
   riservato"), **Annullato**. L'importo non compare: cambia di volta in volta e

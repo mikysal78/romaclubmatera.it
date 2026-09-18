@@ -22,7 +22,11 @@
  *     annullato  - dal socio (prima della chiusura) o dal Club.
  *   Il pagamento lo segna il Club a mano: nessun pagamento passa dal sito.
  * - Una prenotazione per socio e partita; dentro, anche le altre persone per
- *   cui prenota, per nome: biglietti e posti sono nominativi.
+ *   cui prenota, per nome: biglietti e posti sono nominativi. Ogni persona in
+ *   piu' dev'essere tesserata, oppure paga un sovrapprezzo: il socio lo
+ *   dichiara persona per persona, il Club lo vede in bacheca insieme al
+ *   controllo sull'archivio soci. L'importo non compare mai (Michele,
+ *   18/09/2026): lo comunica il Club.
  * - Le email seguono l'interruttore dell'area soci: da spenta non parte niente,
  *   in prova solo verso gli indirizzi di prova.
  *
@@ -36,7 +40,7 @@ const RCM_PR_DB          = 'rcm_pr_db_version';
 const RCM_PR_DB_VER      = '1.0';
 const RCM_PR_GIORNI      = 10;  // entro quando si chiede di prenotare: solo indicazione
 const RCM_PR_META_CHIUSE = '_rcm_pr_chiuse'; // sulla partita: prenotazioni chiuse dal Club
-const RCM_PR_MAX_PERSONE = 5;   // altre persone oltre al socio
+const RCM_PR_MAX_PERSONE = 3;   // altre persone oltre al socio (Michele, 18/09/2026)
 
 function rcm_pr_tabella() {
 	global $wpdb;
@@ -161,20 +165,77 @@ function rcm_pr_prenotazioni_socio( $socio_id ) {
 	return $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM ' . rcm_pr_tabella() . ' WHERE socio_id = %d ORDER BY evento_id', $socio_id ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 }
 
-/** Le altre persone, una per riga, pulite e al massimo RCM_PR_MAX_PERSONE. */
-function rcm_pr_leggi_persone( $grezzo ) {
-	$righe = array();
-	foreach ( preg_split( '/\r\n|\r|\n/', (string) $grezzo ) as $riga ) {
-		$riga = trim( preg_replace( '/\s+/', ' ', sanitize_text_field( $riga ) ) );
-		if ( '' !== $riga ) {
-			$righe[] = mb_substr( $riga, 0, 60 );
+/**
+ * Le altre persone della prenotazione, salvate in JSON:
+ * array( array( 'nome' => 'Mario Rossi', 'tesserato' => true ), ... ).
+ */
+function rcm_pr_persone( $prenotazione ) {
+	$v   = json_decode( (string) $prenotazione->persone, true );
+	$out = array();
+	foreach ( is_array( $v ) ? $v : array() as $x ) {
+		if ( is_array( $x ) && ! empty( $x['nome'] ) ) {
+			$out[] = array(
+				'nome'      => (string) $x['nome'],
+				'tesserato' => ! empty( $x['tesserato'] ),
+			);
 		}
 	}
-	return $righe;
+	return $out;
 }
 
-function rcm_pr_persone( $prenotazione ) {
-	return rcm_pr_leggi_persone( $prenotazione->persone );
+function rcm_pr_etichetta_persona( $x ) {
+	return $x['nome'] . ( $x['tesserato'] ? ' (tesserato)' : ' (non tesserato, con sovrapprezzo)' );
+}
+
+function rcm_pr_elenco_persone( $prenotazione ) {
+	return implode( ', ', array_map( 'rcm_pr_etichetta_persona', rcm_pr_persone( $prenotazione ) ) );
+}
+
+/** Quante persone in piu' non sono tesserate, cioe' pagano il sovrapprezzo. */
+function rcm_pr_non_tesserati( $prenotazione ) {
+	$n = 0;
+	foreach ( rcm_pr_persone( $prenotazione ) as $x ) {
+		$n += $x['tesserato'] ? 0 : 1;
+	}
+	return $n;
+}
+
+/**
+ * Le persone dal modulo: una riga per persona, nome e "tesserato si/no".
+ * Le righe senza nome si saltano; un nome senza la scelta restituisce null,
+ * perche' se c'e' il sovrapprezzo non si indovina.
+ */
+function rcm_pr_leggi_persone_post() {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificato dal chiamante
+	$nomi = (array) wp_unslash( $_POST['persona_nome'] ?? array() );
+	$tess = (array) wp_unslash( $_POST['persona_tessera'] ?? array() );
+	// phpcs:enable
+	$out = array();
+	foreach ( $nomi as $i => $nome ) {
+		$nome = mb_substr( trim( preg_replace( '/\s+/', ' ', sanitize_text_field( (string) $nome ) ) ), 0, 60 );
+		if ( '' === $nome ) {
+			continue;
+		}
+		$scelta = sanitize_key( (string) ( $tess[ $i ] ?? '' ) );
+		if ( ! in_array( $scelta, array( 'si', 'no' ), true ) ) {
+			return null;
+		}
+		$out[] = array(
+			'nome'      => $nome,
+			'tesserato' => 'si' === $scelta,
+		);
+	}
+	return $out;
+}
+
+/**
+ * Per il Club: chi e' dichiarato tesserato risulta in archivio con la tessera
+ * valida? Confronta "nome cognome" e "cognome nome", senza maiuscole.
+ */
+function rcm_pr_in_archivio( $nome ) {
+	global $wpdb;
+	$t = rcm_compleanni_tabella();
+	return (bool) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $t WHERE ( LOWER( CONCAT( nome, ' ', cognome ) ) = LOWER( %s ) OR LOWER( CONCAT( cognome, ' ', nome ) ) = LOWER( %s ) ) AND " . rcm_soci_sql_tessera_valida() . ' LIMIT 1', $nome, $nome ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 }
 
 /* -------------------------------------------------------------------------
@@ -194,6 +255,7 @@ add_filter(
 			'pr_niente'     => 'Scegli almeno il biglietto o il posto in pullman.',
 			'pr_settore'    => 'Scegli il settore dello stadio.',
 			'pr_persone'    => 'Puoi prenotare al massimo per ' . RCM_PR_MAX_PERSONE . ' persone oltre a te.',
+			'pr_tesserato'  => 'Per ogni persona in più indica se è tesserata o no: per chi non lo è c\'è un sovrapprezzo.',
 			'pr_confermata' => 'Questa prenotazione è già confermata: per cambiarla scrivi al Club.',
 		);
 	}
@@ -235,7 +297,10 @@ function rcm_pr_prenota() {
 			$settore = 'Settore ospiti';
 		}
 	}
-	$persone = rcm_pr_leggi_persone( wp_unslash( $_POST['persone'] ?? '' ) );
+	$persone = rcm_pr_leggi_persone_post();
+	if ( null === $persone ) {
+		rcm_as_torna( array( 'avviso' => 'pr_tesserato' ) );
+	}
 	if ( count( $persone ) > RCM_PR_MAX_PERSONE ) {
 		rcm_as_torna( array( 'avviso' => 'pr_persone' ) );
 	}
@@ -251,7 +316,7 @@ function rcm_pr_prenota() {
 		'biglietto'     => $biglietto,
 		'settore'       => $settore,
 		'pullman'       => $pullman,
-		'persone'       => implode( "\n", $persone ),
+		'persone'       => $persone ? wp_json_encode( $persone, JSON_UNESCAPED_UNICODE ) : '',
 		'note'          => $note,
 		'stato'         => 'prenotato',
 		'aggiornato_il' => current_time( 'mysql' ),
@@ -301,9 +366,11 @@ function rcm_pr_riassunto_html( $partita, $p ) {
 	if ( $p->pullman ) {
 		$righe[] = 'Posto in pullman';
 	}
-	$persone = rcm_pr_persone( $p );
-	if ( $persone ) {
-		$righe[] = 'Anche per: ' . esc_html( implode( ', ', $persone ) );
+	if ( rcm_pr_persone( $p ) ) {
+		$righe[] = 'Anche per: ' . esc_html( rcm_pr_elenco_persone( $p ) );
+	}
+	if ( rcm_pr_non_tesserati( $p ) ) {
+		$righe[] = 'Con sovrapprezzo per ' . ( 1 === rcm_pr_non_tesserati( $p ) ? '1 persona non tesserata' : rcm_pr_non_tesserati( $p ) . ' persone non tesserate' );
 	}
 	if ( '' !== $p->note ) {
 		$righe[] = 'Note: ' . esc_html( $p->note );
@@ -452,9 +519,9 @@ function rcm_pr_scheda_partita( $partita, $p, $etichetta ) {
 				<?php if ( $p->pullman ) : ?>
 					<li><?php echo 'confermato' === $p->stato ? '&#10003; Posto in pullman riservato' : 'Posto in pullman'; ?></li>
 				<?php endif; ?>
-				<?php if ( rcm_pr_persone( $p ) ) : ?>
-					<li>Anche per: <?php echo esc_html( implode( ', ', rcm_pr_persone( $p ) ) ); ?></li>
-				<?php endif; ?>
+				<?php foreach ( rcm_pr_persone( $p ) as $x ) : ?>
+					<li><?php echo esc_html( $x['nome'] ); ?> &middot; <?php echo $x['tesserato'] ? 'tesserato' : 'non tesserato, con sovrapprezzo'; ?></li>
+				<?php endforeach; ?>
 			</ul>
 			<?php if ( 'prenotato' === $p->stato ) : ?>
 				<p class="rcm-pr-paga">
@@ -536,8 +603,23 @@ function rcm_pr_modulo( $partita, $p ) {
 				<?php endforeach; ?>
 			</select>
 		<?php endif; ?>
-		<label for="<?php echo esc_attr( $id ); ?>-persone">Anche per altre persone? <span class="rcm-pr-facoltativo">nome e cognome, una per riga, al massimo <?php echo (int) RCM_PR_MAX_PERSONE; ?></span></label>
-		<textarea id="<?php echo esc_attr( $id ); ?>-persone" name="persone" rows="2"><?php echo esc_textarea( $attiva ? $p->persone : '' ); ?></textarea>
+		<?php $persone = $attiva ? rcm_pr_persone( $p ) : array(); ?>
+		<fieldset class="rcm-pr-persone">
+			<legend>Anche per altre persone? <span class="rcm-pr-facoltativo">facoltativo</span></legend>
+			<p class="rcm-pr-regola">Oltre a te, che sei tesserato, puoi indicare altre <?php echo (int) RCM_PR_MAX_PERSONE; ?> persone al massimo: devono essere tesserate, oppure pagano un <strong>sovrapprezzo</strong>.</p>
+			<?php for ( $i = 0; $i < RCM_PR_MAX_PERSONE; $i++ ) : ?>
+				<?php $x = $persone[ $i ] ?? null; ?>
+				<div class="rcm-pr-persona"<?php echo $x ? '' : ' data-vuota="1"'; ?>>
+					<input name="persona_nome[]" value="<?php echo esc_attr( $x ? $x['nome'] : '' ); ?>" placeholder="Nome e cognome" autocomplete="off" aria-label="Nome e cognome della persona <?php echo (int) ( $i + 1 ); ?>">
+					<select name="persona_tessera[]" aria-label="È tesserata la persona <?php echo (int) ( $i + 1 ); ?>?">
+						<option value="">È tesserata?</option>
+						<option value="si" <?php selected( $x && $x['tesserato'] ); ?>>Tesserata</option>
+						<option value="no" <?php selected( $x && ! $x['tesserato'] ); ?>>Non tesserata (con sovrapprezzo)</option>
+					</select>
+				</div>
+			<?php endfor; ?>
+			<button type="button" class="rcm-as-secondario rcm-pr-aggiungi" hidden>+ Aggiungi un'altra persona</button>
+		</fieldset>
 		<label for="<?php echo esc_attr( $id ); ?>-note">Note <span class="rcm-pr-facoltativo">facoltative</span></label>
 		<textarea id="<?php echo esc_attr( $id ); ?>-note" name="note" rows="2" maxlength="500"><?php echo esc_textarea( $attiva ? $p->note : '' ); ?></textarea>
 		<button type="submit"><?php echo $attiva ? 'Salva le modifiche' : 'Prenota'; ?></button>
@@ -640,11 +722,13 @@ function rcm_pr_pagina_admin() {
 	$righe   = $scelta ? $wpdb->get_results( $wpdb->prepare( "SELECT p.*, s.nome, s.cognome, s.email, s.telefono FROM $t p LEFT JOIN " . rcm_compleanni_tabella() . " s ON s.id = p.socio_id WHERE p.evento_id = %d ORDER BY FIELD(p.stato,'prenotato','confermato','annullato'), p.creato_il", $scelta ) ) : array(); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 
 	$tot = array( 'biglietti' => array( 0, 0 ), 'pullman' => array( 0, 0 ) ); // [prenotati, confermati], in persone
+	$non_tesserati = 0;
 	foreach ( $righe as $r ) {
 		if ( 'annullato' === $r->stato ) {
 			continue;
 		}
-		$n = 1 + count( rcm_pr_persone( $r ) );
+		$n              = 1 + count( rcm_pr_persone( $r ) );
+		$non_tesserati += rcm_pr_non_tesserati( $r );
 		$c = 'confermato' === $r->stato ? 1 : 0;
 		if ( $r->biglietto ) {
 			$tot['biglietti'][ $c ] += $n;
@@ -690,6 +774,7 @@ function rcm_pr_pagina_admin() {
 			<p>
 				Biglietti: <strong><?php echo (int) ( $tot['biglietti'][0] + $tot['biglietti'][1] ); ?></strong> persone (<?php echo (int) $tot['biglietti'][1]; ?> confermate) &middot;
 				Pullman: <strong><?php echo (int) ( $tot['pullman'][0] + $tot['pullman'][1] ); ?></strong> posti (<?php echo (int) $tot['pullman'][1]; ?> confermati)
+			<?php if ( $non_tesserati ) : ?> &middot; Non tesserati con sovrapprezzo: <strong><?php echo (int) $non_tesserati; ?></strong><?php endif; ?>
 			</p>
 		<?php endif; ?>
 		<?php if ( ! $righe ) : ?>
@@ -702,7 +787,19 @@ function rcm_pr_pagina_admin() {
 					<tr>
 						<td><strong><?php echo esc_html( $r->nome . ' ' . $r->cognome ); ?></strong><br><?php echo esc_html( $r->email ); ?><?php echo $r->telefono && function_exists( 'rcm_soci_telefono_leggibile' ) ? '<br>' . esc_html( rcm_soci_telefono_leggibile( $r->telefono ) ) : ''; ?></td>
 						<td><?php echo $r->biglietto ? 'Biglietto · ' . esc_html( $r->settore ) . '<br>' : ''; ?><?php echo $r->pullman ? 'Pullman' : ''; ?></td>
-						<td><?php echo esc_html( $r->nome . ' ' . $r->cognome ); ?><?php foreach ( rcm_pr_persone( $r ) as $nome ) { echo '<br>' . esc_html( $nome ); } ?></td>
+						<td>
+							<?php echo esc_html( $r->nome . ' ' . $r->cognome ); ?> <span class="description">(socio)</span>
+							<?php foreach ( rcm_pr_persone( $r ) as $x ) : ?>
+								<br><?php echo esc_html( $x['nome'] ); ?>
+								<?php if ( ! $x['tesserato'] ) : ?>
+									<span style="color:#996800">non tesserato, sovrapprezzo</span>
+								<?php elseif ( rcm_pr_in_archivio( $x['nome'] ) ) : ?>
+									<span style="color:#1a7a2e">&#10003; tesserato, in archivio</span>
+								<?php else : ?>
+									<span style="color:#b32d2e" title="Dichiarato tesserato, ma nell'archivio soci non c'è nessuno con questo nome e la tessera valida">&#9888; tesserato? non trovato in archivio</span>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						</td>
 						<td><?php echo nl2br( esc_html( $r->note ) ); ?></td>
 						<td>
 							<form method="post">

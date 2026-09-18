@@ -2,7 +2,7 @@
 /**
  * Plugin Name: RCM - Area soci
  * Description: Area riservata ai tesserati: accesso via email con link e codice, tessera digitale, dati personali. I soci non sono utenti WordPress. Interruttore spenta/prova/attiva in Soci > Area soci. Lo stile sta in rcm-area-soci/area-soci.css.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Roma Club Matera
  *
  * COME FUNZIONA, E PERCHE' COSI'
@@ -42,7 +42,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const RCM_AS_VERSIONE       = '1.2.0';
+const RCM_AS_VERSIONE       = '1.3.0';
 const RCM_AS_OPZIONE        = 'rcm_area_soci';
 const RCM_AS_DB             = 'rcm_as_db_version';
 const RCM_AS_DB_VER         = '1.0';
