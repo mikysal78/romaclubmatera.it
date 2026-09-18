@@ -89,9 +89,19 @@ function rcm_pr_stati() {
 	);
 }
 
-/** I settori dell'Olimpico, gli stessi del modulo pubblico dei biglietti. */
+/**
+ * I settori dell'Olimpico fra cui il socio sceglie per le partite in casa.
+ * Non sono tutti quelli dello stadio: sono quelli di cui il Club dispone, e
+ * cambiano nel tempo. Per questo si scrivono in bacheca (Soci > Prenotazioni),
+ * uno per riga, e non qui. Chi li assegna al Club non va nominato nelle pagine
+ * pubbliche: al socio si dice solo "i settori disponibili".
+ */
 function rcm_pr_settori() {
-	return array( 'Distinti Nord Est', 'Tribuna Tevere', 'Distinti Sud', 'Distinti Nord Ovest', 'Curva Nord', 'Tribuna Monte Mario', 'Indifferente, consigliatemi voi' );
+	$salvati = get_option( 'rcm_pr_settori' );
+	if ( is_array( $salvati ) && $salvati ) {
+		return $salvati;
+	}
+	return array( 'Distinti Nord Est', 'Tribuna Tevere', 'Distinti Sud', 'Distinti Nord Ovest', 'Curva Nord', 'Tribuna Monte Mario' );
 }
 
 /**
@@ -595,7 +605,7 @@ function rcm_pr_modulo( $partita, $p ) {
 			<label><input type="checkbox" name="pullman" value="1" <?php checked( $pul ); ?>> Posto in pullman</label>
 		</fieldset>
 		<?php if ( $partita->casa ) : ?>
-			<label for="<?php echo esc_attr( $id ); ?>-settore">Settore</label>
+			<label for="<?php echo esc_attr( $id ); ?>-settore">Settore <span class="rcm-pr-facoltativo">fra quelli disponibili</span></label>
 			<select id="<?php echo esc_attr( $id ); ?>-settore" name="settore">
 				<option value="">— scegli —</option>
 				<?php foreach ( rcm_pr_settori() as $s ) : ?>
@@ -643,6 +653,22 @@ function rcm_pr_pagina_admin() {
 	global $wpdb;
 	$t     = rcm_pr_tabella();
 	$stati = rcm_pr_stati();
+
+	if ( isset( $_POST['rcm_pr_salva_settori'] ) && check_admin_referer( 'rcm_pr_settori' ) ) {
+		$settori = array();
+		foreach ( preg_split( '/\r\n|\r|\n/', (string) wp_unslash( $_POST['settori'] ?? '' ) ) as $riga ) {
+			$riga = mb_substr( trim( sanitize_text_field( $riga ) ), 0, 60 );
+			if ( '' !== $riga && ! in_array( $riga, $settori, true ) ) {
+				$settori[] = $riga;
+			}
+		}
+		if ( $settori ) {
+			update_option( 'rcm_pr_settori', $settori, false );
+			rcm_compleanni_avviso( 'Settori salvati: ' . count( $settori ) . '.' );
+		} else {
+			rcm_compleanni_avviso( 'Serve almeno un settore: elenco non cambiato.', 'error' );
+		}
+	}
 
 	if ( isset( $_POST['rcm_pr_chiusura'] ) && check_admin_referer( 'rcm_pr_chiusura' ) ) {
 		$x = rcm_pr_partita( absint( $_POST['evento'] ?? 0 ) );
@@ -821,6 +847,15 @@ function rcm_pr_pagina_admin() {
 				</tbody>
 			</table>
 		<?php endif; ?>
+
+		<h2 style="margin-top:2em">Settori per le partite in casa</h2>
+		<form method="post">
+			<?php wp_nonce_field( 'rcm_pr_settori' ); ?>
+			<p>Quelli fra cui il socio sceglie quando prenota il biglietto per una partita all'Olimpico: solo i settori di cui il Club dispone. Uno per riga, nell'ordine in cui devono comparire. Per le partite fuori casa il settore è sempre quello ospiti.</p>
+			<textarea name="settori" rows="8" class="large-text" style="max-width:32em"><?php echo esc_textarea( implode( "\n", rcm_pr_settori() ) ); ?></textarea>
+			<p class="description">Chi ha già prenotato tiene il settore che ha scelto, anche se lo togliete dall'elenco.</p>
+			<?php submit_button( 'Salva i settori', 'secondary', 'rcm_pr_salva_settori', false ); ?>
+		</form>
 	</div>
 	<?php
 }

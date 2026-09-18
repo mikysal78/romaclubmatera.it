@@ -762,8 +762,9 @@ conto alla rovescia dei giorni che restano.
   socio si chiede di prenotare entro 10 giorni prima (`RCM_PR_GIORNI`): il
   conto alla rovescia segue quell'indicazione, ma non chiude niente da solo.
 - Il socio sceglie **biglietto**, **posto in pullman** o entrambi. Per le
-  partite in casa sceglie anche il settore dell'Olimpico; per quelle fuori il
-  settore è quello ospiti. Oltre a sé può indicare **al massimo 3 persone**,
+  partite in casa sceglie anche il settore dell'Olimpico, **solo fra quelli di
+  cui il Club dispone**: l'elenco si scrive in *Soci › Prenotazioni*, uno per
+  riga, perché cambia nel tempo. Per quelle fuori il settore è quello ospiti. Oltre a sé può indicare **al massimo 3 persone**,
   per nome, dichiarando per ciascuna se è **tesserata** o no: chi non lo è
   paga un **sovrapprezzo**, di cui il sito non mostra l'importo. In bacheca,
   accanto a chi è dichiarato tesserato, il sito controlla l'archivio soci

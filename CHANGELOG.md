@@ -8,6 +8,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Prenotazioni: i settori delle partite in casa si scelgono in bacheca.**
+  Solo quelli di cui il Club dispone, uno per riga in *Soci > Prenotazioni*;
+  tolto "Indifferente".
+
 - **Prenotazioni: le persone in piu' sono al massimo 3, tesserate o con
   sovrapprezzo.** Una riga per persona con nome e scelta obbligatoria
   (tesserata / non tesserata, con sovrapprezzo), senza importi. In bacheca il
