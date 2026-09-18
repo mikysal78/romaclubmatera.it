@@ -8,6 +8,22 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Dati della tessera nell'archivio soci, ed esportazione in CSV**
+  (`roles/wordpress/files/rcm-compleanni.php`, schema 1.2). Primo passo
+  dell'area soci: la tabella ha ora tipologia (Ordinario, Family, Onorario),
+  numero di tessera facoltativo e stagione, nel modulo, nell'elenco e
+  nell'import CSV, che riconosce anche le etichette del JotForm. La Tessera
+  Roma entra senza tipologia: non avra' accesso all'area.
+  L'accesso non si lega alla casella `attivo`, che vuol dire *riceve gli
+  auguri*: un socio puo' non volerli ed essere socio lo stesso. Entra chi ha
+  una tessera annuale della stagione in corso, che cambia il 1° luglio: le
+  tessere scadono da sole.
+  L'**esportazione** usa le stesse colonne dell'import, cosi' il file va in
+  Excel e torna. Provato su soci di prova, poi cancellati: import in stile
+  JotForm, esportazione, reimport identico, e passaggio da un foglio di
+  calcolo. Il cellulare esce con gli spazi, o Excel lo trasforma in un numero
+  e perde il `+`.
+
 - **La posta di sistema del CT arriva davvero** (ruolo `postfix_relay`).
   Il postfix del CT web non aveva un relay: la posta generata li' - cron,
   root, `mail()` di PHP - partiva dall'IP del CT, senza PTR ne' SPF, e
@@ -364,6 +380,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Date di nascita con l'anno a due cifre** (`rcm_compleanni_data`). PHP
+  legge `65` come 2065; la data, nel futuro, veniva scartata: chi era nato
+  fra il 1930 e il 1969 veniva importato senza data e non riceveva gli
+  auguri. Capitava di rado; con l'esportazione verso Excel, che salva le
+  date proprio cosi', sarebbe diventato normale — l'ha fatto vedere il
+  passaggio di prova da un foglio di calcolo. Ora per una data di nascita
+  due cifre maggiori dell'anno in corso vogliono dire 1900. Chiuso anche il
+  caso opposto: il controllo era solo sull'anno, e una data di fine anno in
+  corso, nel futuro, passava.
 
 - **Il backup notturno non lascia piu' cartelle orfane**
   (`roles/backup/templates/wp-backup.sh.j2`). GNU tar esce con 1 quando un

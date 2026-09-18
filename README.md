@@ -487,14 +487,34 @@ In bacheca compare il menu **Soci**, riservato agli amministratori:
   cellulare (niente pulsante WhatsApp). *Modifica* riapre in fondo alla pagina lo stesso
   modulo dell'inserimento, già compilato: cambiare l'email in una già presente viene
   fermato con un messaggio invece che con un errore di database. La casella *riceve gli
-  auguri* serve a chi non è più socio, senza doverlo cancellare dall'archivio;
+  auguri* serve a chi non è più socio, senza doverlo cancellare dall'archivio.
+  Per l'area soci il modulo ha anche **Tessera** (Socio Ordinario, Tessera Family, Socio
+  Onorario — la Tessera Roma della serata singola non c'è: niente tessera digitale né
+  accesso), **N. tessera** (facoltativo, anche dopo: vuoto vuol dire *VIRTUAL* sulla tessera
+  digitale, e in grigio c'è il prossimo numero libero come suggerimento) e **Stagione**.
+  La colonna *Tessera* dell'elenco segna in rosso le tessere scadute o senza stagione.
+  ⚠️ La casella *riceve gli auguri* **non** decide l'accesso all'area: entra chi ha una
+  tessera annuale **della stagione in corso**, che cambia da sola il 1° luglio;
 - **Importa CSV** — prima riga con i nomi delle colonne (`nome`, `cognome`, `email`,
-  `cellulare`, `data di nascita`), separatore `,` o `;`, date `gg/mm/aaaa` o `aaaa-mm-gg`.
+  `cellulare`, `data di nascita`), separatore `,` o `;`, date `gg/mm/aaaa`, `gg/mm/aa` o
+  `aaaa-mm-gg`. Per l'area soci anche `tessera` (riconosce le etichette del JotForm,
+  *SOCIO ORDINARIO 40 €* e simili), `n. tessera`, `stagione` e `auguri` (`sì`/`no`). La
+  Tessera Roma entra in archivio senza tipologia, con un avviso. `numero` da solo resta il
+  telefono: il numero di tessera si riconosce solo con un nome esplicito. Una casella
+  assegna la stagione in corso a chi ha una tessera ma nel file non ha la stagione —
+  l'esportazione del JotForm quella colonna non ce l'ha.
   Un pulsante scarica un **CSV di esempio** già impostato (con il BOM, così Excel su
   Windows non storpia le accentate); il riquadro mostrato nella pagina e il file scaricato
   escono dalla stessa funzione, quindi non possono divergere.
   L'import è **idempotente sull'email**: aggiorna invece di duplicare e le celle vuote non
   sovrascrivono i dati già in archivio;
+- **Esporta in CSV** — dall'elenco e dalla pagina di importazione: tutti i soci con **le
+  stesse colonne e lo stesso formato dell'import**, così il file si lavora in Excel e si
+  ricarica. Il cellulare esce come `+39 377 281 4538`: con gli spazi Excel lo lascia testo,
+  mentre `+393772814538` diventerebbe un numero in notazione scientifica senza il `+`.
+  Provato con andata e ritorno passando da un foglio di calcolo (LibreOffice): l'unica cosa
+  che cambia è la data, che torna con l'anno a due cifre, e l'import la legge giusta. Il
+  file contiene dati personali: resta sul computer di chi lo scarica;
 - **Auguri** — interruttore on/off, ora di invio, oggetto e testo con i segnaposto
   `{nome}` `{cognome}` `{eta}` `{anno_nascita}`, indirizzo in Ccn, prova di invio con dati
   finti e tabella dei compleanni nei 30 giorni successivi, con accanto il pulsante WhatsApp.

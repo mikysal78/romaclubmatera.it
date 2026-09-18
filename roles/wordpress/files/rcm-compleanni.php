@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'RCM_COMPLEANNI_DB_VERSION', '1.1' );
+define( 'RCM_COMPLEANNI_DB_VERSION', '1.2' );
 define( 'RCM_COMPLEANNI_OPZIONI', 'rcm_compleanni_opzioni' );
 define( 'RCM_COMPLEANNI_HOOK', 'rcm_compleanni_invio_giornaliero' );
 define( 'RCM_COMPLEANNI_CAP', 'manage_options' );
@@ -68,6 +68,10 @@ function rcm_compleanni_installa() {
 		attivo tinyint(1) NOT NULL DEFAULT 1,
 		ultimo_invio_anno smallint(6) DEFAULT NULL,
 		creato_il datetime NOT NULL,
+		tipologia varchar(20) NOT NULL DEFAULT '',
+		numero_tessera varchar(20) NOT NULL DEFAULT '',
+		stagione varchar(9) NOT NULL DEFAULT '',
+		benvenuto_il datetime DEFAULT NULL,
 		PRIMARY KEY  (id),
 		UNIQUE KEY email (email),
 		KEY data_nascita (data_nascita)
@@ -79,6 +83,214 @@ function rcm_compleanni_installa() {
 	update_option( 'rcm_compleanni_db_version', RCM_COMPLEANNI_DB_VERSION );
 }
 add_action( 'admin_init', 'rcm_compleanni_installa' );
+
+/* -------------------------------------------------------------------------
+ * Tessera: tipologia, numero, stagione
+ *
+ * Servono all'area soci, ma stanno qui perche' la tabella e' questa: un solo
+ * posto che sa com'e' fatta. La colonna "attivo" NON c'entra con l'accesso:
+ * vuol dire "riceve gli auguri", e un socio puo' non volerli ed essere socio lo
+ * stesso. Nell'area entra chi ha una tessera annuale della stagione in corso.
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Le tessere che danno accesso all'area soci. La Tessera Roma (5 euro,
+ * l'ospite di una sera) manca di proposito: niente tessera digitale, niente
+ * accesso.
+ */
+function rcm_soci_tipologie() {
+	return array(
+		'ordinario' => 'Socio Ordinario',
+		'family'    => 'Tessera Family',
+		'onorario'  => 'Socio Onorario',
+	);
+}
+
+/**
+ * La tipologia da come la scrive una persona o il JotForm ("SOCIO ORDINARIO
+ * 40 €", "Tessera Family (max. 3 persone)", "onorario"...). Restituisce la
+ * chiave; 'roma' per la Tessera Roma, che chi chiama tratta come nessuna
+ * tessera; '' se vuota o non riconosciuta.
+ */
+function rcm_soci_normalizza_tipologia( $testo ) {
+	$t = strtolower( remove_accents( trim( (string) $testo ) ) );
+	if ( '' === $t ) {
+		return '';
+	}
+	if ( false !== strpos( $t, 'onorar' ) ) {
+		return 'onorario';
+	}
+	if ( false !== strpos( $t, 'family' ) || false !== strpos( $t, 'famiglia' ) ) {
+		return 'family';
+	}
+	if ( false !== strpos( $t, 'ordinar' ) ) {
+		return 'ordinario';
+	}
+	if ( false !== strpos( $t, 'roma' ) ) {
+		return 'roma';
+	}
+	return '';
+}
+
+/**
+ * La stagione in corso, "2026/27". Cambia il primo luglio, come il
+ * tesseramento: cosi' le tessere scadono da sole a fine stagione, senza che
+ * nessuno debba disattivare niente. Il filtro serve se un anno il tesseramento
+ * apre prima.
+ */
+function rcm_soci_stagione_corrente() {
+	$oggi   = current_datetime();
+	$anno   = (int) $oggi->format( 'Y' );
+	$inizio = (int) $oggi->format( 'n' ) >= 7 ? $anno : $anno - 1;
+	return apply_filters( 'rcm_soci_stagione_corrente', sprintf( '%d/%02d', $inizio, ( $inizio + 1 ) % 100 ) );
+}
+
+/**
+ * "2026/27", "2026/2027", "26/27", "2026-2027" diventano tutti "2026/27".
+ * Restituisce '' se non e' una stagione: due anni consecutivi.
+ */
+function rcm_soci_normalizza_stagione( $testo ) {
+	if ( ! preg_match( '/^\s*(\d{2}|\d{4})\s*[\/\-]\s*(\d{2}|\d{4})\s*$/', (string) $testo, $m ) ) {
+		return '';
+	}
+	$a = (int) $m[1];
+	$b = (int) $m[2];
+	if ( $a < 100 ) {
+		$a += 2000;
+	}
+	if ( $b % 100 !== ( $a + 1 ) % 100 ) {
+		return '';
+	}
+	return sprintf( '%d/%02d', $a, ( $a + 1 ) % 100 );
+}
+
+/** Il prossimo numero di tessera libero: solo un suggerimento, lo decide il Club. */
+function rcm_soci_prossimo_numero() {
+	global $wpdb;
+	$max = (int) $wpdb->get_var( 'SELECT MAX(CAST(numero_tessera AS UNSIGNED)) FROM ' . rcm_compleanni_tabella() . " WHERE numero_tessera REGEXP '^[0-9]+$'" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+	return (string) ( $max + 1 );
+}
+
+/** "sì", "si", "1", "x" accendono; "no", "0" spengono; vuoto (null) non tocca niente. */
+function rcm_soci_leggi_si_no( $testo ) {
+	$t = strtolower( remove_accents( trim( (string) $testo ) ) );
+	if ( '' === $t ) {
+		return null;
+	}
+	if ( in_array( $t, array( 'si', 's', '1', 'x', 'yes', 'y', 'vero', 'true' ), true ) ) {
+		return 1;
+	}
+	if ( in_array( $t, array( 'no', 'n', '0', 'false', 'falso' ), true ) ) {
+		return 0;
+	}
+	return null;
+}
+
+/**
+ * Il cellulare come lo scrive una persona, "+39 377 281 4538". Serve
+ * all'esportazione: con gli spazi Excel lo tratta come testo, mentre
+ * "+393772814538" lo trasforma in un numero in notazione scientifica e perde il
+ * +. L'importazione gli spazi li toglie gia' da sola.
+ */
+function rcm_soci_telefono_leggibile( $cifre ) {
+	$c = preg_replace( '/\D/', '', (string) $cifre );
+	if ( 12 === strlen( $c ) && 0 === strpos( $c, '39' ) ) {
+		return '+39 ' . substr( $c, 2, 3 ) . ' ' . substr( $c, 5, 3 ) . ' ' . substr( $c, 8 );
+	}
+	return '+' . substr( $c, 0, 2 ) . ' ' . substr( $c, 2 );
+}
+
+/** I campi della tessera dal modulo, gia' ripuliti. Chiamata solo dopo il controllo del nonce. */
+function rcm_soci_campi_tessera_da_post() {
+	// phpcs:disable WordPress.Security.NonceVerification.Missing
+	$tipologia = sanitize_key( wp_unslash( $_POST['tipologia'] ?? '' ) );
+	$numero    = substr( sanitize_text_field( wp_unslash( $_POST['numero_tessera'] ?? '' ) ), 0, 20 );
+	$grezza    = sanitize_text_field( wp_unslash( $_POST['stagione'] ?? '' ) );
+	// phpcs:enable
+	$stagione = rcm_soci_normalizza_stagione( $grezza );
+	if ( '' !== $grezza && '' === $stagione ) {
+		rcm_compleanni_avviso( 'Stagione "' . esc_html( $grezza ) . '" non riconosciuta, lasciata vuota: scrivila come ' . esc_html( rcm_soci_stagione_corrente() ) . '.', 'warning' );
+	}
+	return array(
+		'tipologia'      => array_key_exists( $tipologia, rcm_soci_tipologie() ) ? $tipologia : '',
+		'numero_tessera' => $numero,
+		'stagione'       => $stagione,
+	);
+}
+
+/** "Socio Ordinario · n. 42 · 2026/27", con l'avviso se la stagione non e' quella in corso. */
+function rcm_soci_riassunto_tessera( $socio ) {
+	$tip = rcm_soci_tipologie();
+	if ( empty( $socio->tipologia ) || ! isset( $tip[ $socio->tipologia ] ) ) {
+		return '<em>—</em>';
+	}
+	$parti = array(
+		esc_html( $tip[ $socio->tipologia ] ),
+		'' !== (string) $socio->numero_tessera ? 'n. ' . esc_html( $socio->numero_tessera ) : 'VIRTUAL',
+	);
+	if ( '' === (string) $socio->stagione ) {
+		$parti[] = '<span style="color:#b32d2e">senza stagione</span>';
+	} elseif ( $socio->stagione !== rcm_soci_stagione_corrente() ) {
+		$parti[] = '<span style="color:#b32d2e">' . esc_html( $socio->stagione ) . ' (scaduta)</span>';
+	} else {
+		$parti[] = esc_html( $socio->stagione );
+	}
+	return implode( ' · ', $parti );
+}
+
+/**
+ * Le righe dell'esportazione: le stesse colonne che l'importazione riconosce,
+ * nello stesso formato, cosi' il file si lavora in Excel e si ricarica.
+ */
+function rcm_soci_csv_righe() {
+	global $wpdb;
+	$tip   = rcm_soci_tipologie();
+	$righe = array( array( 'nome', 'cognome', 'email', 'cellulare', 'data di nascita', 'tessera', 'n. tessera', 'stagione', 'auguri' ) );
+	$soci  = $wpdb->get_results( 'SELECT * FROM ' . rcm_compleanni_tabella() . ' ORDER BY cognome, nome' ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+	foreach ( $soci as $s ) {
+		$righe[] = array(
+			$s->nome,
+			$s->cognome,
+			$s->email,
+			$s->telefono ? rcm_soci_telefono_leggibile( $s->telefono ) : '',
+			$s->data_nascita ? mysql2date( 'd/m/Y', $s->data_nascita ) : '',
+			isset( $tip[ $s->tipologia ] ) ? $tip[ $s->tipologia ] : '',
+			$s->numero_tessera,
+			$s->stagione,
+			(int) $s->attivo ? 'sì' : 'no',
+		);
+	}
+	return $righe;
+}
+
+/**
+ * Esporta tutti i soci in CSV. Dentro ci sono dati personali: il file resta
+ * sul computer di chi lo scarica, e va trattato di conseguenza.
+ */
+add_action( 'admin_post_rcm_soci_esporta', 'rcm_soci_esporta' );
+function rcm_soci_esporta() {
+	if ( ! current_user_can( RCM_COMPLEANNI_CAP ) ) {
+		wp_die( 'Non hai i permessi per esportare i soci.', '', array( 'response' => 403 ) );
+	}
+	check_admin_referer( 'rcm_soci_esporta' );
+
+	nocache_headers();
+	header( 'Content-Type: text/csv; charset=UTF-8' );
+	header( 'Content-Disposition: attachment; filename="soci-' . current_time( 'Y-m-d' ) . '.csv"' );
+	echo "\xEF\xBB\xBF"; // BOM: senza, Excel su Windows apre in ANSI e rovina le accentate.
+
+	$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+	foreach ( rcm_soci_csv_righe() as $riga ) {
+		fputcsv( $out, $riga, ';', '"', '' );
+	}
+	fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+	exit;
+}
+
+/** Il link firmato per l'esportazione, usato dall'elenco e dalla pagina di importazione. */
+function rcm_soci_url_esporta() {
+	return wp_nonce_url( admin_url( 'admin-post.php?action=rcm_soci_esporta' ), 'rcm_soci_esporta' );
+}
 
 /* -------------------------------------------------------------------------
  * Pianificazione
@@ -395,12 +607,29 @@ function rcm_compleanni_data( $valore ) {
 	if ( '' === $valore ) {
 		return '';
 	}
+	$oggi = current_time( 'Y-m-d' );
 
-	foreach ( array( 'd/m/Y', 'Y-m-d', 'd-m-Y', 'd.m.Y', 'j/n/Y', 'd/m/y' ) as $formato ) {
+	// Anno a due cifre ("15/06/65"): e' il formato in cui Excel salva le date,
+	// quindi capita a chi esporta i soci, li lavora nel foglio e li ricarica.
+	// PHP leggerebbe 65 come 2065, e la data - nel futuro - veniva scartata: chi
+	// era nato fra il 1930 e il 1969 perdeva gli auguri. Per una data di nascita
+	// le due cifre stanno nel passato: piu' grandi dell'anno in corso = 1900.
+	if ( preg_match( '#^(\d{1,2})/(\d{1,2})/(\d{2})$#', $valore, $m ) ) {
+		$yy   = (int) $m[3];
+		$anno = $yy > (int) current_time( 'y' ) ? 1900 + $yy : 2000 + $yy;
+		if ( ! checkdate( (int) $m[2], (int) $m[1], $anno ) ) {
+			return '';
+		}
+		$data = sprintf( '%04d-%02d-%02d', $anno, (int) $m[2], (int) $m[1] );
+		return $data <= $oggi ? $data : '';
+	}
+
+	foreach ( array( 'd/m/Y', 'Y-m-d', 'd-m-Y', 'd.m.Y', 'j/n/Y' ) as $formato ) {
 		$data = DateTime::createFromFormat( $formato . '|', $valore );
 		if ( $data && $data->format( $formato ) === $valore ) {
-			$anno = (int) $data->format( 'Y' );
-			if ( $anno >= 1900 && $anno <= (int) current_time( 'Y' ) ) {
+			// nel passato e non prima del 1900: il controllo era solo
+			// sull'anno, e una data di fine anno in corso passava lo stesso
+			if ( (int) $data->format( 'Y' ) >= 1900 && $data->format( 'Y-m-d' ) <= $oggi ) {
 				return $data->format( 'Y-m-d' );
 			}
 		}
@@ -496,6 +725,12 @@ function rcm_compleanni_mappa_colonne( $intestazione ) {
 		'email'        => array( 'email', 'e-mail', 'mail', 'indirizzo email', 'posta elettronica' ),
 		'data_nascita' => array( 'data_nascita', 'data di nascita', 'data nascita', 'nascita', 'compleanno', 'birthday', 'data' ),
 		'telefono'     => array( 'telefono', 'tel', 'cellulare', 'cell', 'cellulare/whatsapp', 'whatsapp', 'mobile', 'phone', 'numero', 'numero di telefono' ),
+		// "numero" da solo e' gia' del telefono: il numero di tessera si
+		// riconosce solo con un nome esplicito, o il cellulare finirebbe li'.
+		'tipologia'      => array( 'tessera', 'tipo di tessera', 'tipologia', 'tipologia tessera', 'tipo tessera' ),
+		'numero_tessera' => array( 'n. tessera', 'n tessera', 'n.tessera', 'numero tessera', 'numero di tessera', 'n° tessera', 'numero_tessera' ),
+		'stagione'       => array( 'stagione', 'validita', 'validità', 'stagione tessera' ),
+		'auguri'         => array( 'auguri', 'riceve gli auguri' ),
 	);
 
 	$mappa = array();
@@ -525,10 +760,10 @@ function rcm_compleanni_mappa_colonne( $intestazione ) {
  */
 function rcm_compleanni_csv_esempio_righe() {
 	return array(
-		array( 'nome', 'cognome', 'email', 'cellulare', 'data di nascita' ),
-		array( 'Mario', 'Rossi', 'mario.rossi@example.it', '377 281 4538', '24/03/1978' ),
-		array( 'Anna', 'Bianchi', 'anna.bianchi@example.it', '+39 340 1234567', '02/11/1985' ),
-		array( 'Niccolò', 'Verdi', 'niccolo.verdi@example.it', '', '29/02/1980' ),
+		array( 'nome', 'cognome', 'email', 'cellulare', 'data di nascita', 'tessera', 'n. tessera', 'stagione', 'auguri' ),
+		array( 'Mario', 'Rossi', 'mario.rossi@example.it', '377 281 4538', '24/03/1978', 'Socio Ordinario', '12', '2026/27', 'sì' ),
+		array( 'Anna', 'Bianchi', 'anna.bianchi@example.it', '+39 340 1234567', '02/11/1985', 'Tessera Family', '', '2026/27', 'sì' ),
+		array( 'Niccolò', 'Verdi', 'niccolo.verdi@example.it', '', '29/02/1980', 'Socio Onorario', '3', '2026/27', 'no' ),
 	);
 }
 
@@ -565,8 +800,11 @@ function rcm_compleanni_scarica_esempio() {
 /**
  * Importa il CSV caricato. Aggiorna i soci già presenti (chiave: email).
  */
-function rcm_compleanni_importa( $percorso ) {
+function rcm_compleanni_importa( $percorso, $opzioni_import = array() ) {
 	global $wpdb;
+	// stagione_corrente: a chi ha una tessera ma non una stagione nel file si da'
+	// quella in corso. L'esportazione del JotForm una colonna stagione non ce l'ha.
+	$opzioni_import = wp_parse_args( $opzioni_import, array( 'stagione_corrente' => false ) );
 
 	$file = fopen( $percorso, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 	if ( ! $file ) {
@@ -631,6 +869,31 @@ function rcm_compleanni_importa( $percorso ) {
 			'data_nascita' => $data ? $data : null,
 		);
 
+		// La tessera: tipologia riconosciuta anche dalle etichette del JotForm,
+		// stagione normalizzata, numero cosi' com'e'. La Tessera Roma entra in
+		// archivio ma senza tipologia: non ha accesso all'area soci.
+		$tip_grezza = $leggi( 'tipologia' );
+		$tip        = rcm_soci_normalizza_tipologia( $tip_grezza );
+		if ( 'roma' === $tip ) {
+			$tip = '';
+			if ( count( $esito['avvisi'] ) < 10 ) {
+				$esito['avvisi'][] = sprintf( 'Riga %d: Tessera Roma, importato senza tipologia (non entra nell\'area soci).', $riga );
+			}
+		} elseif ( '' === $tip && '' !== $tip_grezza && count( $esito['avvisi'] ) < 10 ) {
+			$esito['avvisi'][] = sprintf( 'Riga %d: tessera "%s" non riconosciuta, importato senza tipologia.', $riga, $tip_grezza );
+		}
+		$stagione = rcm_soci_normalizza_stagione( $leggi( 'stagione' ) );
+		if ( '' === $stagione && '' !== $tip && $opzioni_import['stagione_corrente'] ) {
+			$stagione = rcm_soci_stagione_corrente();
+		}
+		$dati['tipologia']      = $tip;
+		$dati['numero_tessera'] = substr( sanitize_text_field( $leggi( 'numero_tessera' ) ), 0, 20 );
+		$dati['stagione']       = $stagione;
+		$auguri                 = rcm_soci_leggi_si_no( $leggi( 'auguri' ) );
+		if ( null !== $auguri ) {
+			$dati['attivo'] = $auguri;
+		}
+
 		$id = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . rcm_compleanni_tabella() . ' WHERE email = %s', $email ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 
 		if ( $id ) {
@@ -647,7 +910,7 @@ function rcm_compleanni_importa( $percorso ) {
 			++$esito['aggiornati'];
 		} else {
 			$dati['email']     = $email;
-			$dati['attivo']    = 1;
+			$dati['attivo']    = $dati['attivo'] ?? 1;
 			$dati['creato_il'] = current_time( 'mysql' );
 			$wpdb->insert( rcm_compleanni_tabella(), $dati );
 			++$esito['nuovi'];
@@ -708,6 +971,11 @@ function rcm_compleanni_pagina_elenco() {
 					'creato_il'    => current_time( 'mysql' ),
 				)
 			);
+			if ( $inserito ) {
+				$nuovo_id = (int) $wpdb->insert_id;
+				$wpdb->update( $tabella, rcm_soci_campi_tessera_da_post(), array( 'id' => $nuovo_id ), null, array( '%d' ) );
+				do_action( 'rcm_socio_salvato', $nuovo_id, true );
+			}
 			rcm_compleanni_avviso( $inserito ? 'Socio aggiunto.' : 'Esiste già un socio con questa email.', $inserito ? 'success' : 'error' );
 		}
 	}
@@ -744,6 +1012,8 @@ function rcm_compleanni_pagina_elenco() {
 					null,
 					array( '%d' )
 				);
+				$wpdb->update( $tabella, rcm_soci_campi_tessera_da_post(), array( 'id' => $id ), null, array( '%d' ) );
+				do_action( 'rcm_socio_salvato', $id, false );
 				rcm_compleanni_avviso( 'Socio aggiornato.' );
 			}
 		}
@@ -805,6 +1075,7 @@ function rcm_compleanni_pagina_elenco() {
 			}
 			?>.
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci-import' ) ); ?>">Importa da CSV</a>
+			· <a href="<?php echo esc_url( rcm_soci_url_esporta() ); ?>">Esporta in CSV</a>
 		</p>
 
 		<form method="get" style="margin-bottom:1em">
@@ -816,10 +1087,10 @@ function rcm_compleanni_pagina_elenco() {
 		</form>
 
 		<table class="widefat striped">
-			<thead><tr><th>Cognome</th><th>Nome</th><th>Email</th><th>Cellulare</th><th>Data di nascita</th><th>Ultimi auguri</th><th></th></tr></thead>
+			<thead><tr><th>Cognome</th><th>Nome</th><th>Email</th><th>Cellulare</th><th>Data di nascita</th><th>Tessera</th><th>Ultimi auguri</th><th></th></tr></thead>
 			<tbody>
 			<?php if ( ! $soci ) : ?>
-				<tr><td colspan="7">Nessun socio. Comincia importando il CSV.</td></tr>
+				<tr><td colspan="8">Nessun socio. Comincia importando il CSV.</td></tr>
 			<?php endif; ?>
 			<?php foreach ( $soci as $socio ) : ?>
 				<tr>
@@ -828,6 +1099,7 @@ function rcm_compleanni_pagina_elenco() {
 					<td><?php echo esc_html( $socio->email ); ?></td>
 					<td><?php echo $socio->telefono ? esc_html( '+' . $socio->telefono ) : '<em>—</em>'; ?></td>
 					<td><?php echo $socio->data_nascita ? esc_html( mysql2date( 'd/m/Y', $socio->data_nascita ) ) : '<em>—</em>'; ?></td>
+					<td><?php echo wp_kses_post( rcm_soci_riassunto_tessera( $socio ) ); ?></td>
 					<td><?php echo $socio->ultimo_invio_anno ? esc_html( $socio->ultimo_invio_anno ) : '—'; ?></td>
 					<td>
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci&modifica=' . $socio->id ) . '#rcm-modulo-socio' ); ?>">Modifica</a>
@@ -884,6 +1156,23 @@ function rcm_compleanni_pagina_elenco() {
 					<label><input type="checkbox" name="attivo" value="1" <?php checked( $modifica ? (int) $in_modifica->attivo : 1, 1 ); ?>> riceve gli auguri di compleanno</label>
 					<p class="description">Da togliere a chi non è più socio, senza doverlo cancellare dall'archivio.</p>
 				</td></tr>
+				<tr><th><label for="rcm-tipologia">Tessera</label></th><td>
+					<select id="rcm-tipologia" name="tipologia">
+						<option value="">— nessuna (non entra nell'area soci) —</option>
+						<?php foreach ( rcm_soci_tipologie() as $chiave => $etichetta ) : ?>
+							<option value="<?php echo esc_attr( $chiave ); ?>" <?php selected( $val( 'tipologia' ), $chiave ); ?>><?php echo esc_html( $etichetta ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<p class="description">La Tessera Roma, quella della serata singola, non è fra le scelte: non ha tessera digitale né accesso all'area soci.</p>
+				</td></tr>
+				<tr><th><label for="rcm-numero">N. tessera</label></th><td>
+					<input id="rcm-numero" name="numero_tessera" style="width:8em" value="<?php echo esc_attr( $val( 'numero_tessera' ) ); ?>" placeholder="<?php echo esc_attr( rcm_soci_prossimo_numero() ); ?>">
+					<p class="description">Facoltativo, anche in un secondo momento. Se resta vuoto, sulla tessera digitale compare <strong>VIRTUAL</strong>. Il numero in grigio è solo il prossimo libero, come suggerimento.</p>
+				</td></tr>
+				<tr><th><label for="rcm-stagione">Stagione</label></th><td>
+					<input id="rcm-stagione" name="stagione" style="width:8em" value="<?php echo esc_attr( $val( 'stagione', rcm_soci_stagione_corrente() ) ); ?>" placeholder="<?php echo esc_attr( rcm_soci_stagione_corrente() ); ?>">
+					<p class="description">Nell'area soci entra chi ha una tessera della stagione in corso (<?php echo esc_html( rcm_soci_stagione_corrente() ); ?>): a fine stagione la tessera scade da sola.</p>
+				</td></tr>
 			</table>
 			<?php
 			submit_button( $modifica ? 'Salva modifiche' : 'Aggiungi socio', 'primary', 'submit', false );
@@ -909,7 +1198,7 @@ function rcm_compleanni_pagina_import() {
 			|| ! is_uploaded_file( $_FILES['csv']['tmp_name'] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			rcm_compleanni_avviso( 'Nessun file caricato (o file troppo grande).', 'error' );
 		} else {
-			$esito = rcm_compleanni_importa( $_FILES['csv']['tmp_name'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$esito = rcm_compleanni_importa( $_FILES['csv']['tmp_name'], array( 'stagione_corrente' => ! empty( $_POST['stagione_corrente'] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 
 			if ( is_wp_error( $esito ) ) {
 				rcm_compleanni_avviso( esc_html( $esito->get_error_message() ), 'error' );
@@ -935,6 +1224,11 @@ function rcm_compleanni_pagina_import() {
 			<code>nome</code>, <code>cognome</code>, <code>email</code>, <code>data di nascita</code> e
 			<code>cellulare</code> (o <code>telefono</code>, <code>whatsapp</code>)
 			(separatore virgola o punto e virgola, date in <code>gg/mm/aaaa</code> o <code>aaaa-mm-gg</code>).</p>
+		<p>Per l'area soci: <code>tessera</code> (anche <code>tipo di tessera</code>, come nel JotForm), <code>n. tessera</code>,
+			<code>stagione</code> e <code>auguri</code> (<code>sì</code>/<code>no</code>). La Tessera Roma viene importata
+			senza tipologia: non entra nell'area soci.</p>
+		<p><strong>Per lavorare in Excel</strong>: <a href="<?php echo esc_url( rcm_soci_url_esporta() ); ?>">esporta i soci in CSV</a>,
+			modificali e ricarica qui lo stesso file. Contiene dati personali: non va inoltrato né lasciato in giro.</p>
 		<p>I numeri si possono scrivere come vengono: spazi, trattini e <code>+39</code> vengono tolti da soli. Senza
 			prefisso il numero si intende italiano; per un numero estero serve il <code>+</code> davanti.</p>
 		<p>I soci già presenti vengono <strong>aggiornati</strong> in base all'email, non duplicati. Le celle vuote non
@@ -958,6 +1252,9 @@ function rcm_compleanni_pagina_import() {
 			<?php wp_nonce_field( 'rcm_import' ); ?>
 			<input type="hidden" name="rcm_azione" value="importa">
 			<p><input type="file" name="csv" accept=".csv,text/csv,text/plain" required></p>
+			<p><label><input type="checkbox" name="stagione_corrente" value="1" checked>
+				assegna la stagione <?php echo esc_html( rcm_soci_stagione_corrente() ); ?> a chi ha una tessera ma nel file non ha la stagione</label><br>
+				<span class="description">L'esportazione del JotForm la colonna della stagione non ce l'ha: senza questa casella quei soci non entrerebbero nell'area.</span></p>
 			<?php submit_button( 'Importa' ); ?>
 		</form>
 	</div>
