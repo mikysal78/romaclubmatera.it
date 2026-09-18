@@ -810,6 +810,36 @@ Ogni socio ha un QR con lo scudo del Club al centro.
   `.php`, `.json` e `.lock` sotto `/wp-content/mu-plugins/`: le librerie di
   terze parti non hanno la guardia su `ABSPATH`.
 
+#### App Verifica, per chi controlla le tessere (`rcm-verifica`)
+
+Un'app per telefono, Android e iPhone, per chi gestisce i soci: inquadra il QR
+della tessera e mostra a tutto schermo un **pallino verde con la spunta** o una
+**grande X rossa**, con nome e cognome del socio. L'app sta nel repository
+privato `romaclubmatera-app` (cartella `verifica/`, Flutter); qui c'è il lato
+sito.
+
+- **Tre controlli**: *ingresso* in sede (tessera valida), *pullman* e
+  *biglietto* (tessera valida e prenotazione **Confermata** con pullman o
+  biglietto per la partita scelta). "Prenotato" non basta.
+- **Accesso**: utente e password di WordPress la prima volta, solo per chi ha
+  `rcm_gestisci_soci`; poi l'app si sblocca con impronta, volto, Face ID o un
+  PIN, sul telefono. Il sito dà in cambio un **token che vale solo per questa
+  API**, non per la bacheca: un PIN di poche cifre non apre mai un account
+  amministratore. Senza Turnstile, perché è un'app: limiti stretti per IP e per
+  utente.
+- **API** `/wp-json/rcm/v1/app/`: `accesso`, `partite`, `verifica`,
+  `prenotazioni`, `esci`. Il token viaggia in `X-RCM-App-Token`; nel database
+  solo la sua impronta.
+- **Registro** di ogni lettura (`wp_rcm_soci_verifiche`): conteggio per
+  l'appello ("saliti 12 su 30") e avviso **"già passato alle…"** se lo stesso QR
+  ripassa, segno di un QR fotografato e girato a qualcun altro.
+- **Notifiche delle nuove prenotazioni** senza Firebase: l'app interroga
+  `prenotazioni?dopo=<id>` ogni 15 minuti.
+- **Soci › App Verifica**: scaricamento dell'APK (da `/var/www/rcm-privato/`,
+  fuori dal docroot, solo per chi gestisce i soci), istruzioni per installare
+  un'app che non viene da Play Store o App Store, telefoni collegati con
+  **Revoca**.
+
 ## 10. Manutenzione e tag utili
 
 Esegui solo una parte del playbook con i tag:

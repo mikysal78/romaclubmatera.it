@@ -494,6 +494,25 @@
     mode: "0644"
     directory_mode: "0755"
 
+# API dell'app Android/iPhone "Verifica RCM" per chi controlla le tessere.
+- name: Installa il mu-plugin della verifica (API dell'app dei gestori)
+  ansible.builtin.copy:
+    src: rcm-verifica.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-verifica.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
+# L'APK dell'app sta fuori dal docroot: lo serve PHP, solo a chi gestisce i
+# soci (Soci > App Verifica). Il file lo carica chi compila l'app.
+- name: Cartella privata per l'APK dell'app Verifica
+  ansible.builtin.file:
+    path: /var/www/rcm-privato
+    state: directory
+    owner: root
+    group: www-data
+    mode: "0750"
+
 - name: Installa gli asset dell'area soci
   ansible.builtin.copy:
     src: rcm-area-soci/

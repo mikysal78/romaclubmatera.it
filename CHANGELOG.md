@@ -6,6 +6,17 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Aggiunto
+
+- **App Verifica: il lato sito** (`rcm-verifica.php`). API per l'app dei
+  gestori (repository privato `romaclubmatera-app`): accesso con utente e
+  password in cambio di un token che vale solo per l'API, regole per ingresso,
+  pullman e biglietto, registro delle letture con avviso di doppio passaggio e
+  conteggio per l'appello, elenco delle prenotazioni per le notifiche. In
+  *Soci > App Verifica* lo scaricamento dell'APK, le istruzioni per Android e
+  iPhone e la revoca dei telefoni. Provata con un token di prova, poi
+  revocato.
+
 ## [1.3.0] - 2026-09-18
 
 ### Aggiunto

@@ -135,11 +135,16 @@ function rcm_qr_matrice( $url, $opzioni ) {
  *                      in cache una volta per tutti).
  */
 function rcm_qr_svg( $socio, $scudo = 'inline' ) {
+	return rcm_qr_svg_da_url( rcm_qr_url( $socio ), $scudo );
+}
+
+/** Lo stesso disegno per un indirizzo qualsiasi (es. l'app Verifica). */
+function rcm_qr_svg_da_url( $url, $scudo = 'inline' ) {
 	if ( ! rcm_qr_carica_libreria() ) {
 		return '';
 	}
 	$opzioni = rcm_qr_opzioni();
-	$matrice = rcm_qr_matrice( rcm_qr_url( $socio ), $opzioni );
+	$matrice = rcm_qr_matrice( $url, $opzioni );
 	$svg     = ( new chillerlan\QRCode\Output\QRMarkupSVG( $opzioni, $matrice ) )->dump();
 	$svg     = preg_replace( '/^<\?xml[^>]*>\s*/', '', $svg );
 	$svg     = str_replace( '<svg ', '<svg role="img" aria-label="QR code della tessera" ', $svg );
