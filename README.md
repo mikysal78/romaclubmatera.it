@@ -777,6 +777,32 @@ conto alla rovescia dei giorni che restano.
 
 Tabella: `wp_rcm_soci_prenotazioni`, una riga per socio e partita.
 
+#### QR code della tessera (`rcm-soci-qr`)
+
+Ogni socio ha un QR con lo scudo del Club al centro.
+
+- **Il socio** lo trova nell'area soci, sotto la tessera.
+- **Il Club** lo scarica dall'elenco soci (SVG per la stampa, PNG) o tutti
+  insieme: *Scarica i QR dei soci con tessera valida (ZIP)*. Dal modulo del
+  socio, *Rigenera* lo sostituisce se la tessera o il telefono si perdono: il
+  vecchio smette di funzionare.
+- **La verifica**: si inquadra con la fotocamera del telefono. Chi è
+  collegato al sito come amministratore o *Gestore soci* vede **Tessera
+  valida** (verde) o **scaduta / nessuna tessera** (rosso), con nome, numero,
+  stagione e le prenotazioni delle prossime partite (serve alla salita sul
+  pullman). Chiunque altro vede solo "verifica riservata al Club", senza dati.
+- Nel QR c'è solo `https://romaclubmatera.it/?rcm_tessera=<codice>`: un
+  codice casuale a 128 bit (colonna `qr_token`), nessun dato personale.
+- Correzione d'errore **H**; spazio centrale 11×13 moduli e scudo largo 8:
+  misure provate con `zbarimg` su 10 codici, da 250 a 1200 px, con sfocatura
+  e rotazione (60 letture su 60). Con lo scudo più grande la lettura saltava:
+  se si cambiano, vanno riprovate.
+- Libreria: [chillerlan/php-qrcode](https://github.com/chillerlan/php-qrcode)
+  (MIT), installata con Composer in `rcm-soci-qr/vendor/` e versionata con
+  `composer.lock`; istruzioni in `rcm-soci-qr/LEGGIMI.txt`. nginx nega ogni
+  `.php`, `.json` e `.lock` sotto `/wp-content/mu-plugins/`: le librerie di
+  terze parti non hanno la guardia su `ABSPATH`.
+
 ## 10. Manutenzione e tag utili
 
 Esegui solo una parte del playbook con i tag:

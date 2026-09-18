@@ -98,13 +98,33 @@
   changed_when: true
   when: enable_redis | bool
 
-- name: Installa e attiva il plugin redis-cache
-  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install redis-cache --activate --path={{ wp_root }}"
-  register: wordpress_redis_plugin
-  changed_when: "'Plugin already installed' not in wordpress_redis_plugin.stdout"
-  failed_when:
-    - wordpress_redis_plugin.rc != 0
-    - "'already installed' not in wordpress_redis_plugin.stdout"
+# Come per Turnstile piu' sotto: "wp plugin install" su un plugin gia' presente
+# ma piu' vecchio di quello in repository non si ferma, scarica, trova la
+# cartella occupata e fallisce ("La directory di destinazione esiste gia'",
+# in italiano: il controllo sul testo inglese non lo riconosceva). Il 18/09/2026
+# fermava cosi' l'intero ruolo. Gli aggiornamenti li fa WordPress.
+- name: Verifica se redis-cache e' gia' installato
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin is-installed redis-cache --path={{ wp_root }}"
+  register: wordpress_redis_presente
+  failed_when: false
+  changed_when: false
+  become: true
+  become_user: www-data
+  when: enable_redis | bool
+
+- name: Installa il plugin redis-cache
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install redis-cache --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+  when:
+    - enable_redis | bool
+    - wordpress_redis_presente.rc | default(1) != 0
+
+- name: Attiva il plugin redis-cache
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin activate redis-cache --path={{ wp_root }}"
+  register: wordpress_redis_attivo
+  changed_when: "'already active' not in wordpress_redis_attivo.stdout"
   become: true
   become_user: www-data
   when: enable_redis | bool
@@ -191,13 +211,27 @@
     - turnstile_secret_key | length > 0
 
 # ---------- SEO (Yoast) ----------
-- name: Installa e attiva il plugin Yoast SEO
-  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install wordpress-seo --activate --path={{ wp_root }}"
-  register: wordpress_yoast_plugin
-  changed_when: "'Plugin already installed' not in wordpress_yoast_plugin.stdout"
-  failed_when:
-    - wordpress_yoast_plugin.rc != 0
-    - "'already installed' not in wordpress_yoast_plugin.stdout"
+# Stesso schema di redis-cache: controllo, installazione solo se manca, attivazione.
+- name: Verifica se Yoast SEO e' gia' installato
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin is-installed wordpress-seo --path={{ wp_root }}"
+  register: wordpress_yoast_presente
+  failed_when: false
+  changed_when: false
+  become: true
+  become_user: www-data
+
+- name: Installa il plugin Yoast SEO
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install wordpress-seo --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+  when:
+    - wordpress_yoast_presente.rc | default(1) != 0
+
+- name: Attiva il plugin Yoast SEO
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin activate wordpress-seo --path={{ wp_root }}"
+  register: wordpress_yoast_attivo
+  changed_when: "'already active' not in wordpress_yoast_attivo.stdout"
   become: true
   become_user: www-data
 
@@ -209,13 +243,28 @@
   changed_when: true
 
 # ---------- Email in uscita (WP Mail SMTP) ----------
-- name: Installa e attiva il plugin WP Mail SMTP
-  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install wp-mail-smtp --activate --path={{ wp_root }}"
-  register: wordpress_smtp_plugin
-  changed_when: "'Plugin already installed' not in wordpress_smtp_plugin.stdout"
-  failed_when:
-    - wordpress_smtp_plugin.rc != 0
-    - "'already installed' not in wordpress_smtp_plugin.stdout"
+- name: Verifica se WP Mail SMTP e' gia' installato
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin is-installed wp-mail-smtp --path={{ wp_root }}"
+  register: wordpress_smtp_presente
+  failed_when: false
+  changed_when: false
+  become: true
+  become_user: www-data
+  when: enable_smtp | bool
+
+- name: Installa il plugin WP Mail SMTP
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin install wp-mail-smtp --path={{ wp_root }}"
+  become: true
+  become_user: www-data
+  changed_when: true
+  when:
+    - enable_smtp | bool
+    - wordpress_smtp_presente.rc | default(1) != 0
+
+- name: Attiva il plugin WP Mail SMTP
+  ansible.builtin.command: "{{ wordpress_cli_path }} plugin activate wp-mail-smtp --path={{ wp_root }}"
+  register: wordpress_smtp_attivo
+  changed_when: "'already active' not in wordpress_smtp_attivo.stdout"
   become: true
   become_user: www-data
   when: enable_smtp | bool
@@ -425,6 +474,25 @@
     owner: www-data
     group: www-data
     mode: "0644"
+
+# QR code della tessera. La cartella porta con se' la libreria installata con
+# Composer (vendor/): nginx nega i .php sotto mu-plugins, vedi il ruolo webserver.
+- name: Installa il mu-plugin dei QR code dei soci
+  ansible.builtin.copy:
+    src: rcm-soci-qr.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-soci-qr.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
+- name: Installa libreria e scudo dei QR code
+  ansible.builtin.copy:
+    src: rcm-soci-qr/
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-soci-qr/"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+    directory_mode: "0755"
 
 - name: Installa gli asset dell'area soci
   ansible.builtin.copy:

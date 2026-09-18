@@ -268,3 +268,26 @@
 }
 .rcm-pr-modifica summary { cursor: pointer; color: var(--rcm-as-rosso); font-weight: 600; }
 .rcm-pr-modifica[open] { display: grid; gap: 10px; }
+
+/* ---- QR code della tessera (rcm-soci-qr) ---- */
+
+.rcm-as .rcm-qr {
+	display: grid;
+	grid-template-columns: minmax(0, 190px) 1fr;
+	gap: 18px;
+	align-items: center;
+}
+.rcm-qr-codice {
+	background: #fff;
+	border-radius: 10px;
+	padding: 6px;
+	border: 1px solid var(--rcm-as-bordo);
+	line-height: 0;
+}
+.rcm-qr-codice svg { display: block; width: 100%; height: auto; }
+.rcm-as .rcm-qr-testo p { margin: 0 0 8px; }
+.rcm-as .rcm-qr-testo .rcm-as-titolo { margin-bottom: 6px; }
+@media (max-width: 520px) {
+	.rcm-as .rcm-qr { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+	.rcm-qr-codice { width: min(260px, 80vw); }
+}

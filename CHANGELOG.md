@@ -8,6 +8,16 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **QR code della tessera per ogni socio** (`rcm-soci-qr.php`, libreria
+  chillerlan/php-qrcode via Composer). Con lo scudo del Club al centro, nell'area
+  soci e scaricabile dal Club (SVG, PNG, ZIP di tutti i soci validi), con
+  "Rigenera" per tessere o telefoni persi. Inquadrato da un gestore collegato
+  mostra se la tessera e' valida e le prenotazioni; agli altri nessun dato.
+  Lettura provata con zbarimg: 60 su 60, anche sfocato e ruotato.
+- **nginx nega i file PHP, JSON e lock sotto `/wp-content/mu-plugins/`**:
+  nessuno va chiamato dall'esterno, e le librerie di Composer non hanno la
+  guardia su ABSPATH. Le pagine di verifica dei QR non vanno in cache.
+
 - **Ruolo "Gestore soci"** (`rcm-compleanni.php`): chi tiene i soci vede in
   bacheca solo il menu Soci - elenco, import ed esportazione, auguri,
   prenotazioni - e il proprio profilo. Il menu ora dipende dal permesso
@@ -417,6 +427,12 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Il ruolo `wordpress` si fermava su redis-cache** quando in repository
+  c'era una versione piu' nuova: `wp plugin install` riscaricava, trovava la
+  cartella e falliva, con il messaggio in italiano che il controllo non
+  riconosceva. Stesso schema di Turnstile (controllo, installazione solo se
+  manca, attivazione) per redis-cache, Yoast e WP Mail SMTP.
 
 - **Il ruolo `wordpress` rigenerava le chiavi di sicurezza a ogni esecuzione**
   (`config shuffle-salts`), buttando fuori tutti gli amministratori a ogni

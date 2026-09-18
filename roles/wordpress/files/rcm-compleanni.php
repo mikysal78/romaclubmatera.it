@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'RCM_COMPLEANNI_DB_VERSION', '1.2' );
+define( 'RCM_COMPLEANNI_DB_VERSION', '1.3' );
 define( 'RCM_COMPLEANNI_OPZIONI', 'rcm_compleanni_opzioni' );
 define( 'RCM_COMPLEANNI_HOOK', 'rcm_compleanni_invio_giornaliero' );
 // Il permesso che apre il menu Soci. Ce l'hanno gli amministratori e il ruolo
@@ -150,8 +150,10 @@ function rcm_compleanni_installa() {
 		numero_tessera varchar(20) NOT NULL DEFAULT '',
 		stagione varchar(9) NOT NULL DEFAULT '',
 		benvenuto_il datetime DEFAULT NULL,
+		qr_token varchar(32) NOT NULL DEFAULT '',
 		PRIMARY KEY  (id),
 		UNIQUE KEY email (email),
+		KEY qr_token (qr_token),
 		KEY data_nascita (data_nascita)
 	) $collate;";
 
@@ -1221,6 +1223,7 @@ function rcm_compleanni_pagina_elenco() {
 			?>.
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=rcm-soci-import' ) ); ?>">Importa da CSV</a>
 			· <a href="<?php echo esc_url( rcm_soci_url_esporta() ); ?>">Esporta in CSV</a>
+			<?php do_action( 'rcm_soci_link_elenco' ); // es. lo ZIP dei QR (rcm-soci-qr) ?>
 		</p>
 
 		<form method="get" style="margin-bottom:1em">
@@ -1256,6 +1259,7 @@ function rcm_compleanni_pagina_elenco() {
 						|
 						<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=rcm-soci&elimina=' . $socio->id ), 'rcm_elimina_' . $socio->id ) ); ?>"
 						   onclick="return confirm('Eliminare <?php echo esc_js( $socio->email ); ?>?')">Elimina</a>
+						<?php do_action( 'rcm_soci_azioni_riga', $socio ); ?>
 					</td>
 				</tr>
 			<?php endforeach; ?>

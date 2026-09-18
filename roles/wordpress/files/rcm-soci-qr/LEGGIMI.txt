@@ -1,0 +1,12 @@
+rcm-soci-qr - dipendenze e risorse del mu-plugin rcm-soci-qr.php
+
+vendor/     chillerlan/php-qrcode (MIT) e chillerlan/php-settings-container
+            (MIT), installate con Composer. Non si modificano a mano.
+            Aggiornare:  cd roles/wordpress/files/rcm-soci-qr
+                         composer update --no-dev && composer audit
+            poi rieseguire il ruolo wordpress e provare un QR con zbarimg.
+scudo.svg   Lo scudo del Club, vettoriale: va al centro dei QR da stampare.
+scudo.png   Lo stesso, 400 px: per i QR in PNG (GD non legge l'SVG).
+
+Sul server nginx nega ogni .php/.json/.lock sotto /wp-content/mu-plugins/:
+queste librerie non hanno la guardia su ABSPATH.

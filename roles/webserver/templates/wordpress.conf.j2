@@ -70,7 +70,7 @@ server {
     #   /area-soci/ - l'area riservata;
     #   rcm_socio   - il cookie di sessione dei soci (mu-plugin rcm-area-soci):
     #                 chi ce l'ha non riceve mai pagine dalla cache.
-    if ($request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml|/wp-json/|/area-soci/") { set $skip_cache 1; }
+    if ($request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml|/wp-json/|/area-soci/|rcm_tessera=") { set $skip_cache 1; }
     if ($http_cookie ~* "comment_author|wordpress_logged_in|wp-postpass|woocommerce_items_in_cart|rcm_socio") { set $skip_cache 1; }
 {% endif %}
 
@@ -79,6 +79,11 @@ server {
     location ~* /(?:wp-config\.php|readme\.html|license\.txt) { deny all; }
     location ~ /\.(?!well-known) { deny all; access_log off; log_not_found off; }
     location ~* ^/wp-content/uploads/.*\.(?:php|phtml|php\d)$ { deny all; }
+    # I mu-plugin li carica WordPress: nessun loro file PHP va chiamato
+    # dall'esterno. Vale soprattutto per le librerie di terze parti (vendor/ di
+    # Composer, es. rcm-soci-qr/), che non hanno la guardia su ABSPATH, e per
+    # composer.json/.lock, che elencano versioni e dipendenze.
+    location ~* ^/wp-content/mu-plugins/.*\.(?:php|phtml|php\d|json|lock)$ { deny all; }
 
     # Vecchi indirizzi ancora in classifica sui motori (vedi
     # webserver_redirect_permanenti): meglio un 301 che un 404.
