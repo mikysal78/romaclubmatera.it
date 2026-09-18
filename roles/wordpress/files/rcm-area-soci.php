@@ -2,7 +2,7 @@
 /**
  * Plugin Name: RCM - Area soci
  * Description: Area riservata ai tesserati: accesso via email con link e codice, tessera digitale, dati personali. I soci non sono utenti WordPress. Interruttore spenta/prova/attiva in Soci > Area soci. Lo stile sta in rcm-area-soci/area-soci.css.
- * Version: 1.0.1
+ * Version: 1.1.0
  * Author: Roma Club Matera
  *
  * COME FUNZIONA, E PERCHE' COSI'
@@ -42,7 +42,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const RCM_AS_VERSIONE       = '1.0.1';
+const RCM_AS_VERSIONE       = '1.1.0';
 const RCM_AS_OPZIONE        = 'rcm_area_soci';
 const RCM_AS_DB             = 'rcm_as_db_version';
 const RCM_AS_DB_VER         = '1.0';
@@ -165,9 +165,26 @@ function rcm_as_puo_entrare( $socio ) {
  * Attrezzi
  * ---------------------------------------------------------------------- */
 
+/**
+ * La chiave delle impronte. E' dell'area soci e non quella di WordPress
+ * (wp_salt): il ruolo Ansible rigenera i salt di wp-config a ogni esecuzione,
+ * e con quelli ogni deploy chiuderebbe tutte le sessioni dei soci e
+ * invaliderebbe i link appena mandati. Nasce una volta, sta nel database.
+ */
+function rcm_as_segreto() {
+	$s = get_option( 'rcm_as_segreto' );
+	if ( ! is_string( $s ) || strlen( $s ) < 64 ) {
+		$s = bin2hex( random_bytes( 32 ) );
+		// add_option non sovrascrive: se due richieste arrivano insieme vince la prima
+		add_option( 'rcm_as_segreto', $s, '', false );
+		$s = get_option( 'rcm_as_segreto' );
+	}
+	return $s;
+}
+
 /** Nel database vanno solo impronte: chi legge le tabelle non trova niente da usare. */
 function rcm_as_hash( $valore ) {
-	return hash_hmac( 'sha256', (string) $valore, wp_salt( 'auth' ) . '|rcm_area_soci' );
+	return hash_hmac( 'sha256', (string) $valore, rcm_as_segreto() );
 }
 
 function rcm_as_token() {
@@ -746,6 +763,8 @@ function rcm_as_shortcode() {
 	$socio = rcm_as_socio_corrente();
 	if ( $socio ) {
 		rcm_as_mostra_tessera( $socio );
+		// qui si agganciano le altre sezioni (rcm-area-soci-prenotazioni)
+		do_action( 'rcm_as_sezioni', $socio );
 		rcm_as_mostra_dati( $socio );
 	} elseif ( ! empty( $_GET['accesso'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		rcm_as_mostra_conferma( sanitize_text_field( wp_unslash( $_GET['accesso'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -770,9 +789,15 @@ function rcm_as_messaggi() {
 		'troppi'   => 'Troppi tentativi: riprova fra un\'ora.',
 		'telefono' => 'Numero di cellulare non riconosciuto: non l\'abbiamo salvato.',
 	);
+	$avvisi = apply_filters( 'rcm_as_avvisi', $avvisi );
 	$chiave = isset( $_GET['avviso'] ) ? sanitize_key( wp_unslash( $_GET['avviso'] ) ) : '';
 	if ( isset( $avvisi[ $chiave ] ) ) {
 		echo '<p class="rcm-as-avviso rcm-as-avviso--errore">' . esc_html( $avvisi[ $chiave ] ) . '</p>';
+	}
+	$conferme = apply_filters( 'rcm_as_conferme', array() );
+	$chiave   = isset( $_GET['fatto'] ) ? sanitize_key( wp_unslash( $_GET['fatto'] ) ) : '';
+	if ( isset( $conferme[ $chiave ] ) ) {
+		echo '<p class="rcm-as-avviso">' . esc_html( $conferme[ $chiave ] ) . '</p>';
 	}
 	if ( ! empty( $_GET['salvato'] ) ) {
 		echo '<p class="rcm-as-avviso">Dati salvati.</p>';

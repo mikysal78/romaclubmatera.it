@@ -670,6 +670,13 @@ function rcm_compleanni_telefono( $grezzo ) {
 		$internazionale = true;
 	}
 
+	if ( ! $internazionale && 12 === strlen( $cifre ) && '393' === substr( $cifre, 0, 3 ) ) {
+		// "39 349 ..." senza il +: un cellulare italiano ha 10 cifre e comincia
+		// con 3, quindi 12 cifre che cominciano con 393 hanno gia' il prefisso.
+		// Senza questo controllo il 39 finiva scritto due volte.
+		$internazionale = true;
+	}
+
 	if ( ! $internazionale ) {
 		// Numero nazionale italiano: il prefisso va aggiunto davanti a com'e'
 		// scritto. Sui fissi lo zero fa parte del numero (+39 0835 ...), quindi

@@ -8,6 +8,15 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Area soci: prenotazione di biglietto e pullman**
+  (`roles/wordpress/files/rcm-area-soci-prenotazioni.php`). La prossima
+  partita del calendario e la prima ancora prenotabile, con il conto alla
+  rovescia: si prenota fino a 10 giorni prima. Il socio vede "Prenotato" finche'
+  non paga e "Confermato" quando il Club segna il pagamento, con il biglietto e
+  il posto in pullman. L'importo non compare, perche' cambia di volta in volta.
+  In bacheca, *Soci > Prenotazioni*: prenotazioni per partita, totali, stato e
+  nota per il socio, email a ogni passaggio.
+
 - **Area soci, spenta finche' il Club non la verifica**
   (`roles/wordpress/files/rcm-area-soci.php` e `rcm-area-soci/`). Pagina
   `/area-soci/` con la tessera digitale - il retro della tessera stampata, con
@@ -395,6 +404,13 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   inventata che potrebbe partire cosi' com'e'.
 
 ### Corretto
+
+- **Il cellulare scritto "39 349..." senza il + prendeva il 39 due volte**
+  (`rcm_compleanni_telefono`). Dodici cifre che cominciano con 393 hanno gia'
+  il prefisso: un cellulare italiano ne ha dieci e comincia con 3.
+- **Area soci: ogni deploy avrebbe fatto uscire tutti i soci.** Le impronte di
+  sessioni e link usavano i salt di WordPress, che il ruolo rigenera a ogni
+  esecuzione. Ora hanno una chiave propria nel database.
 
 - **Area soci: nei campi non si vedeva cosa si scriveva.** Il tema scuro da'
   ai campi il testo chiaro, e sul fondo bianco del modulo codice ed email

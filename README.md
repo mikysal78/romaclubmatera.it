@@ -734,6 +734,35 @@ salvataggio; la data dell'invio finisce in `benvenuto_il`.
 Tabelle: `wp_rcm_soci_accessi` e `wp_rcm_soci_sessioni`, create al primo
 caricamento e ripulite ogni notte da `rcm_as_pulizia`.
 
+Le impronte usano una chiave propria (opzione `rcm_as_segreto`) e non i salt
+di `wp-config.php`: il ruolo Ansible li rigenera a ogni esecuzione, e con
+quelli ogni deploy farebbe uscire tutti i soci.
+
+#### Biglietti e pullman (`rcm-area-soci-prenotazioni`)
+
+Nell'area soci, sotto la tessera: la **prossima partita** del calendario di
+SportsPress e, se questa è già chiusa, la **prima ancora prenotabile**, con il
+conto alla rovescia dei giorni che restano.
+
+- Si prenota **fino a 10 giorni prima** (data della partita meno 10, fino a
+  mezzanotte; `RCM_PR_GIORNI`). Dopo non si prenota, non si modifica e non si
+  annulla più.
+- Il socio sceglie **biglietto**, **posto in pullman** o entrambi. Per le
+  partite in casa sceglie anche il settore dell'Olimpico; per quelle fuori il
+  settore è quello ospiti. Può prenotare anche per altre 5 persone al massimo,
+  per nome.
+- Il socio vede tre stati: **Prenotato** finché non paga, **Confermato** quando
+  il Club segna il pagamento ("il biglietto c'è", "posto in pullman
+  riservato"), **Annullato**. L'importo non compare: cambia di volta in volta e
+  lo comunica il Club.
+- Il Club le gestisce da *Soci › Prenotazioni*, partita per partita, con i
+  totali di biglietti e posti in pullman (in persone) e una nota per il socio,
+  per esempio l'orario di ritrovo. Cambiando lo stato, il socio riceve
+  un'email. A ogni richiesta, modifica o annullamento del socio arriva
+  un'email a info@ (con `[PROVA]` nell'oggetto finché l'area è in prova).
+
+Tabella: `wp_rcm_soci_prenotazioni`, una riga per socio e partita.
+
 ## 10. Manutenzione e tag utili
 
 Esegui solo una parte del playbook con i tag:

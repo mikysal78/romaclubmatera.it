@@ -411,6 +411,14 @@
     group: www-data
     mode: "0644"
 
+- name: Installa il mu-plugin delle prenotazioni dell'area soci
+  ansible.builtin.copy:
+    src: rcm-area-soci-prenotazioni.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-area-soci-prenotazioni.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 - name: Installa gli asset dell'area soci
   ansible.builtin.copy:
     src: rcm-area-soci/

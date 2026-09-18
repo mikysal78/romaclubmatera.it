@@ -192,3 +192,79 @@
 	.rcm-as-punto { animation: none; }
 }
 .rcm-as .rcm-as-tessera-box .rcm-as-nota { margin: 0; text-align: center; }
+
+/* ---- Biglietti e pullman (rcm-area-soci-prenotazioni) ---- */
+
+.rcm-as .rcm-pr { display: grid; gap: 14px; }
+.rcm-as .rcm-pr > .rcm-as-titolo { margin-bottom: 0; }
+.rcm-as .rcm-pr .rcm-as-nota { margin: 0; }
+
+.rcm-pr-partita {
+	display: grid;
+	gap: 8px;
+	padding: 16px;
+	border-radius: 8px;
+	background: #fff;
+	border: 1px solid var(--rcm-as-bordo);
+}
+.rcm-pr-partita--confermato { border-color: #5e9b63; box-shadow: inset 4px 0 0 #5e9b63; }
+.rcm-pr-partita--prenotato { box-shadow: inset 4px 0 0 var(--rcm-as-oro); }
+
+.rcm-as .rcm-pr-partita p { margin: 0; }
+.rcm-as .rcm-pr-etichetta {
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	color: var(--rcm-as-rosso);
+}
+.rcm-as .rcm-pr-titolo { margin: 0; font-size: 20px; line-height: 1.2; color: #222; }
+.rcm-as .rcm-pr-quando { color: #555; font-size: 14px; }
+.rcm-pr-sottotitolo { margin: 6px 0 0; font-size: 16px; }
+
+.rcm-as .rcm-pr-stato {
+	justify-self: start;
+	padding: 4px 12px;
+	border-radius: 999px;
+	font-size: 14px;
+	font-weight: 700;
+}
+.rcm-pr-stato--prenotato { background: #fff1cc; color: #7a5300; }
+.rcm-pr-stato--confermato { background: #e3f3e4; color: #24632b; }
+.rcm-pr-stato--annullato { background: #eee; color: #666; }
+
+.rcm-as .rcm-pr-voci { margin: 0; padding-left: 18px; }
+.rcm-as .rcm-pr-voci li { margin: 0; }
+.rcm-pr-partita--confermato .rcm-pr-voci { list-style: none; padding-left: 0; font-weight: 600; color: #24632b; }
+.rcm-as .rcm-pr-paga, .rcm-as .rcm-pr-chiusa { font-size: 14px; color: #555; }
+.rcm-as .rcm-pr-nota-club { padding: 8px 10px; border-radius: 6px; background: var(--rcm-as-carta); font-size: 14px; }
+
+.rcm-as .rcm-pr-conto {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 6px;
+	color: var(--rcm-as-rosso);
+	font-weight: 600;
+}
+.rcm-pr-giorni { font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+
+.rcm-pr-modulo { margin: 4px 0 0; }
+.rcm-pr-scelte { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; border: 0; }
+.rcm-pr-scelte legend { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.rcm-pr-scelte label { font-weight: 400; font-size: 16px; }
+.rcm-pr-facoltativo { font-weight: 400; color: #777; }
+.rcm-as .rcm-pr-modulo select,
+.rcm-as .rcm-pr-modulo textarea {
+	width: 100%;
+	padding: 10px;
+	font-size: 16px;
+	border: 1px solid #c9b58a;
+	border-radius: 6px;
+	background: #fff;
+	color: #222;
+	-webkit-text-fill-color: #222;
+	box-sizing: border-box;
+}
+.rcm-pr-modifica summary { cursor: pointer; color: var(--rcm-as-rosso); font-weight: 600; }
+.rcm-pr-modifica[open] { display: grid; gap: 10px; }
