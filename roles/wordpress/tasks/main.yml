@@ -494,6 +494,15 @@
     mode: "0644"
     directory_mode: "0755"
 
+# API dell'app dei soci "RCM Soci" (repository privato romaclubmatera-app)
+- name: Installa il mu-plugin dell'API dei soci
+  ansible.builtin.copy:
+    src: rcm-socio-api.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-socio-api.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # Nomi utente degli amministratori non pubblici (controllo del 19/09/2026)
 - name: Installa il mu-plugin della riservatezza degli autori
   ansible.builtin.copy:

@@ -306,52 +306,61 @@ add_filter(
 	}
 );
 
-function rcm_pr_prenota() {
-	$socio = rcm_as_socio_corrente();
-	if ( ! $socio || ! rcm_as_nonce_ok( 'rcm_pr_prenota' ) ) {
-		rcm_as_torna( array( 'avviso' => 'scaduto' ) );
-	}
-	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificato sopra
-	$partita = rcm_pr_partita( absint( $_POST['evento'] ?? 0 ) );
+/**
+ * Salva (o modifica) la prenotazione di un socio: la stessa regola per la
+ * pagina dell'area soci e per l'app dei soci (rcm-socio-api.php).
+ *
+ * @param object $socio
+ * @param int    $evento_id
+ * @param array  $in  biglietto (bool), pullman (bool), settore (string),
+ *                    persone (array di {nome, tesserato}; null = una persona
+ *                    senza la scelta tesserato/no), note (string).
+ * @return string 'prenotato' | 'modificato', oppure il codice dell'errore
+ *                (pr_chiusa, pr_niente, pr_settore, pr_tesserato, pr_persone,
+ *                pr_confermata): i testi stanno nel filtro rcm_as_avvisi.
+ */
+function rcm_pr_salva( $socio, $evento_id, $in ) {
+	$partita = rcm_pr_partita( absint( $evento_id ) );
 	if ( ! $partita || ! isset( rcm_pr_prenotabili()[ $partita->id ] ) ) {
-		rcm_as_torna( array( 'avviso' => 'pr_chiusa' ) );
+		return 'pr_chiusa';
 	}
-	$biglietto = ! empty( $_POST['biglietto'] ) ? 1 : 0;
-	$pullman   = ! empty( $_POST['pullman'] ) ? 1 : 0;
+	$biglietto = ! empty( $in['biglietto'] ) ? 1 : 0;
+	$pullman   = ! empty( $in['pullman'] ) ? 1 : 0;
 	if ( ! $biglietto && ! $pullman ) {
-		rcm_as_torna( array( 'avviso' => 'pr_niente' ) );
+		return 'pr_niente';
 	}
 	$settore = '';
 	if ( $biglietto ) {
 		if ( $partita->casa ) {
-			$settore = sanitize_text_field( wp_unslash( $_POST['settore'] ?? '' ) );
+			$settore = sanitize_text_field( (string) ( $in['settore'] ?? '' ) );
 			if ( ! in_array( $settore, rcm_pr_settori(), true ) ) {
-				rcm_as_torna( array( 'avviso' => 'pr_settore' ) );
+				return 'pr_settore';
 			}
 		} else {
 			$settore = 'Settore ospiti';
 		}
 	}
-	$persone = rcm_pr_leggi_persone_post();
+	// null vuol dire "una persona senza la scelta tesserata/no": non va confuso
+	// con "nessuna persona", e ?? lo confonderebbe
+	$persone = array_key_exists( 'persone', $in ) ? $in['persone'] : array();
 	if ( null === $persone ) {
-		rcm_as_torna( array( 'avviso' => 'pr_tesserato' ) );
+		return 'pr_tesserato';
 	}
 	if ( count( $persone ) > RCM_PR_MAX_PERSONE ) {
-		rcm_as_torna( array( 'avviso' => 'pr_persone' ) );
+		return 'pr_persone';
 	}
-	$note = mb_substr( sanitize_textarea_field( wp_unslash( $_POST['note'] ?? '' ) ), 0, 500 );
-	// phpcs:enable
+	$note = mb_substr( sanitize_textarea_field( (string) ( $in['note'] ?? '' ) ), 0, 500 );
 
 	global $wpdb;
 	$prima = rcm_pr_prenotazione( $socio->id, $partita->id );
 	if ( $prima && 'confermato' === $prima->stato ) {
-		rcm_as_torna( array( 'avviso' => 'pr_confermata' ) );
+		return 'pr_confermata';
 	}
 	$dati = array(
 		'biglietto'     => $biglietto,
 		'settore'       => $settore,
 		'pullman'       => $pullman,
-		'persone'       => $persone ? wp_json_encode( $persone, JSON_UNESCAPED_UNICODE ) : '',
+		'persone'       => $persone ? wp_json_encode( array_values( $persone ), JSON_UNESCAPED_UNICODE ) : '',
 		'note'          => $note,
 		'stato'         => 'prenotato',
 		'aggiornato_il' => current_time( 'mysql' ),
@@ -361,13 +370,56 @@ function rcm_pr_prenota() {
 	} else {
 		$wpdb->insert( rcm_pr_tabella(), $dati + array( 'socio_id' => $socio->id, 'evento_id' => $partita->id, 'nota_club' => '', 'creato_il' => current_time( 'mysql' ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
-	$nuova = rcm_pr_prenotazione( $socio->id, $partita->id );
+	$nuova   = rcm_pr_prenotazione( $socio->id, $partita->id );
 	$rifatta = $prima && 'annullato' === $prima->stato;
 	rcm_pr_avvisa_club( $socio, $partita, $nuova, $prima && ! $rifatta ? 'modificata' : 'nuova' );
 	if ( ! $prima || $rifatta ) {
 		rcm_pr_email_socio( $socio, $partita, $nuova );
 	}
-	rcm_as_torna( array( 'fatto' => $prima && ! $rifatta ? 'modificato' : 'prenotato' ) );
+	return $prima && ! $rifatta ? 'modificato' : 'prenotato';
+}
+
+/** Annulla la prenotazione del socio: 'annullato' o il codice dell'errore. */
+function rcm_pr_annulla_per( $socio, $evento_id ) {
+	$partita = rcm_pr_partita( absint( $evento_id ) );
+	$p       = $partita ? rcm_pr_prenotazione( $socio->id, $partita->id ) : null;
+	if ( ! $p || ! $partita->aperta ) {
+		return 'pr_chiusa';
+	}
+	if ( 'confermato' === $p->stato ) {
+		return 'pr_confermata';
+	}
+	global $wpdb;
+	$wpdb->update( rcm_pr_tabella(), array( 'stato' => 'annullato', 'aggiornato_il' => current_time( 'mysql' ) ), array( 'id' => $p->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	rcm_pr_avvisa_club( $socio, $partita, rcm_pr_prenotazione( $socio->id, $partita->id ), 'annullata dal socio' );
+	return 'annullato';
+}
+
+/** Il testo di un codice d'errore delle prenotazioni. */
+function rcm_pr_messaggio( $codice ) {
+	$avvisi = apply_filters( 'rcm_as_avvisi', array() );
+	return $avvisi[ $codice ] ?? 'Operazione non riuscita.';
+}
+
+function rcm_pr_prenota() {
+	$socio = rcm_as_socio_corrente();
+	if ( ! $socio || ! rcm_as_nonce_ok( 'rcm_pr_prenota' ) ) {
+		rcm_as_torna( array( 'avviso' => 'scaduto' ) );
+	}
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- verificato sopra
+	$esito = rcm_pr_salva(
+		$socio,
+		absint( $_POST['evento'] ?? 0 ),
+		array(
+			'biglietto' => ! empty( $_POST['biglietto'] ),
+			'pullman'   => ! empty( $_POST['pullman'] ),
+			'settore'   => wp_unslash( $_POST['settore'] ?? '' ),
+			'persone'   => rcm_pr_leggi_persone_post(),
+			'note'      => wp_unslash( $_POST['note'] ?? '' ),
+		)
+	);
+	// phpcs:enable
+	rcm_as_torna( in_array( $esito, array( 'prenotato', 'modificato' ), true ) ? array( 'fatto' => $esito ) : array( 'avviso' => $esito ) );
 }
 
 function rcm_pr_annulla() {
@@ -375,18 +427,33 @@ function rcm_pr_annulla() {
 	if ( ! $socio || ! rcm_as_nonce_ok( 'rcm_pr_annulla' ) ) {
 		rcm_as_torna( array( 'avviso' => 'scaduto' ) );
 	}
-	$partita = rcm_pr_partita( absint( $_POST['evento'] ?? 0 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-	$p       = $partita ? rcm_pr_prenotazione( $socio->id, $partita->id ) : null;
-	if ( ! $p || ! $partita->aperta ) {
-		rcm_as_torna( array( 'avviso' => 'pr_chiusa' ) );
+	$esito = rcm_pr_annulla_per( $socio, absint( $_POST['evento'] ?? 0 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	rcm_as_torna( 'annullato' === $esito ? array( 'fatto' => 'annullato' ) : array( 'avviso' => $esito ) );
+}
+
+/* -------------------------------------------------------------------------
+ * La partenza del pullman, una per partita
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Data, ora e luogo di partenza del pullman per una partita, scritti dal Club
+ * in Soci > Prenotazioni. Null finche' non ci sono. La data e' di solito quella
+ * della partita, ma per le trasferte lontane si parte il giorno prima.
+ * Da qui escono il promemoria dell'app dei soci ("domani si parte alle 5:30
+ * da piazza Matteotti") e le indicazioni nell'area soci.
+ */
+function rcm_pr_partenza( $evento_id ) {
+	$p = get_post_meta( $evento_id, '_rcm_pr_partenza', true );
+	if ( ! is_array( $p ) || empty( $p['ora'] ) || empty( $p['luogo'] ) || empty( $p['data'] ) ) {
+		return null;
 	}
-	if ( 'confermato' === $p->stato ) {
-		rcm_as_torna( array( 'avviso' => 'pr_confermata' ) );
-	}
-	global $wpdb;
-	$wpdb->update( rcm_pr_tabella(), array( 'stato' => 'annullato', 'aggiornato_il' => current_time( 'mysql' ) ), array( 'id' => $p->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-	rcm_pr_avvisa_club( $socio, $partita, rcm_pr_prenotazione( $socio->id, $partita->id ), 'annullata dal socio' );
-	rcm_as_torna( array( 'fatto' => 'annullato' ) );
+	return $p;
+}
+
+/** "sabato 10 ottobre alle 5:30, da Piazza Matteotti" */
+function rcm_pr_partenza_testo( $partenza ) {
+	$quando = strtotime( $partenza['data'] . ' ' . $partenza['ora'] );
+	return wp_date( 'l j F', $quando ) . ' alle ' . ltrim( $partenza['ora'], '0' ) . ', da ' . $partenza['luogo'];
 }
 
 /* -------------------------------------------------------------------------
@@ -447,7 +514,11 @@ function rcm_pr_email_socio( $socio, $partita, $p ) {
 		if ( $p->pullman ) {
 			$cosa[] = 'il posto in pullman è riservato';
 		}
-		$nota = '' !== $p->nota_club ? '<p>' . nl2br( esc_html( $p->nota_club ) ) . '</p>' : '';
+		$nota     = '' !== $p->nota_club ? '<p>' . nl2br( esc_html( $p->nota_club ) ) . '</p>' : '';
+		$partenza = $p->pullman ? rcm_pr_partenza( $partita->id ) : null;
+		if ( $partenza ) {
+			$nota = '<p><strong>Partenza del pullman:</strong> ' . esc_html( rcm_pr_partenza_testo( $partenza ) ) . '.</p>' . $nota;
+		}
 		return rcm_pr_manda( $socio->email, 'Confermato: ' . $partita->titolo, $ciao . '<p>abbiamo ricevuto il pagamento: <strong>' . esc_html( implode( ' e ', $cosa ) ) . '</strong>.</p>' . $riep . $nota . $link );
 	}
 	if ( 'annullato' === $p->stato ) {
@@ -585,6 +656,9 @@ function rcm_pr_scheda_partita( $partita, $p, $etichetta, $intestazione = true )
 				<?php endif; ?>
 				<?php if ( $p->pullman ) : ?>
 					<li><?php echo 'confermato' === $p->stato ? '&#10003; Posto in pullman riservato' : 'Posto in pullman'; ?></li>
+					<?php if ( 'confermato' === $p->stato && ( $partenza = rcm_pr_partenza( $partita->id ) ) ) : ?>
+						<li>Partenza: <?php echo esc_html( rcm_pr_partenza_testo( $partenza ) ); ?></li>
+					<?php endif; ?>
 				<?php endif; ?>
 				<?php foreach ( rcm_pr_persone( $p ) as $x ) : ?>
 					<li><?php echo esc_html( $x['nome'] ); ?> &middot; <?php echo $x['tesserato'] ? 'tesserato' : 'non tesserato, con sovrapprezzo'; ?></li>
@@ -712,7 +786,7 @@ function rcm_pr_pagina_admin() {
 	$stati = rcm_pr_stati();
 	$puo   = rcm_soci_puo_modificare(); // il direttivo vede e basta
 	if ( ! $puo ) {
-		unset( $_POST['rcm_pr_salva'], $_POST['rcm_pr_chiusura'], $_POST['rcm_pr_salva_settori'] );
+		unset( $_POST['rcm_pr_salva'], $_POST['rcm_pr_chiusura'], $_POST['rcm_pr_salva_settori'], $_POST['rcm_pr_salva_partenza'] );
 	}
 
 	if ( isset( $_POST['rcm_pr_salva_settori'] ) && check_admin_referer( 'rcm_pr_settori' ) ) {
@@ -728,6 +802,25 @@ function rcm_pr_pagina_admin() {
 			rcm_compleanni_avviso( 'Settori salvati: ' . count( $settori ) . '.' );
 		} else {
 			rcm_compleanni_avviso( 'Serve almeno un settore: elenco non cambiato.', 'error' );
+		}
+	}
+
+	if ( isset( $_POST['rcm_pr_salva_partenza'] ) && check_admin_referer( 'rcm_pr_partenza' ) ) {
+		$x     = rcm_pr_partita( absint( $_POST['evento'] ?? 0 ) );
+		$data  = sanitize_text_field( wp_unslash( $_POST['partenza_data'] ?? '' ) );
+		$ora   = sanitize_text_field( wp_unslash( $_POST['partenza_ora'] ?? '' ) );
+		$luogo = mb_substr( sanitize_text_field( wp_unslash( $_POST['partenza_luogo'] ?? '' ) ), 0, 120 );
+		if ( $x ) {
+			if ( '' === $luogo && '' === $ora ) {
+				delete_post_meta( $x->id, '_rcm_pr_partenza' );
+				rcm_compleanni_avviso( 'Partenza tolta per ' . esc_html( $x->titolo ) . '.' );
+			} elseif ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $data ) || ! preg_match( '/^([01]\d|2[0-3]):[0-5]\d$/', $ora ) || '' === $luogo ) {
+				rcm_compleanni_avviso( 'Partenza non salvata: servono data, ora e luogo.', 'error' );
+			} else {
+				update_post_meta( $x->id, '_rcm_pr_partenza', array( 'data' => $data, 'ora' => $ora, 'luogo' => $luogo ) );
+				rcm_compleanni_avviso( 'Partenza salvata: ' . esc_html( rcm_pr_partenza_testo( rcm_pr_partenza( $x->id ) ) ) . '. I soci confermati con il pullman ricevono il promemoria nell\'app il giorno prima alle 18.' );
+			}
+			$_GET['evento'] = $x->id;
 		}
 	}
 
@@ -858,6 +951,21 @@ function rcm_pr_pagina_admin() {
 					<?php submit_button( $partita->chiusa ? 'Riapri le prenotazioni' : 'Chiudi le prenotazioni', $partita->chiusa ? 'secondary' : 'primary', 'rcm_pr_chiusura', false ); ?>
 					<span class="description">Chiuse, i soci non possono più prenotare, modificare o annullare per questa partita.</span>
 				</form>
+			<?php endif; ?>
+			<?php $partenza = rcm_pr_partenza( $partita->id ); ?>
+			<?php if ( $partita->futura && $puo ) : ?>
+				<form method="post" style="margin:0 0 16px;padding:10px 12px;background:#fff;border:1px solid #dcdcde;border-radius:6px;max-width:60em">
+					<?php wp_nonce_field( 'rcm_pr_partenza' ); ?>
+					<input type="hidden" name="evento" value="<?php echo esc_attr( $partita->id ); ?>">
+					<strong>Partenza del pullman</strong>
+					<input type="date" name="partenza_data" value="<?php echo esc_attr( $partenza['data'] ?? $partita->quando->format( 'Y-m-d' ) ); ?>">
+					alle <input type="time" name="partenza_ora" value="<?php echo esc_attr( $partenza['ora'] ?? '' ); ?>">
+					da <input type="text" name="partenza_luogo" value="<?php echo esc_attr( $partenza['luogo'] ?? '' ); ?>" placeholder="es. Piazza Matteotti" style="width:16em">
+					<?php submit_button( 'Salva la partenza', 'secondary small', 'rcm_pr_salva_partenza', false ); ?>
+					<br><span class="description">La vedono i soci con il posto in pullman confermato, e l'app manda il promemoria il giorno prima alle 18: "domani si parte alle…". Per toglierla, svuota ora e luogo.</span>
+				</form>
+			<?php elseif ( $partenza ) : ?>
+				<p><strong>Partenza del pullman:</strong> <?php echo esc_html( rcm_pr_partenza_testo( $partenza ) ); ?></p>
 			<?php endif; ?>
 			<p>
 				Biglietti: <strong><?php echo (int) ( $tot['biglietti'][0] + $tot['biglietti'][1] ); ?></strong> persone (<?php echo (int) $tot['biglietti'][1]; ?> confermate) &middot;

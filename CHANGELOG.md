@@ -6,6 +6,19 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Aggiunto
+
+- **API dell'app dei soci** (`rcm-socio-api.php`, `/wp-json/rcm/v1/socio/`):
+  accesso con email e codice (gli stessi dell'area soci), tessera e QR,
+  dati, partite prenotabili, prenotare e annullare, con le stesse regole del
+  sito e il rispetto dell'interruttore. Il token e' una sessione dell'area
+  soci di 180 giorni.
+- **Partenza del pullman per partita** (data, ora, luogo) in *Soci >
+  Prenotazioni*: compare nella prenotazione confermata e nell'email di
+  conferma, e da li' l'app manda il promemoria del giorno prima.
+- La logica di prenotazione sta in `rcm_pr_salva()` e `rcm_pr_annulla_per()`,
+  usate dal sito e dall'app.
+
 ### Sicurezza
 
 - **Controllo del 19/09/2026, correzioni 2 e 3.** Gli header di sicurezza
