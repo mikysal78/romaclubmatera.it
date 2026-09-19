@@ -42,6 +42,7 @@ defined( 'ABSPATH' ) || exit;
 const RCM_VER_DB     = 'rcm_ver_db_version';
 const RCM_VER_DB_VER = '1.0';
 const RCM_VER_APK    = '/var/www/rcm-privato/verifica-rcm.apk';
+const RCM_SOCI_APK   = '/var/www/rcm-privato/rcm-soci.apk'; // l'app dei soci, finche' e' in prova
 const RCM_VER_HEADER = 'X-RCM-App-Token';
 
 function rcm_ver_tabella() {
@@ -505,18 +506,18 @@ add_action(
 	16
 );
 
-function rcm_ver_apk_info() {
-	if ( ! is_readable( RCM_VER_APK ) ) {
+function rcm_ver_apk_info( $percorso = RCM_VER_APK ) {
+	if ( ! is_readable( $percorso ) ) {
 		return null;
 	}
 	$meta = array();
-	$json = RCM_VER_APK . '.json'; // versione scritta accanto all'APK al momento del caricamento
+	$json = $percorso . '.json'; // versione scritta accanto all'APK al momento del caricamento
 	if ( is_readable( $json ) ) {
 		$meta = (array) json_decode( (string) file_get_contents( $json ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 	}
 	return array(
-		'dimensione' => filesize( RCM_VER_APK ),
-		'data'       => filemtime( RCM_VER_APK ),
+		'dimensione' => filesize( $percorso ),
+		'data'       => filemtime( $percorso ),
 		'versione'   => $meta['versione'] ?? '',
 		'sha256'     => $meta['sha256'] ?? '',
 	);
@@ -528,14 +529,16 @@ function rcm_ver_scarica() {
 		wp_die( 'Non hai i permessi per scaricare l\'app.', '', array( 'response' => 403 ) );
 	}
 	check_admin_referer( 'rcm_ver_scarica' );
-	if ( ! is_readable( RCM_VER_APK ) ) {
+	$soci     = 'soci' === sanitize_key( wp_unslash( $_GET['app'] ?? '' ) );
+	$percorso = $soci ? RCM_SOCI_APK : RCM_VER_APK;
+	if ( ! is_readable( $percorso ) ) {
 		wp_die( 'L\'app non è ancora stata caricata sul server.', '', array( 'response' => 404 ) );
 	}
 	nocache_headers();
 	header( 'Content-Type: application/vnd.android.package-archive' );
-	header( 'Content-Disposition: attachment; filename="Verifica-RCM.apk"' );
-	header( 'Content-Length: ' . filesize( RCM_VER_APK ) );
-	readfile( RCM_VER_APK ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
+	header( 'Content-Disposition: attachment; filename="' . ( $soci ? 'RCM-Soci.apk' : 'Verifica-RCM.apk' ) . '"' );
+	header( 'Content-Length: ' . filesize( $percorso ) );
+	readfile( $percorso ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
 	exit;
 }
 
@@ -598,6 +601,16 @@ function rcm_ver_pagina_admin() {
 				</div>
 			<?php endif; ?>
 		</div>
+
+		<?php $soci_apk = rcm_ver_apk_info( RCM_SOCI_APK ); ?>
+		<?php if ( $soci_apk ) : ?>
+			<div style="background:#fff;border:1px solid #dcdcde;border-left:4px solid #f0bc42;border-radius:8px;padding:14px 20px;max-width:60em;margin-top:22px">
+				<h2 style="margin:0 0 6px">App dei soci — RCM Soci <span style="font-size:13px;font-weight:400;color:#996800">(in prova)</span></h2>
+				<p style="margin:0 0 10px">L'app per i tesserati: tessera con QR, prenotazione di biglietti e pullman, i propri dati, promemoria della partenza il giorno prima alle 18. Finché l'area soci è in prova entrano solo gli indirizzi di prova; quando l'area si accende, l'app andrà ai soci dalla loro area.</p>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rcm_ver_scarica&app=soci' ), 'rcm_ver_scarica' ) ); ?>">Scarica RCM Soci <?php echo esc_html( $soci_apk['versione'] ); ?></a>
+				<span class="description">&nbsp;<?php echo esc_html( size_format( $soci_apk['dimensione'], 1 ) ); ?>, del <?php echo esc_html( wp_date( 'j F Y', $soci_apk['data'] ) ); ?>. Si installa come Verifica (istruzioni qui sotto).</span>
+			</div>
+		<?php endif; ?>
 
 		<div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:22px">
 			<div style="background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:18px 22px;max-width:34em">
