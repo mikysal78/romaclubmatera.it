@@ -105,12 +105,15 @@ server {
         fastcgi_no_cache $skip_cache;
         add_header X-FastCGI-Cache $upstream_cache_status;
 {% endif %}
+        # un add_header qui fa perdere quelli ereditati: si rimettono
+        include snippets/rcm-sicurezza.conf;
     }
 
     # Static assets con cache lunga
     location ~* \.(?:css|js|jpg|jpeg|gif|png|webp|svg|ico|woff2?|ttf|otf|mp4|pdf)$ {
         expires 30d;
         add_header Cache-Control "public, no-transform";
+        include snippets/rcm-sicurezza.conf;
         access_log off;
     }
 

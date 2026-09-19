@@ -74,15 +74,33 @@
     state: link
   notify: Reload nginx
 
+# Gli header di sicurezza stanno in uno snippet, incluso sia a livello http
+# sia in ogni location che aggiunge un suo add_header: in nginx un add_header
+# dentro una location fa perdere TUTTI quelli ereditati. Fino al 19/09/2026
+# erano solo a livello http, e le pagine PHP (che aggiungono X-FastCGI-Cache)
+# e i file statici (Cache-Control) uscivano senza: trovato nel controllo di
+# sicurezza. HSTS solo con TLS, e senza includeSubDomains: i sottodomini
+# (posta e altri) non sono gestiti qui.
+- name: Header di sicurezza (snippet riusabile)
+  ansible.builtin.copy:
+    dest: /etc/nginx/snippets/rcm-sicurezza.conf
+    mode: "0644"
+    content: |
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      {% if (webserver_tls | bool) and (webserver_cert.stat.exists | default(false) | bool) %}
+      add_header Strict-Transport-Security "max-age=31536000" always;
+      {% endif %}
+  notify: Reload nginx
+
 - name: Hardening globale Nginx (security headers)
   ansible.builtin.copy:
     dest: /etc/nginx/conf.d/security.conf
     mode: "0644"
     content: |
       # server_tokens e' impostato nel vhost (Debian Trixie lo definisce gia' in nginx.conf)
-      add_header X-Content-Type-Options "nosniff" always;
-      add_header X-Frame-Options "SAMEORIGIN" always;
-      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      include snippets/rcm-sicurezza.conf;
   notify: Reload nginx
 
 - name: Verifica la configurazione Nginx

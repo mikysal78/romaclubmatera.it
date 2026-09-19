@@ -494,6 +494,15 @@
     mode: "0644"
     directory_mode: "0755"
 
+# Nomi utente degli amministratori non pubblici (controllo del 19/09/2026)
+- name: Installa il mu-plugin della riservatezza degli autori
+  ansible.builtin.copy:
+    src: rcm-riservatezza-autori.php
+    dest: "{{ wp_root }}/wp-content/mu-plugins/rcm-riservatezza-autori.php"
+    owner: www-data
+    group: www-data
+    mode: "0644"
+
 # API dell'app Android/iPhone "Verifica RCM" per chi controlla le tessere.
 - name: Installa il mu-plugin della verifica (API dell'app dei gestori)
   ansible.builtin.copy:

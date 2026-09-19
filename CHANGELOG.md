@@ -6,6 +6,18 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
 
 ## [Unreleased]
 
+### Sicurezza
+
+- **Controllo del 19/09/2026, correzioni 2 e 3.** Gli header di sicurezza
+  (nosniff, X-Frame-Options, Referrer-Policy) non arrivavano alle pagine
+  WordPress ne' ai file statici: un `add_header` nella location fa perdere
+  quelli ereditati. Ora stanno in `snippets/rcm-sicurezza.conf`, incluso anche
+  nelle location, con in piu' **HSTS** (un anno, senza sottodomini). E
+  l'elenco degli autori non e' piu' pubblico (`rcm-riservatezza-autori.php`):
+  `/wp/v2/users` solo per chi gestisce gli utenti, niente autore in oEmbed, i
+  link alle pagine autore portano alla home. Lo slug di un autore coincideva
+  con il suo nome utente di amministratore e usciva in ogni suo articolo.
+
 ### Aggiunto
 
 - **Ruolo "Direttivo (sola lettura)"**: vede elenco soci, prenotazioni e la
