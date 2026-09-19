@@ -371,3 +371,17 @@
 .rcm-sa-come summary { cursor: pointer; color: var(--rcm-as-rosso); font-weight: 600; }
 .rcm-as .rcm-sa-come ol { margin: 10px 0; padding-left: 20px; }
 .rcm-as .rcm-sa-come li { margin-bottom: 6px; }
+
+/* ---- Due colonne sul computer (area soci da collegati) ----
+   Sul telefono sinistra e destra si impilano: tessera, QR, prenotazioni,
+   app, dati. Le pagine di accesso restano strette: senza .rcm-as-colonne. */
+.rcm-as:has(.rcm-as-colonne) { max-width: 1180px; }
+.rcm-as-colonne,
+.rcm-as-sx,
+.rcm-as-dx { display: grid; gap: 22px; align-content: start; min-width: 0; }
+@media (min-width: 960px) {
+	.rcm-as-colonne { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 34px; align-items: start; }
+	/* la tessera resta in vista mentre si scorrono prenotazioni e dati */
+	.rcm-as-sx { position: sticky; top: 24px; }
+	.rcm-as .rcm-as-sx .rcm-qr { grid-template-columns: minmax(0, 170px) 1fr; }
+}

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: RCM - Area soci
  * Description: Area riservata ai tesserati: accesso via email con link e codice, tessera digitale, dati personali. I soci non sono utenti WordPress. Interruttore spenta/prova/attiva in Soci > Area soci. Lo stile sta in rcm-area-soci/area-soci.css.
- * Version: 1.5.0
+ * Version: 1.6.0
  * Author: Roma Club Matera
  *
  * COME FUNZIONA, E PERCHE' COSI'
@@ -42,7 +42,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const RCM_AS_VERSIONE       = '1.5.0';
+const RCM_AS_VERSIONE       = '1.6.0';
 const RCM_AS_OPZIONE        = 'rcm_area_soci';
 const RCM_AS_DB             = 'rcm_as_db_version';
 const RCM_AS_DB_VER         = '1.0';
@@ -762,10 +762,17 @@ function rcm_as_shortcode() {
 
 	$socio = rcm_as_socio_corrente();
 	if ( $socio ) {
+		// Due colonne sul computer: a sinistra quello che si mostra all'ingresso
+		// (tessera e QR, ferma mentre si scorre), a destra il resto. Sul
+		// telefono si impilano nello stesso ordine di sempre.
+		echo '<div class="rcm-as-colonne"><div class="rcm-as-sx">';
 		rcm_as_mostra_tessera( $socio );
-		// qui si agganciano le altre sezioni (rcm-area-soci-prenotazioni)
+		do_action( 'rcm_as_sotto_tessera', $socio ); // il QR (rcm-soci-qr)
+		echo '</div><div class="rcm-as-dx">';
+		// qui si agganciano le altre sezioni (prenotazioni, app del Club)
 		do_action( 'rcm_as_sezioni', $socio );
 		rcm_as_mostra_dati( $socio );
+		echo '</div></div>';
 	} elseif ( ! empty( $_GET['accesso'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		rcm_as_mostra_conferma( sanitize_text_field( wp_unslash( $_GET['accesso'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	} elseif ( ! empty( $_GET['inviato'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended

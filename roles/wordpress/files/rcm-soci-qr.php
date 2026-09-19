@@ -221,8 +221,8 @@ function rcm_qr_nome_file( $socio, $estensione ) {
  * Nell'area soci, sotto la tessera
  * ---------------------------------------------------------------------- */
 
-// Priorita' 5: prima delle prenotazioni (10), subito dopo la tessera.
-add_action( 'rcm_as_sezioni', 'rcm_qr_sezione_socio', 5, 1 );
+// Subito sotto la tessera, nella colonna di quello che si mostra all'ingresso.
+add_action( 'rcm_as_sotto_tessera', 'rcm_qr_sezione_socio', 10, 1 );
 function rcm_qr_sezione_socio( $socio ) {
 	$svg = rcm_qr_svg( $socio, 'link' );
 	if ( '' === $svg ) {
