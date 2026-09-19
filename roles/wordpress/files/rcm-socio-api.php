@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: RCM - API dell'app dei soci
- * Description: Il lato sito dell'app "RCM Soci": accesso con email e codice, tessera e QR, dati, partite prenotabili, prenotare e annullare biglietto e pullman, partenza del pullman per il promemoria. Le stesse regole e gli stessi dati dell'area soci del sito.
+ * Description: Il lato sito dell'app dei soci "Roma Club Matera": accesso con email e codice, tessera e QR, dati, partite prenotabili, prenotare e annullare biglietto e pullman, partenza del pullman per il promemoria. Le stesse regole e gli stessi dati dell'area soci del sito.
  * Version: 1.0.0
  * Author: Roma Club Matera
  *
@@ -332,10 +332,10 @@ function rcm_sa_sezione_app( $socio ) {
 		<details class="rcm-sa-come">
 			<summary>Come si installa</summary>
 			<ol>
-				<li>Tocca <strong>Scarica</strong> e apri il file <em>RCM-Soci.apk</em>. Se Chrome avvisa che il file potrebbe essere dannoso, tocca <strong>Scarica comunque</strong>: l'app è del Club, non è sul Play Store.</li>
+				<li>Tocca <strong>Scarica</strong> e apri il file <em>Roma-Club-Matera.apk</em>. Se Chrome avvisa che il file potrebbe essere dannoso, tocca <strong>Scarica comunque</strong>: l'app è del Club, non è sul Play Store.</li>
 				<li>La prima volta Android chiede di <strong>consentire l'installazione da questa fonte</strong>: consentila e torna indietro.</li>
 				<li>Se Google Play Protect dice <em>app non riconosciuta</em>: <strong>Altri dettagli › Installa comunque</strong>.</li>
-				<li>Apri <strong>RCM Soci</strong>, scrivi la tua email e il codice che ti arriva. Consenti le notifiche e l'uso in background: servono al promemoria della partenza.</li>
+				<li>Apri l'app <strong>Roma Club Matera</strong>, scrivi la tua email e il codice che ti arriva. Consenti le notifiche e l'uso in background: servono al promemoria della partenza.</li>
 			</ol>
 			<p class="rcm-as-nota">iPhone: l'app arriverà più avanti. Intanto la tessera e le prenotazioni sono qui, in questa pagina.</p>
 		</details>
@@ -355,7 +355,7 @@ function rcm_sa_scarica() {
 	}
 	nocache_headers();
 	header( 'Content-Type: application/vnd.android.package-archive' );
-	header( 'Content-Disposition: attachment; filename="RCM-Soci.apk"' );
+	header( 'Content-Disposition: attachment; filename="Roma-Club-Matera.apk"' );
 	header( 'Content-Length: ' . filesize( RCM_SA_APK ) );
 	readfile( RCM_SA_APK ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
 	exit;
