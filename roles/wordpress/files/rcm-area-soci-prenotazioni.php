@@ -290,7 +290,7 @@ add_filter(
 			'pr_niente'     => 'Scegli almeno il biglietto o il posto in pullman.',
 			'pr_settore'    => 'Scegli il settore dello stadio.',
 			'pr_persone'    => 'Puoi prenotare al massimo per ' . RCM_PR_MAX_PERSONE . ' persone oltre a te.',
-			'pr_tesserato'  => 'Per ogni persona in più indica se è tesserato/a o no: per chi non lo è c\'è un sovrapprezzo.',
+			'pr_tesserato'  => 'Per ogni persona in più indica se è tesserato: Sì o No. Per chi non lo è c\'è un sovrapprezzo.',
 			'pr_confermata' => 'Questa prenotazione è già confermata: per cambiarla scrivi al Club.',
 		);
 	}
@@ -751,12 +751,13 @@ function rcm_pr_modulo( $partita, $p ) {
 			<?php for ( $i = 0; $i < RCM_PR_MAX_PERSONE; $i++ ) : ?>
 				<?php $x = $persone[ $i ] ?? null; ?>
 				<div class="rcm-pr-persona"<?php echo $x ? '' : ' data-vuota="1"'; ?>>
-					<input name="persona_nome[]" value="<?php echo esc_attr( $x ? $x['nome'] : '' ); ?>" placeholder="Nome e cognome" autocomplete="off" aria-label="Nome e cognome della persona <?php echo (int) ( $i + 1 ); ?>">
-					<select name="persona_tessera[]" aria-label="Tesserato/a (persona <?php echo (int) ( $i + 1 ); ?>)">
-						<option value="">Tesserato/a?</option>
-						<option value="si" <?php selected( $x && $x['tesserato'] ); ?>>Sì, tesserato/a</option>
-						<option value="no" <?php selected( $x && ! $x['tesserato'] ); ?>>No, con sovrapprezzo</option>
-					</select>
+					<input name="persona_nome[<?php echo (int) $i; ?>]" value="<?php echo esc_attr( $x ? $x['nome'] : '' ); ?>" placeholder="Nome e cognome" autocomplete="off" aria-label="Nome e cognome della persona <?php echo (int) ( $i + 1 ); ?>">
+					<?php // Si' o No, non un menu: il sovrapprezzo e' gia' spiegato sopra (Michele, 19/09/2026) ?>
+					<span class="rcm-pr-tesserato" role="radiogroup" aria-label="Persona <?php echo (int) ( $i + 1 ); ?>: tesserato?">
+						<span class="rcm-pr-tesserato-dom">Tesserato?</span>
+						<label><input type="radio" name="persona_tessera[<?php echo (int) $i; ?>]" value="si" <?php checked( $x && $x['tesserato'] ); ?>> Sì</label>
+						<label><input type="radio" name="persona_tessera[<?php echo (int) $i; ?>]" value="no" <?php checked( $x && ! $x['tesserato'] ); ?>> No</label>
+					</span>
 				</div>
 			<?php endfor; ?>
 			<button type="button" class="rcm-as-secondario rcm-pr-aggiungi" hidden>+ Aggiungi un'altra persona</button>

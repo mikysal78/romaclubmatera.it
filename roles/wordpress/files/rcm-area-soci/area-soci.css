@@ -385,3 +385,9 @@
 	.rcm-as-sx { position: sticky; top: 24px; }
 	.rcm-as .rcm-as-sx .rcm-qr { grid-template-columns: minmax(0, 170px) 1fr; }
 }
+
+/* Tesserato? Si' / No, accanto al nome */
+.rcm-as .rcm-pr-tesserato { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; white-space: nowrap; }
+.rcm-as .rcm-pr-tesserato-dom { font-size: 14px; color: #555; }
+.rcm-as .rcm-pr-tesserato label { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; font-size: 16px; cursor: pointer; }
+.rcm-as .rcm-pr-tesserato input { width: 20px; height: 20px; accent-color: var(--rcm-as-rosso); margin: 0; }
