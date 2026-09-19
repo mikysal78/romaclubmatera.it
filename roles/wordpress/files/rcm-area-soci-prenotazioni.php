@@ -754,8 +754,8 @@ function rcm_pr_modulo( $partita, $p ) {
 					<input name="persona_nome[]" value="<?php echo esc_attr( $x ? $x['nome'] : '' ); ?>" placeholder="Nome e cognome" autocomplete="off" aria-label="Nome e cognome della persona <?php echo (int) ( $i + 1 ); ?>">
 					<select name="persona_tessera[]" aria-label="Tesserato/a (persona <?php echo (int) ( $i + 1 ); ?>)">
 						<option value="">Tesserato/a?</option>
-						<option value="si" <?php selected( $x && $x['tesserato'] ); ?>>Tesserato/a</option>
-						<option value="no" <?php selected( $x && ! $x['tesserato'] ); ?>>Non tesserato/a (con sovrapprezzo)</option>
+						<option value="si" <?php selected( $x && $x['tesserato'] ); ?>>Sì, tesserato/a</option>
+						<option value="no" <?php selected( $x && ! $x['tesserato'] ); ?>>No, con sovrapprezzo</option>
 					</select>
 				</div>
 			<?php endfor; ?>
