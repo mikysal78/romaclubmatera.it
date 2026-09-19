@@ -290,7 +290,7 @@ add_filter(
 			'pr_niente'     => 'Scegli almeno il biglietto o il posto in pullman.',
 			'pr_settore'    => 'Scegli il settore dello stadio.',
 			'pr_persone'    => 'Puoi prenotare al massimo per ' . RCM_PR_MAX_PERSONE . ' persone oltre a te.',
-			'pr_tesserato'  => 'Per ogni persona in più indica se è tesserata o no: per chi non lo è c\'è un sovrapprezzo.',
+			'pr_tesserato'  => 'Per ogni persona in più indica se è tesserato/a o no: per chi non lo è c\'è un sovrapprezzo.',
 			'pr_confermata' => 'Questa prenotazione è già confermata: per cambiarla scrivi al Club.',
 		);
 	}
@@ -472,7 +472,7 @@ function rcm_pr_riassunto_html( $partita, $p ) {
 		$righe[] = 'Anche per: ' . esc_html( rcm_pr_elenco_persone( $p ) );
 	}
 	if ( rcm_pr_non_tesserati( $p ) ) {
-		$righe[] = 'Con sovrapprezzo per ' . ( 1 === rcm_pr_non_tesserati( $p ) ? '1 persona non tesserata' : rcm_pr_non_tesserati( $p ) . ' persone non tesserate' );
+		$righe[] = 'Con sovrapprezzo per ' . ( 1 === rcm_pr_non_tesserati( $p ) ? '1 non tesserato/a' : rcm_pr_non_tesserati( $p ) . ' non tesserati' );
 	}
 	if ( '' !== $p->note ) {
 		$righe[] = 'Note: ' . esc_html( $p->note );
@@ -747,15 +747,15 @@ function rcm_pr_modulo( $partita, $p ) {
 		<?php $persone = $attiva ? rcm_pr_persone( $p ) : array(); ?>
 		<fieldset class="rcm-pr-persone">
 			<legend>Anche per altre persone? <span class="rcm-pr-facoltativo">facoltativo</span></legend>
-			<p class="rcm-pr-regola">Oltre a te, che sei tesserato, puoi indicare altre <?php echo (int) RCM_PR_MAX_PERSONE; ?> persone al massimo: devono essere tesserate, oppure pagano un <strong>sovrapprezzo</strong>.</p>
+			<p class="rcm-pr-regola">Oltre a te, che sei tesserato, puoi indicare altre <?php echo (int) RCM_PR_MAX_PERSONE; ?> persone al massimo: devono essere tesserati, oppure pagano un <strong>sovrapprezzo</strong>.</p>
 			<?php for ( $i = 0; $i < RCM_PR_MAX_PERSONE; $i++ ) : ?>
 				<?php $x = $persone[ $i ] ?? null; ?>
 				<div class="rcm-pr-persona"<?php echo $x ? '' : ' data-vuota="1"'; ?>>
 					<input name="persona_nome[]" value="<?php echo esc_attr( $x ? $x['nome'] : '' ); ?>" placeholder="Nome e cognome" autocomplete="off" aria-label="Nome e cognome della persona <?php echo (int) ( $i + 1 ); ?>">
-					<select name="persona_tessera[]" aria-label="È tesserata la persona <?php echo (int) ( $i + 1 ); ?>?">
-						<option value="">È tesserata?</option>
-						<option value="si" <?php selected( $x && $x['tesserato'] ); ?>>Tesserata</option>
-						<option value="no" <?php selected( $x && ! $x['tesserato'] ); ?>>Non tesserata (con sovrapprezzo)</option>
+					<select name="persona_tessera[]" aria-label="Tesserato/a (persona <?php echo (int) ( $i + 1 ); ?>)">
+						<option value="">Tesserato/a?</option>
+						<option value="si" <?php selected( $x && $x['tesserato'] ); ?>>Tesserato/a</option>
+						<option value="no" <?php selected( $x && ! $x['tesserato'] ); ?>>Non tesserato/a (con sovrapprezzo)</option>
 					</select>
 				</div>
 			<?php endfor; ?>
