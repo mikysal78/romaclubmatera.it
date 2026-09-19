@@ -21,11 +21,15 @@
  *   possa ancora entrare: tessera scaduta o area spenta chiudono fuori.
  * - Il promemoria della partenza lo programma l'app sul telefono, con i dati
  *   di /socio/partite (partenza del pullman scritta dal Club per partita).
+ * - L'app si scarica dall'area soci, sezione "L'app del Club": solo il socio
+ *   collegato la vede e la scarica. I soci non entrano mai in bacheca
+ *   (Michele, 19/09/2026).
  */
 
 defined( 'ABSPATH' ) || exit;
 
 const RCM_SA_HEADER = 'X-RCM-Socio-Token';
+const RCM_SA_APK    = '/var/www/rcm-privato/rcm-soci.apk'; // fuori dal docroot: lo serve PHP, solo ai soci collegati
 const RCM_SA_DURATA = 15552000; // 180 giorni
 
 /* -------------------------------------------------------------------------
@@ -306,4 +310,53 @@ function rcm_sa_esci( WP_REST_Request $req ) {
 	global $wpdb;
 	$wpdb->delete( rcm_as_tab( 'sessioni' ), array( 'id' => $s->sessione_id ), array( '%d' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	return rest_ensure_response( array( 'ok' => true ) );
+}
+
+/* -------------------------------------------------------------------------
+ * Nell'area soci: la sezione per scaricare l'app
+ * ---------------------------------------------------------------------- */
+
+// Dopo biglietti e pullman (priorita' 10), prima dei dati.
+add_action( 'rcm_as_sezioni', 'rcm_sa_sezione_app', 20, 1 );
+function rcm_sa_sezione_app( $socio ) {
+	if ( ! is_readable( RCM_SA_APK ) ) {
+		return;
+	}
+	$meta = is_readable( RCM_SA_APK . '.json' ) ? (array) json_decode( (string) file_get_contents( RCM_SA_APK . '.json' ), true ) : array(); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+	?>
+	<section class="rcm-as-scheda rcm-sa-app">
+		<h2 class="rcm-as-titolo">L'app del Club</h2>
+		<p>Tessera con il QR code, prenotazioni di biglietto e pullman, i tuoi dati, e il <strong>promemoria il giorno prima della partenza</strong>: «domani si parte alle 5:30 da piazza…». Entri con la stessa email, senza password.</p>
+		<p><a class="rcm-sa-scarica" href="<?php echo esc_url( admin_url( 'admin-post.php?action=rcm_sa_scarica' ) ); ?>">Scarica l'app per Android</a>
+			<span class="rcm-as-nota"><?php echo esc_html( trim( ( $meta['versione'] ?? '' ) . ' · ' . size_format( filesize( RCM_SA_APK ), 0 ), ' ·' ) ); ?></span></p>
+		<details class="rcm-sa-come">
+			<summary>Come si installa</summary>
+			<ol>
+				<li>Tocca <strong>Scarica</strong> e apri il file <em>RCM-Soci.apk</em>. Se Chrome avvisa che il file potrebbe essere dannoso, tocca <strong>Scarica comunque</strong>: l'app è del Club, non è sul Play Store.</li>
+				<li>La prima volta Android chiede di <strong>consentire l'installazione da questa fonte</strong>: consentila e torna indietro.</li>
+				<li>Se Google Play Protect dice <em>app non riconosciuta</em>: <strong>Altri dettagli › Installa comunque</strong>.</li>
+				<li>Apri <strong>RCM Soci</strong>, scrivi la tua email e il codice che ti arriva. Consenti le notifiche e l'uso in background: servono al promemoria della partenza.</li>
+			</ol>
+			<p class="rcm-as-nota">iPhone: l'app arriverà più avanti. Intanto la tessera e le prenotazioni sono qui, in questa pagina.</p>
+		</details>
+	</section>
+	<?php
+}
+
+add_action( 'admin_post_nopriv_rcm_sa_scarica', 'rcm_sa_scarica' );
+add_action( 'admin_post_rcm_sa_scarica', 'rcm_sa_scarica' );
+function rcm_sa_scarica() {
+	// solo il socio collegato all'area soci: nessun altro scarica l'app
+	if ( ! function_exists( 'rcm_as_socio_corrente' ) || ! rcm_as_socio_corrente() ) {
+		rcm_as_torna( array( 'avviso' => 'scaduto' ) );
+	}
+	if ( ! is_readable( RCM_SA_APK ) ) {
+		rcm_as_torna();
+	}
+	nocache_headers();
+	header( 'Content-Type: application/vnd.android.package-archive' );
+	header( 'Content-Disposition: attachment; filename="RCM-Soci.apk"' );
+	header( 'Content-Length: ' . filesize( RCM_SA_APK ) );
+	readfile( RCM_SA_APK ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
+	exit;
 }

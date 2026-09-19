@@ -355,3 +355,19 @@
 .rcm-pr-riga .rcm-pr-stato { flex: none; font-size: 12px; padding: 3px 10px; }
 .rcm-pr-partita--dentro { border: 0; border-top: 1px solid var(--rcm-as-bordo); border-radius: 0 0 8px 8px; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .rcm-pr-riga > summary::after { transition: none; } }
+
+/* L'app del Club (rcm-socio-api.php) */
+.rcm-as .rcm-sa-scarica {
+	display: inline-block;
+	padding: 12px 20px;
+	border-radius: 6px;
+	background: var(--rcm-as-rosso);
+	color: #fff !important;
+	font-weight: 700;
+	text-decoration: none !important;
+	margin-right: 8px;
+}
+.rcm-as .rcm-sa-scarica:hover { background: #721726; }
+.rcm-sa-come summary { cursor: pointer; color: var(--rcm-as-rosso); font-weight: 600; }
+.rcm-as .rcm-sa-come ol { margin: 10px 0; padding-left: 20px; }
+.rcm-as .rcm-sa-come li { margin-bottom: 6px; }
