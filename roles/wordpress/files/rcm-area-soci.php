@@ -717,6 +717,7 @@ function rcm_as_pagina_impostazioni() {
 			</table>
 			<?php submit_button( 'Salva', 'primary', 'rcm_as_salva_impostazioni' ); ?>
 		</form>
+		<?php do_action( 'rcm_as_impostazioni_dopo' ); // es. chi usa l'app dei soci (rcm-socio-api) ?>
 	</div>
 	<?php
 }

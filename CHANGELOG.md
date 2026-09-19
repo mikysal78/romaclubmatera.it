@@ -18,6 +18,10 @@ e il versionamento [SemVer](https://semver.org/lang/it/).
   conferma, e da li' l'app manda il promemoria del giorno prima.
 - La logica di prenotazione sta in `rcm_pr_salva()` e `rcm_pr_annulla_per()`,
   usate dal sito e dall'app.
+- **Chi usa l'app dei soci**, in *Soci > Area soci*: chi l'ha scaricata
+  dall'area soci (quando, quante volte) e chi la usa, con telefono, versione,
+  primo accesso e ultimo uso. La versione arriva dallo User-Agent e segue gli
+  aggiornamenti.
 - **L'app dei soci si scarica dall'area soci** (sezione "L'app del Club"),
   solo dal socio collegato e con le istruzioni per installarla; non dalla
   bacheca, dove i soci non entrano.

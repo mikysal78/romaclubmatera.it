@@ -56,8 +56,20 @@ function rcm_sa_socio( WP_REST_Request $req ) {
 	if ( ! rcm_as_puo_entrare( $socio ) ) {
 		return null;
 	}
+	$aggiorna = array();
 	if ( strtotime( $s->ultimo_uso . ' UTC' ) < time() - 600 ) {
-		$wpdb->update( $t, array( 'ultimo_uso' => rcm_as_ora_utc() ), array( 'id' => $s->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$aggiorna['ultimo_uso'] = rcm_as_ora_utc();
+	}
+	// la versione dell'app ("RCMSoci/1.0.4" nello User-Agent) segue gli
+	// aggiornamenti: si tiene in fondo all'agente, "app: telefono · v1.0.4"
+	if ( preg_match( '#RCMSoci/([0-9][0-9A-Za-z.+-]{0,19})#', (string) $req->get_header( 'user_agent' ), $m ) ) {
+		$agente = preg_replace( '/ · v[^ ]+$/', '', $s->agente ) . ' · v' . $m[1];
+		if ( $agente !== $s->agente ) {
+			$aggiorna['agente'] = mb_substr( $agente, 0, 190 );
+		}
+	}
+	if ( $aggiorna ) {
+		$wpdb->update( $t, $aggiorna, array( 'id' => $s->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	}
 	$socio->sessione_id = (int) $s->id;
 	$cache              = $socio;
@@ -353,10 +365,84 @@ function rcm_sa_scarica() {
 	if ( ! is_readable( RCM_SA_APK ) ) {
 		rcm_as_torna();
 	}
+	$socio    = rcm_as_socio_corrente();
+	$scaricati = (array) get_option( 'rcm_sa_download', array() );
+	$prima     = $scaricati[ $socio->id ] ?? array( 'n' => 0, 'primo' => current_time( 'mysql' ) );
+	$scaricati[ $socio->id ] = array(
+		'n'      => (int) $prima['n'] + 1,
+		'primo'  => $prima['primo'],
+		'ultimo' => current_time( 'mysql' ),
+	);
+	update_option( 'rcm_sa_download', $scaricati, false );
 	nocache_headers();
 	header( 'Content-Type: application/vnd.android.package-archive' );
 	header( 'Content-Disposition: attachment; filename="Roma-Club-Matera.apk"' );
 	header( 'Content-Length: ' . filesize( RCM_SA_APK ) );
 	readfile( RCM_SA_APK ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
 	exit;
+}
+
+/* -------------------------------------------------------------------------
+ * In bacheca, Soci > Area soci: chi ha scaricato l'app e chi la usa
+ * ---------------------------------------------------------------------- */
+
+add_action( 'rcm_as_impostazioni_dopo', 'rcm_sa_admin_uso_app' );
+function rcm_sa_admin_uso_app() {
+	global $wpdb;
+	$scaricati = (array) get_option( 'rcm_sa_download', array() );
+	$t         = rcm_as_tab( 'sessioni' );
+	// una riga per socio: le sessioni dell'app, la piu' usata di recente per prima
+	$sessioni = $wpdb->get_results( $wpdb->prepare( "SELECT socio_id, agente, creato_il, ultimo_uso FROM $t WHERE agente LIKE %s AND scade_il > %s ORDER BY ultimo_uso DESC", 'app:%', rcm_as_ora_utc() ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+	$uso      = array();
+	foreach ( $sessioni as $r ) {
+		$uso[ (int) $r->socio_id ][] = $r;
+	}
+	$ids = array_unique( array_merge( array_map( 'intval', array_keys( $scaricati ) ), array_keys( $uso ) ) );
+	$soci = array();
+	foreach ( $ids as $id ) {
+		$s = rcm_as_socio( $id );
+		if ( $s ) {
+			$soci[] = $s;
+		}
+	}
+	usort(
+		$soci,
+		function ( $a, $b ) {
+			return strcasecmp( $a->cognome . $a->nome, $b->cognome . $b->nome );
+		}
+	);
+	$quando = function ( $utc ) {
+		return wp_date( 'd/m/Y H:i', strtotime( $utc . ' UTC' ) );
+	};
+	?>
+	<h2 style="margin-top:2em">App dei soci</h2>
+	<p><strong><?php echo count( $scaricati ); ?></strong> soci l'hanno scaricata dall'area soci · <strong><?php echo count( $uso ); ?></strong> la usano (collegati con l'app).</p>
+	<?php if ( ! $soci ) : ?>
+		<p>Ancora nessuno.</p>
+	<?php else : ?>
+		<table class="widefat striped" style="max-width:70em">
+			<thead><tr><th>Socio</th><th>Scaricata</th><th>Telefono e versione</th><th>Entrato la prima volta</th><th>Ultimo uso</th></tr></thead>
+			<tbody>
+			<?php foreach ( $soci as $s ) : ?>
+				<?php $d = $scaricati[ $s->id ] ?? null; ?>
+				<?php $righe = $uso[ (int) $s->id ] ?? array( null ); ?>
+				<?php foreach ( $righe as $i => $r ) : ?>
+					<tr>
+						<td><?php echo 0 === $i ? esc_html( $s->nome . ' ' . $s->cognome ) : ''; ?></td>
+						<td><?php echo 0 === $i ? ( $d ? esc_html( mysql2date( 'd/m/Y', $d['ultimo'] ) . ( $d['n'] > 1 ? ' (' . $d['n'] . ' volte)' : '' ) ) : '<span class="description">non dall\'area soci</span>' ) : ''; ?></td>
+						<?php if ( $r ) : ?>
+							<td><?php echo esc_html( trim( preg_replace( '/^app:\s*/', '', $r->agente ) ) ); ?></td>
+							<td><?php echo esc_html( $quando( $r->creato_il ) ); ?></td>
+							<td><?php echo esc_html( $quando( $r->ultimo_uso ) ); ?></td>
+						<?php else : ?>
+							<td colspan="3"><span class="description">scaricata, ma non ancora usata</span></td>
+						<?php endif; ?>
+					</tr>
+				<?php endforeach; ?>
+			<?php endforeach; ?>
+			</tbody>
+		</table>
+		<p class="description">Un socio può avere più telefoni. "Ultimo uso" si aggiorna quando l'app si collega al sito (all'apertura e con il controllo in background). I download si contano dal 19/09/2026.</p>
+	<?php endif; ?>
+	<?php
 }
